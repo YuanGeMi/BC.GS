@@ -1,0 +1,304 @@
+{
+  "Nav": {
+    "casinos": "娱乐场",
+    "bonuses": "优惠",
+    "compare": "对比",
+    "bestOf": "精选",
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单",
+    "primary": "主导航",
+    "mobile": "移动主导航"
+  },
+  "LocaleSwitcher": {
+    "label": "语言"
+  },
+  "Meta": {
+    "title": "BC.GS — 独立博彩与娱乐场评测",
+    "template": "%s · BC.GS",
+    "description": "独立的编辑评测与对比 — 不是娱乐场。对公平性、出款与产品质量给出清楚评分。"
+  },
+  "Footer": {
+    "tagline": "面向挑剔玩家的独立评测与编辑级对比。",
+    "explore": "探索",
+    "legal": "法律",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "responsibleGambling": "负责任博彩",
+    "settings": "设置",
+    "copyright": "© {year} BC.GS。保留所有权利。"
+  },
+  "HomePage": {
+    "hero": {
+      "masthead": "评测与评分",
+      "updated": "每周更新",
+      "coverKicker": "本期封面",
+      "coverFallback": "经过实操评测后的当前首选推荐。",
+      "coverCta": "阅读完整评测",
+      "deskLabel": "同台关注",
+      "browseAll": "浏览全部娱乐场",
+      "methodLink": "我们如何评分",
+      "finder": {
+        "kicker": "找一家娱乐场",
+        "title": "你最看重娱乐场的哪一点？",
+        "subtitle": "先选一个优先条件。我们会推荐一家我们已经评测过的娱乐场 — 不是付费推广。",
+        "scoreLabel": "我们的评分",
+        "scoreNote": "我们开过户、存过款、也出过金。这个分数来自那次评测，不是娱乐场自己给的。",
+        "related": "我们评测过的其他娱乐场",
+        "prompts": {
+          "allrounder": "条款清楚、综合表现稳的娱乐场",
+          "payout": "出款能按时到账",
+          "license": "有真正玩家保障的牌照",
+          "live": "真正开着的真人荷官桌"
+        },
+        "answers": {
+          "allrounder": "综合表现最好的娱乐场",
+          "payout": "出款最快的选择",
+          "license": "牌照最稳妥的选择",
+          "live": "最适合玩真人桌的选择"
+        }
+      },
+      "index": {
+        "kicker": "本周排名",
+        "title": "{count} 家娱乐场，按评分排列",
+        "subtitle": "分数从高到低。每一项评分都来自我们实际游玩、存款并出金的评测。"
+      }
+    },
+    "casinos": {
+      "title": "高分娱乐场",
+      "viewAll": "查看全部",
+      "cta": "阅读评测"
+    },
+    "bonuses": {
+      "title": "精选优惠",
+      "viewAll": "查看全部",
+      "cta": "领取"
+    },
+    "categories": {
+      "title": "按分类探索"
+    },
+    "review": {
+      "eyebrow": "编辑标准",
+      "title": "我们的评测流程",
+      "subtitle": "每一项评分都基于实操测试与透明标准 — 绝不以付费位冒充观点。",
+      "researchTitle": "运营商调研",
+      "researchBody": "在深入测试前，我们会核验牌照、所有权线索与公开履历。",
+      "testTitle": "实操测试",
+      "testBody": "在真实账户条件下评估存款、游戏、客服与出款流程。",
+      "scoreTitle": "透明评分",
+      "scoreBody": "评分侧重产品质量、可靠性与公平性 — 而非营销预算。",
+      "updateTitle": "持续更新",
+      "updateBody": "当优惠、条款或表现发生实质变化时，我们会重新评估榜单。"
+    }
+  },
+  "CasinosPage": {
+    "eyebrow": "目录",
+    "title": "全部娱乐场",
+    "description": "浏览我们已评测的运营商 — 可按牌照、支付方式、游戏厂商与优惠类型筛选。",
+    "cta": "阅读评测",
+    "resultsCount": "{count} 家娱乐场",
+    "loadMore": "加载更多",
+    "empty": {
+      "title": "没有符合筛选条件的娱乐场",
+      "body": "取消一两项筛选后，列表会重新出现。"
+    },
+    "sort": {
+      "label": "排序",
+      "rating": "评分（从高到低）",
+      "newest": "最新",
+      "bonus": "优惠金额"
+    },
+    "filters": {
+      "title": "筛选",
+      "license": "牌照",
+      "payments": "支付方式",
+      "providers": "游戏厂商",
+      "bonusType": "优惠类型",
+      "clear": "清除筛选",
+      "close": "关闭"
+    },
+    "licenses": {
+      "mga": "马耳他（MGA）",
+      "curacao": "库拉索",
+      "gibraltar": "直布罗陀",
+      "ukgc": "UKGC",
+      "kahnawake": "Kahnawake"
+    },
+    "payments": {
+      "crypto": "加密货币",
+      "visa": "Visa / Mastercard",
+      "paypal": "PayPal",
+      "bank": "银行转账"
+    },
+    "providers": {
+      "evolution": "Evolution",
+      "pragmatic": "Pragmatic Play",
+      "netent": "NetEnt",
+      "playngo": "Play’n GO",
+      "hacksaw": "Hacksaw"
+    },
+    "bonusTypes": {
+      "welcome": "迎新优惠",
+      "no-deposit": "无需存款",
+      "free-spins": "免费旋转",
+      "reload": "再存优惠",
+      "cashback": "返水"
+    }
+  },
+  "CasinoDetail": {
+    "eyebrow": "评测",
+    "visit": "前往娱乐场",
+    "facts": {
+      "license": "牌照",
+      "established": "成立年份",
+      "minDeposit": "最低存款",
+      "withdrawal": "出款时间",
+      "payments": "支付方式",
+      "providers": "游戏厂商"
+    },
+    "scores": {
+      "title": "评分明细",
+      "bonuses": "优惠",
+      "gameVariety": "游戏丰富度",
+      "support": "客服",
+      "payoutSpeed": "出款速度",
+      "trust": "信任与安全"
+    },
+    "verdict": {
+      "title": "优缺点",
+      "pros": "优点",
+      "cons": "不足"
+    },
+    "bonus": {
+      "title": "优惠条款",
+      "wagering": "流水要求",
+      "minDeposit": "最低存款",
+      "expiry": "有效期",
+      "cta": "领取"
+    },
+    "review": {
+      "title": "{name} 评测"
+    },
+    "related": {
+      "title": "相关娱乐场",
+      "cta": "阅读评测"
+    }
+  },
+  "BonusesPage": {
+    "eyebrow": "优惠",
+    "title": "全部优惠",
+    "description": "当前的迎新、再存、旋转与返水优惠 — 每项都关联到已评测的运营商。",
+    "cta": "查看娱乐场",
+    "resultsCount": "{count} 项优惠",
+    "loadMore": "加载更多",
+    "empty": {
+      "title": "没有符合筛选条件的优惠",
+      "body": "取消类型或娱乐场筛选后，列表会重新出现。"
+    },
+    "sort": {
+      "label": "排序",
+      "value": "优惠金额（从高到低）",
+      "newest": "最新",
+      "expiring": "即将到期"
+    },
+    "filters": {
+      "type": "优惠类型",
+      "casino": "娱乐场",
+      "allCasinos": "全部娱乐场",
+      "clear": "清除筛选"
+    }
+  },
+  "ComparePage": {
+    "eyebrow": "对照",
+    "title": "对比娱乐场",
+    "description": "并排查看两到三家运营商的同一组事实 — 评分、出款、牌照，以及真正重要的条款。",
+    "slots": {
+      "label": "娱乐场 {n}",
+      "placeholder": "按名称搜索",
+      "empty": "选择运营商",
+      "clear": "移除",
+      "change": "更换",
+      "noResults": "没有匹配的娱乐场"
+    },
+    "empty": {
+      "title": "在上方选择 2–3 家娱乐场，即可并排对比",
+      "body": "可以从推荐的组合开始，也可以搜索你已经知道的名字。",
+      "needOneMore": "再加一家，即可打开对比表。",
+      "suggested": "快速添加"
+    },
+    "table": {
+      "attribute": "项目",
+      "rating": "综合评分",
+      "license": "牌照",
+      "established": "成立年份",
+      "minDeposit": "最低存款",
+      "withdrawal": "出款时间",
+      "payments": "支付方式",
+      "providers": "游戏厂商",
+      "bonus": "优惠",
+      "wagering": "流水要求",
+      "bonuses": "优惠",
+      "gameVariety": "游戏丰富度",
+      "support": "客服",
+      "payoutSpeed": "出款速度",
+      "trust": "信任与安全",
+      "pros": "优点",
+      "cons": "不足",
+      "visit": "前往娱乐场",
+      "review": "阅读评测"
+    }
+  },
+  "BestOfIndex": {
+    "eyebrow": "精选",
+    "title": "精选榜单",
+    "description": "按真正重要的条件排名的短名单 — 加密结算、出款速度、真人桌台，以及手机上游玩。",
+    "seoTitle": "娱乐场精选榜单",
+    "seoDescription": "独立的娱乐场精选排名 — 加密货币、极速出款、真人荷官与移动端 — 基于实操测试，而非付费位置。"
+  },
+  "BestOfPage": {
+    "eyebrow": "精选",
+    "editorsChoice": "编辑首选",
+    "cta": "阅读评测",
+    "rankLabel": "第 {rank} 名",
+    "count": "{count} 家运营商上榜",
+    "table": {
+      "title": "一览",
+      "rank": "名次",
+      "casino": "娱乐场",
+      "rating": "评分",
+      "bonus": "主要优惠",
+      "cta": "评测"
+    },
+    "method": {
+      "title": "排名方法"
+    },
+    "related": {
+      "title": "更多精选榜单",
+      "cta": "查看榜单"
+    },
+    "empty": {
+      "title": "此分类暂无运营商",
+      "body": "当我们有足够的实操测试后，会发布这份排名。"
+    }
+  },
+  "LegalPage": {
+    "lastUpdated": "最近更新 {date}"
+  },
+  "SettingsPage": {
+    "eyebrow": "工作区",
+    "title": "设置",
+    "description": "用于对比布局的临时控件。仅保存在本浏览器。",
+    "cards": {
+      "label": "娱乐场列表",
+      "help": "在编辑索引与卡片之间切换。选择会保持，直到你再次更改。",
+      "row": "索引行",
+      "card": "卡片"
+    },
+    "hero": {
+      "label": "首页头图",
+      "help": "在封面故事、“找一家娱乐场”问答与本周排名之间切换。选择会保持，直到你再次更改。",
+      "masthead": "封面故事",
+      "finder": "问答",
+      "index": "排名"
+    }
+  }
+}

@@ -1,0 +1,304 @@
+{
+  "Nav": {
+    "casinos": "Casinos",
+    "bonuses": "Bonuses",
+    "compare": "Compare",
+    "bestOf": "Best Of",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "primary": "Primary",
+    "mobile": "Mobile primary"
+  },
+  "LocaleSwitcher": {
+    "label": "Language"
+  },
+  "Meta": {
+    "title": "BC.GS — Independent betting & casino reviews",
+    "template": "%s · BC.GS",
+    "description": "Independent editorial reviews and comparisons — not a casino. Clear ratings on fairness, payouts, and product quality."
+  },
+  "Footer": {
+    "tagline": "Independent reviews and editorial comparisons for discerning players.",
+    "explore": "Explore",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "responsibleGambling": "Responsible Gambling",
+    "settings": "Settings",
+    "copyright": "© {year} BC.GS. All rights reserved."
+  },
+  "HomePage": {
+    "hero": {
+      "masthead": "Reviews and ratings",
+      "updated": "Reviews updated weekly",
+      "coverKicker": "Cover pick",
+      "coverFallback": "Our current lead recommendation after hands-on review.",
+      "coverCta": "Read the full review",
+      "deskLabel": "Also on the desk",
+      "browseAll": "Browse all casinos",
+      "methodLink": "How we score operators",
+      "finder": {
+        "kicker": "Find a casino",
+        "title": "What do you want from a casino?",
+        "subtitle": "Choose what matters first. We’ll recommend one casino we’ve reviewed — not a paid placement.",
+        "scoreLabel": "Our rating",
+        "scoreNote": "We opened an account, deposited, and withdrew. This score comes from that review, not from the casino.",
+        "related": "Other casinos we reviewed",
+        "prompts": {
+          "allrounder": "A balanced casino with clear bonus terms",
+          "payout": "Withdrawals that arrive on time",
+          "license": "A license with real player protection",
+          "live": "Live dealer tables that are actually open"
+        },
+        "answers": {
+          "allrounder": "Best all-round casino",
+          "payout": "Best for fast withdrawals",
+          "license": "Best licensed option",
+          "live": "Best for live dealer"
+        }
+      },
+      "index": {
+        "kicker": "This week's ranking",
+        "title": "{count} casinos, ranked",
+        "subtitle": "Highest score first. Every rating is from a review we played, deposited, and cashed out."
+      }
+    },
+    "casinos": {
+      "title": "Top Rated Casinos",
+      "viewAll": "View all",
+      "cta": "Read review"
+    },
+    "bonuses": {
+      "title": "Featured Bonuses",
+      "viewAll": "View all",
+      "cta": "Claim"
+    },
+    "categories": {
+      "title": "Explore by category"
+    },
+    "review": {
+      "eyebrow": "Editorial standards",
+      "title": "Our Review Process",
+      "subtitle": "Every rating is grounded in hands-on testing and transparent criteria — never paid placement disguised as opinion.",
+      "researchTitle": "Operator research",
+      "researchBody": "We verify licensing, ownership signals, and public track record before deeper testing begins.",
+      "testTitle": "Hands-on testing",
+      "testBody": "Deposits, gameplay, support, and withdrawals are assessed under real account conditions.",
+      "scoreTitle": "Transparent scoring",
+      "scoreBody": "Ratings weight product quality, reliability, and fairness — not marketing spend.",
+      "updateTitle": "Ongoing updates",
+      "updateBody": "Listings are revisited when offers, terms, or performance materially change."
+    }
+  },
+  "CasinosPage": {
+    "eyebrow": "Directory",
+    "title": "All Casinos",
+    "description": "Browse operators we have reviewed — filter by license, payments, studios, and bonus type.",
+    "cta": "Read review",
+    "resultsCount": "{count, plural, one {# casino} other {# casinos}}",
+    "loadMore": "Load more",
+    "empty": {
+      "title": "No casinos match your filters",
+      "body": "Clear a filter or two and the list will fill back in."
+    },
+    "sort": {
+      "label": "Sort",
+      "rating": "Rating (high to low)",
+      "newest": "Newest",
+      "bonus": "Bonus value"
+    },
+    "filters": {
+      "title": "Filters",
+      "license": "License",
+      "payments": "Payment methods",
+      "providers": "Game providers",
+      "bonusType": "Bonus type",
+      "clear": "Clear filters",
+      "close": "Close"
+    },
+    "licenses": {
+      "mga": "Malta (MGA)",
+      "curacao": "Curaçao",
+      "gibraltar": "Gibraltar",
+      "ukgc": "UKGC",
+      "kahnawake": "Kahnawake"
+    },
+    "payments": {
+      "crypto": "Crypto",
+      "visa": "Visa / Mastercard",
+      "paypal": "PayPal",
+      "bank": "Bank transfer"
+    },
+    "providers": {
+      "evolution": "Evolution",
+      "pragmatic": "Pragmatic Play",
+      "netent": "NetEnt",
+      "playngo": "Play’n GO",
+      "hacksaw": "Hacksaw"
+    },
+    "bonusTypes": {
+      "welcome": "Welcome bonus",
+      "no-deposit": "No deposit",
+      "free-spins": "Free spins",
+      "reload": "Reload",
+      "cashback": "Cashback"
+    }
+  },
+  "CasinoDetail": {
+    "eyebrow": "Review",
+    "visit": "Visit Casino",
+    "facts": {
+      "license": "License",
+      "established": "Established",
+      "minDeposit": "Min deposit",
+      "withdrawal": "Withdrawal",
+      "payments": "Payments",
+      "providers": "Providers"
+    },
+    "scores": {
+      "title": "Rating breakdown",
+      "bonuses": "Bonuses",
+      "gameVariety": "Game variety",
+      "support": "Support",
+      "payoutSpeed": "Payout speed",
+      "trust": "Trust & safety"
+    },
+    "verdict": {
+      "title": "Pros and cons",
+      "pros": "What holds up",
+      "cons": "What doesn’t"
+    },
+    "bonus": {
+      "title": "Bonus terms",
+      "wagering": "Wagering",
+      "minDeposit": "Min deposit",
+      "expiry": "Expiry",
+      "cta": "Claim"
+    },
+    "review": {
+      "title": "{name} review"
+    },
+    "related": {
+      "title": "Related casinos",
+      "cta": "Read review"
+    }
+  },
+  "BonusesPage": {
+    "eyebrow": "Offers",
+    "title": "All Bonuses",
+    "description": "Current welcome, reload, spins, and cashback offers — each one tied to a reviewed operator.",
+    "cta": "View casino",
+    "resultsCount": "{count, plural, one {# bonus} other {# bonuses}}",
+    "loadMore": "Load more",
+    "empty": {
+      "title": "No bonuses match your filters",
+      "body": "Clear a type or casino filter and the list will fill back in."
+    },
+    "sort": {
+      "label": "Sort",
+      "value": "Bonus value (high to low)",
+      "newest": "Newest",
+      "expiring": "Expiring soon"
+    },
+    "filters": {
+      "type": "Bonus type",
+      "casino": "Casino",
+      "allCasinos": "All casinos",
+      "clear": "Clear filters"
+    }
+  },
+  "ComparePage": {
+    "eyebrow": "Side by side",
+    "title": "Compare Casinos",
+    "description": "Line up two or three operators and read the same facts in one place — ratings, payouts, licenses, and the terms that actually matter.",
+    "slots": {
+      "label": "Casino {n}",
+      "placeholder": "Search by name",
+      "empty": "Choose an operator",
+      "clear": "Remove",
+      "change": "Replace",
+      "noResults": "No casinos match that name"
+    },
+    "empty": {
+      "title": "Select 2–3 casinos above to compare them side by side",
+      "body": "Start with a recommended pair, or search for a casino you already have in mind.",
+      "needOneMore": "Add one more casino to open the comparison.",
+      "suggested": "Quick add"
+    },
+    "table": {
+      "attribute": "Attribute",
+      "rating": "Overall rating",
+      "license": "License",
+      "established": "Established",
+      "minDeposit": "Min deposit",
+      "withdrawal": "Withdrawal time",
+      "payments": "Payment methods",
+      "providers": "Game providers",
+      "bonus": "Bonus",
+      "wagering": "Wagering",
+      "bonuses": "Bonuses",
+      "gameVariety": "Game variety",
+      "support": "Support",
+      "payoutSpeed": "Payout speed",
+      "trust": "Trust & safety",
+      "pros": "What holds up",
+      "cons": "What doesn’t",
+      "visit": "Visit Casino",
+      "review": "Read review"
+    }
+  },
+  "BestOfIndex": {
+    "eyebrow": "Best of",
+    "title": "Best-of lists",
+    "description": "Ranked shortlists by the constraint that actually matters — crypto settlement, payout speed, live tables, and play on a phone.",
+    "seoTitle": "Best-of casino lists",
+    "seoDescription": "Independent best-of casino rankings — crypto, fastest payouts, live dealer, and mobile — scored from hands-on testing, not paid placement."
+  },
+  "BestOfPage": {
+    "eyebrow": "Best of",
+    "editorsChoice": "Editor's Choice",
+    "cta": "Read review",
+    "rankLabel": "Rank {rank}",
+    "count": "{count, plural, one {# operator ranked} other {# operators ranked}}",
+    "table": {
+      "title": "At a glance",
+      "rank": "Rank",
+      "casino": "Casino",
+      "rating": "Rating",
+      "bonus": "Key bonus",
+      "cta": "Review"
+    },
+    "method": {
+      "title": "How this list is ranked"
+    },
+    "related": {
+      "title": "More best-of lists",
+      "cta": "View list"
+    },
+    "empty": {
+      "title": "No operators in this category yet",
+      "body": "We will publish this ranking once we have enough hands-on tests."
+    }
+  },
+  "LegalPage": {
+    "lastUpdated": "Last updated {date}"
+  },
+  "SettingsPage": {
+    "eyebrow": "Workspace",
+    "title": "Settings",
+    "description": "Temporary controls for comparing layouts. Stored in this browser only.",
+    "cards": {
+      "label": "Casino listings",
+      "help": "Switch between the editorial index and the original cards. Your choice stays selected until you change it.",
+      "row": "Index rows",
+      "card": "Cards"
+    },
+    "hero": {
+      "label": "Homepage hero",
+      "help": "Switch between the cover story, the “find a casino” questions, and this week’s ranking. Your choice stays selected until you change it.",
+      "masthead": "Cover story",
+      "finder": "Finder",
+      "index": "Ranking"
+    }
+  }
+}
