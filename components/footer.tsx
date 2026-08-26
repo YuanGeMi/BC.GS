@@ -17,7 +17,7 @@ export async function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-text/8 bg-card/40 mt-auto border-t">
+    <footer className="border-text/8 bg-card/40 mt-auto w-full min-w-0 border-t">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
           <div className="max-w-xs">

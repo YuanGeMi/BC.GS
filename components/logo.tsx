@@ -31,7 +31,8 @@ export function Logo({ className, size = "md", priority = false }: LogoProps) {
         alt="BC.GS"
         width={dims.width}
         height={dims.height}
-        className="h-auto w-auto"
+        className="object-contain"
+        style={{ width: dims.width, height: dims.height }}
         priority={priority}
       />
     </Link>

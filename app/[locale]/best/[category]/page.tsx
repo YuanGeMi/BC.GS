@@ -116,8 +116,56 @@ export default async function BestCategoryPage({ params }: Props) {
           <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
             {t("table.title")}
           </h2>
-          <div className="min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-            <table className="w-full min-w-[36rem] border-collapse text-left">
+
+          <ul className="divide-text/8 divide-y md:hidden">
+            {ranked.map((casino, index) => {
+              const name = localize(casino.name, locale);
+              const rank = index + 1;
+
+              return (
+                <li key={casino.id} className="py-4 first:pt-0">
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={cn(
+                        "font-display w-6 shrink-0 text-xl tabular-nums",
+                        rank === 1 ? "text-accent" : "text-text/35",
+                      )}
+                    >
+                      {rank}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/casinos/${casino.slug}`}
+                        className="text-text hover:text-accent block text-sm font-semibold tracking-tight break-words transition-colors duration-200"
+                      >
+                        {name}
+                      </Link>
+                      <RatingStars
+                        rating={casino.rating}
+                        showValue
+                        size="sm"
+                        className="mt-1"
+                      />
+                      <p className="text-text/70 mt-2 text-sm break-words">
+                        {getWelcomeBonus(casino, locale)}
+                      </p>
+                      <Button
+                        href={`/casinos/${casino.slug}`}
+                        variant="secondary"
+                        size="sm"
+                        className="mt-3"
+                      >
+                        {t("table.cta")}
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden overflow-x-auto overscroll-x-contain md:block">
+            <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-text/8 border-b">
                   <th

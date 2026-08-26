@@ -76,7 +76,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       lang={locale}
       className={`${inter.variable} ${newsreader.variable} h-full`}
     >
-      <body className="bg-background text-text flex min-h-full flex-col font-sans antialiased">
+      <body className="bg-background text-text flex min-h-full min-w-0 flex-col font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
           <CardStyleProvider>
             <HeroStyleProvider>

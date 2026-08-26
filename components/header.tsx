@@ -40,7 +40,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="border-text/8 bg-background/85 sticky top-0 z-50 border-b backdrop-blur-md">
+    <header className="border-text/8 bg-background/85 sticky top-0 z-50 w-full min-w-0 border-b backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Logo size="md" priority />
 
