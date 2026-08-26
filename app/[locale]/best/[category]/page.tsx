@@ -116,7 +116,7 @@ export default async function BestCategoryPage({ params }: Props) {
           <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
             {t("table.title")}
           </h2>
-          <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+          <div className="min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
             <table className="w-full min-w-[36rem] border-collapse text-left">
               <thead>
                 <tr className="border-text/8 border-b">

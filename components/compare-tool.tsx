@@ -436,7 +436,7 @@ function ComparisonTable({
       label: t("table.payments"),
       muted: true,
       values: casinos.map((casino) => (
-        <div key={casino.slug} className="flex flex-wrap justify-end gap-1.5 md:justify-start">
+        <div key={casino.slug} className="flex flex-wrap justify-start gap-1.5">
           {casino.payments.map((id) => (
             <Badge key={id}>{paymentLabel(id)}</Badge>
           ))}
@@ -527,16 +527,14 @@ function ComparisonTable({
   return (
     <div className="mt-8 md:mt-10">
       <div className="md:hidden">
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex flex-col gap-2">
           {casinos.map((casino, index) => (
             <div
               key={casino.slug}
-              className="bg-card/50 ring-text/8 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-2 ring-1"
+              className="bg-card/50 ring-text/8 flex items-center gap-2 rounded-lg px-2.5 py-2 ring-1"
             >
               <LogoMark name={names[index]} logoUrl={casino.logoUrl} size="xs" />
-              <p className="text-text truncate text-xs font-semibold">
-                {names[index]}
-              </p>
+              <p className="text-text text-xs font-semibold">{names[index]}</p>
             </div>
           ))}
         </div>
@@ -561,6 +559,28 @@ function ComparisonTable({
                 casinos={casinos}
                 names={names}
                 scoreKey={line.id}
+              />
+            ) : line.id === "pros" || line.id === "cons" ? (
+              <MobileVerdictCompare
+                key={line.id}
+                label={line.label}
+                muted={line.muted}
+                casinos={casinos}
+                names={names}
+                locale={locale}
+                kind={line.id}
+              />
+            ) : isWrapLine(line.id) ? (
+              <MobileWrapCompare
+                key={line.id}
+                id={line.id}
+                label={line.label}
+                muted={line.muted}
+                casinos={casinos}
+                names={names}
+                licenseLabel={licenseLabel}
+                paymentLabel={paymentLabel}
+                providerLabel={providerLabel}
               />
             ) : (
               <div
@@ -754,6 +774,60 @@ function Td({
   );
 }
 
+function isWrapLine(id: string): id is "license" | "payments" | "providers" {
+  return id === "license" || id === "payments" || id === "providers";
+}
+
+function MobileWrapCompare({
+  id,
+  label,
+  muted,
+  casinos,
+  names,
+  licenseLabel,
+  paymentLabel,
+  providerLabel,
+}: {
+  id: "license" | "payments" | "providers";
+  label: string;
+  muted?: boolean;
+  casinos: CasinoProfile[];
+  names: string[];
+  licenseLabel: (id: CasinoProfile["licenses"][number]) => string;
+  paymentLabel: (id: CasinoProfile["payments"][number]) => string;
+  providerLabel: (id: CasinoProfile["providers"][number]) => string;
+}) {
+  return (
+    <div className={muted ? "bg-text/[0.02] -mx-4 px-4 py-3" : undefined}>
+      <p className="text-text/40 text-[11px] font-medium tracking-[0.14em] uppercase">
+        {label}
+      </p>
+      <ul className="mt-3 space-y-3">
+        {casinos.map((casino, index) => (
+          <li key={casino.slug} className="min-w-0">
+            <p className="text-text text-sm font-semibold">{names[index]}</p>
+            <div className="text-text/80 mt-1.5 min-w-0 text-sm break-words">
+              {id === "payments" ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {casino.payments.map((paymentId) => (
+                    <Badge key={paymentId} wrap>
+                      {paymentLabel(paymentId)}
+                    </Badge>
+                  ))}
+                </div>
+              ) : id === "license" ? (
+                casino.licenses.map(licenseLabel).join(" · ")
+              ) : (
+                casino.providers.map(providerLabel).join(" · ")
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function isScoreLine(id: string): id is (typeof SCORE_KEYS)[number] {
   return (SCORE_KEYS as readonly string[]).includes(id);
 }
@@ -799,6 +873,58 @@ function MobileScoreCompare({
             </li>
           );
         })}
+      </ul>
+    </div>
+  );
+}
+
+function MobileVerdictCompare({
+  label,
+  muted,
+  casinos,
+  names,
+  locale,
+  kind,
+}: {
+  label: string;
+  muted?: boolean;
+  casinos: CasinoProfile[];
+  names: string[];
+  locale: string;
+  kind: "pros" | "cons";
+}) {
+  const positive = kind === "pros";
+
+  return (
+    <div className={muted ? "bg-text/[0.02] -mx-4 px-4 py-3" : undefined}>
+      <p className="text-text/40 text-[11px] font-medium tracking-[0.14em] uppercase">
+        {label}
+      </p>
+      <ul className="mt-3 space-y-4">
+        {casinos.map((casino, index) => (
+          <li key={casino.slug}>
+            <p className="text-text text-sm font-semibold">{names[index]}</p>
+            <ul className="mt-2 space-y-2">
+              {casino[kind].slice(0, 2).map((item) => (
+                <li
+                  key={localize(item, locale)}
+                  className="flex gap-2 text-sm leading-relaxed"
+                >
+                  <span
+                    className={cn(
+                      "mt-0.5 shrink-0",
+                      positive ? "text-accent" : "text-text/35",
+                    )}
+                    aria-hidden
+                  >
+                    {positive ? "✓" : "×"}
+                  </span>
+                  <span className="text-text/70 min-w-0">{localize(item, locale)}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
       </ul>
     </div>
   );

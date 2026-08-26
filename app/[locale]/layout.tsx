@@ -81,7 +81,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           <CardStyleProvider>
             <HeroStyleProvider>
               <Header />
-              <main className="flex-1">{children}</main>
+              <main className="min-w-0 flex-1">{children}</main>
               <Footer />
             </HeroStyleProvider>
           </CardStyleProvider>
