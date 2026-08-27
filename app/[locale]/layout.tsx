@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { Inter, Newsreader } from "next/font/google";
@@ -86,6 +87,7 @@ export default async function LocaleLayout({ children, params }: Props) {
             </HeroStyleProvider>
           </CardStyleProvider>
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
