@@ -1,14 +1,29 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CompareTool } from "@/components/compare-tool";
 import { Section } from "@/components/section";
-import { mockCasinos } from "@/data/mock-casinos";
+import { getCasinos } from "@/lib/casinos";
+import { pageAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ casinos?: string | string[] }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("ComparePage");
+
+  return {
+    title: t("seoTitle"),
+    description: t("seoDescription"),
+    ...pageAlternates("/compare"),
+  };
+}
 
 export default async function ComparePage({ params, searchParams }: Props) {
   const { locale } = await params;
@@ -16,6 +31,7 @@ export default async function ComparePage({ params, searchParams }: Props) {
 
   const query = await searchParams;
   const t = await getTranslations("ComparePage");
+  const casinos = await getCasinos(locale);
   const initialQuery = Array.isArray(query.casinos)
     ? query.casinos[0]
     : query.casinos;
@@ -38,7 +54,7 @@ export default async function ComparePage({ params, searchParams }: Props) {
         <Suspense fallback={<CompareFallback />}>
           <CompareTool
             locale={locale}
-            casinos={mockCasinos}
+            casinos={casinos}
             initialQuery={initialQuery}
           />
         </Suspense>

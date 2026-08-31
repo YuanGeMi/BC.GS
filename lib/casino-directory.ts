@@ -5,6 +5,7 @@ import type {
   PaymentId,
   ProviderId,
 } from "@/data/mock-casinos";
+import { localize } from "@/data/mock-casinos";
 
 export type FilterFacet = "licenses" | "payments" | "providers" | "bonusTypes";
 
@@ -65,13 +66,19 @@ function matchesFacet<T extends string>(selected: T[], values: T[]): boolean {
 export function filterCasinos(
   casinos: MockCasino[],
   filters: CasinoFilters,
+  options?: { searchQuery?: string; locale?: string },
 ): MockCasino[] {
+  const needle = options?.searchQuery?.trim().toLowerCase() ?? "";
+  const locale = options?.locale ?? "en";
+
   return casinos.filter(
     (casino) =>
       matchesFacet(filters.licenses, casino.licenses) &&
       matchesFacet(filters.payments, casino.payments) &&
       matchesFacet(filters.providers, casino.providers) &&
-      matchesFacet(filters.bonusTypes, casino.bonusTypes),
+      matchesFacet(filters.bonusTypes, casino.bonusTypes) &&
+      (!needle ||
+        localize(casino.name, locale).toLowerCase().includes(needle)),
   );
 }
 

@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/button";
+import type { TrackAffiliateClickInput } from "@/lib/track-affiliate-click";
 import { cn } from "@/lib/utils";
 
 type Props = {
   href: string;
   label: string;
   name: string;
+  trackClick?: TrackAffiliateClickInput;
 };
 
-export function StickyVisitCta({ href, label, name }: Props) {
+export function StickyVisitCta({ href, label, name, trackClick }: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function StickyVisitCta({ href, label, name }: Props) {
         <p className="text-text/70 min-w-0 truncate text-sm">
           <span className="text-text font-medium">{name}</span>
         </p>
-        <Button href={href} size="sm" className="shrink-0">
+        <Button href={href} size="sm" className="shrink-0" trackClick={trackClick}>
           {label}
         </Button>
       </div>

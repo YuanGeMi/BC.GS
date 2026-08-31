@@ -1,18 +1,34 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BonusDirectory } from "@/components/bonus-directory";
 import { Section } from "@/components/section";
-import { mockBonuses } from "@/data/mock-bonuses";
+import { getBonuses } from "@/lib/bonuses";
+import { pageAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("BonusesPage");
+
+  return {
+    title: t("seoTitle"),
+    description: t("seoDescription"),
+    ...pageAlternates("/bonuses"),
+  };
+}
 
 export default async function BonusesPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const t = await getTranslations("BonusesPage");
+  const bonuses = await getBonuses(locale);
 
   return (
     <>
@@ -29,7 +45,18 @@ export default async function BonusesPage({ params }: Props) {
       </Section>
 
       <Section>
-        <BonusDirectory locale={locale} bonuses={mockBonuses} />
+        {bonuses.length === 0 ? (
+          <div className="bg-card ring-text/8 rounded-xl px-6 py-12 text-center ring-1">
+            <p className="text-text text-base font-semibold tracking-tight">
+              {t("empty.title")}
+            </p>
+            <p className="text-text/55 mt-2 text-sm leading-relaxed">
+              {t("empty.body")}
+            </p>
+          </div>
+        ) : (
+          <BonusDirectory locale={locale} bonuses={bonuses} />
+        )}
       </Section>
     </>
   );

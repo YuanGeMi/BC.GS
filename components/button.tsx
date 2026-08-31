@@ -1,6 +1,12 @@
+"use client";
+
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
+import {
+  trackAffiliateClick,
+  type TrackAffiliateClickInput,
+} from "@/lib/track-affiliate-click";
 import { cn } from "@/lib/utils";
 
 const variantClasses = {
@@ -24,6 +30,7 @@ type CommonProps = {
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
+  trackClick?: TrackAffiliateClickInput;
 };
 
 type ButtonAsButton = CommonProps &
@@ -48,6 +55,7 @@ export function Button(props: ButtonProps) {
     variant = "primary",
     size = "md",
     className,
+    trackClick,
     ...rest
   } = props;
 
@@ -63,12 +71,21 @@ export function Button(props: ButtonProps) {
     const isExternal = href.startsWith("http://") || href.startsWith("https://");
 
     if (isExternal) {
+      const anchorProps = trackClick
+        ? {
+            onClick: () => {
+              trackAffiliateClick(trackClick);
+            },
+          }
+        : {};
+
       return (
         <a
           href={href}
           className={classes}
           target={target ?? "_blank"}
           rel={rel ?? "noopener noreferrer"}
+          {...anchorProps}
         >
           {children}
         </a>

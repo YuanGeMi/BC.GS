@@ -1,8 +1,5 @@
 import { getTranslations } from "next-intl/server";
 
-import { HomeHeroFinder } from "@/components/home-hero-finder";
-import { HomeHeroIndex } from "@/components/home-hero-index";
-import { HomeHeroSwitch } from "@/components/home-hero-switch";
 import { RatingStars } from "@/components/rating-stars";
 import { Container } from "@/components/section";
 import { localize, type MockCasino } from "@/data/mock-casinos";
@@ -13,24 +10,9 @@ type HomeHeroProps = {
   locale: string;
   cover: MockCasino;
   desk: MockCasino[];
-  casinos: MockCasino[];
 };
 
-export async function HomeHero({ locale, cover, desk, casinos }: HomeHeroProps) {
-  return (
-    <HomeHeroSwitch
-      masthead={<HomeHeroMasthead locale={locale} cover={cover} desk={desk} />}
-      finder={<HomeHeroFinder locale={locale} casinos={casinos} />}
-      index={<HomeHeroIndex locale={locale} casinos={casinos} />}
-    />
-  );
-}
-
-async function HomeHeroMasthead({
-  locale,
-  cover,
-  desk,
-}: Omit<HomeHeroProps, "casinos">) {
+export async function HomeHero({ locale, cover, desk }: HomeHeroProps) {
   const t = await getTranslations("HomePage.hero");
   const coverName = localize(cover.name, locale);
   const coverLede = cover.coverLede

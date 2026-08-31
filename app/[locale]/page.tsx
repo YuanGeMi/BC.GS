@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BonusCard } from "@/components/bonus-card";
@@ -8,11 +9,25 @@ import { mockBonuses } from "@/data/mock-bonuses";
 import { localize, mockCasinos } from "@/data/mock-casinos";
 import { mockCategories } from "@/data/mock-categories";
 import { Link } from "@/i18n/navigation";
+import { pageAlternates } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("HomePage");
+
+  return {
+    title: t("seoTitle"),
+    description: t("seoDescription"),
+    ...pageAlternates("/"),
+  };
+}
 
 function SectionHeader({
   title,
@@ -135,12 +150,7 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      <HomeHero
-        locale={locale}
-        cover={cover}
-        desk={desk}
-        casinos={mockCasinos}
-      />
+      <HomeHero locale={locale} cover={cover} desk={desk} />
 
       {/* Top-rated casinos */}
       <Section>

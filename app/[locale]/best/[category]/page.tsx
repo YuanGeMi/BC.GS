@@ -7,38 +7,38 @@ import { Button } from "@/components/button";
 import { RatingStars } from "@/components/rating-stars";
 import { Section } from "@/components/section";
 import {
-  getBestCategory,
-  getFeaturedHighlight,
-  getRankedCasinos,
-  getRelatedBestCategories,
-  getWelcomeBonus,
-  bestCategories,
-} from "@/data/best-categories";
-import { localize, mockCasinos } from "@/data/mock-casinos";
+  getCasinosForCategory,
+  getCategoryBySlug,
+  getPublishedCategorySlugs,
+  getRelatedCategories,
+} from "@/lib/categories";
 import { Link } from "@/i18n/navigation";
+import { pageAlternates } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ locale: string; category: string }>;
 };
 
-export function generateStaticParams() {
-  return bestCategories.map((category) => ({ category: category.slug }));
+export async function generateStaticParams() {
+  const slugs = await getPublishedCategorySlugs();
+  return slugs.map((slug) => ({ category: slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category: slug } = await params;
   setRequestLocale(locale);
 
-  const category = getBestCategory(slug);
+  const category = await getCategoryBySlug(slug, locale);
 
   if (!category) {
     return {};
   }
 
   return {
-    title: localize(category.seoTitle, locale),
-    description: localize(category.seoDescription, locale),
+    title: category.seoTitle,
+    description: category.seoDescription,
+    ...pageAlternates(`/best/${slug}`),
   };
 }
 
@@ -46,30 +46,28 @@ export default async function BestCategoryPage({ params }: Props) {
   const { locale, category: slug } = await params;
   setRequestLocale(locale);
 
-  const category = getBestCategory(slug);
+  const category = await getCategoryBySlug(slug, locale);
 
   if (!category) {
     notFound();
   }
 
   const t = await getTranslations("BestOfPage");
-  const ranked = getRankedCasinos(category, mockCasinos);
-  const related = getRelatedBestCategories(slug);
-  const title = localize(category.title, locale);
-  const description = localize(category.description, locale);
+  const [ranked, related] = await Promise.all([
+    getCasinosForCategory(category.id, locale),
+    getRelatedCategories(slug, locale),
+  ]);
 
   const entries = ranked.map((casino, index) => ({
     rank: index + 1,
     featured: index === 0,
-    name: localize(casino.name, locale),
+    name: casino.name,
     slug: casino.slug,
     logoUrl: casino.logoUrl,
     rating: casino.rating,
-    badges: casino.badges.map((badge) => localize(badge, locale)),
-    highlight: getFeaturedHighlight(casino, locale, category.highlightLabelEn),
-    lede: casino.coverLede
-      ? localize(casino.coverLede, locale)
-      : undefined,
+    badges: casino.badges,
+    highlight: casino.highlight,
+    lede: casino.lede,
   }));
 
   return (
@@ -79,10 +77,10 @@ export default async function BestCategoryPage({ params }: Props) {
           {t("eyebrow")}
         </p>
         <h1 className="text-text text-3xl font-semibold tracking-tight md:text-4xl">
-          {title}
+          {category.name}
         </h1>
         <p className="text-text/60 mt-4 max-w-2xl text-base leading-relaxed">
-          {description}
+          {category.description}
         </p>
         {ranked.length > 0 ? (
           <p className="text-text/40 mt-5 text-xs font-medium tracking-[0.16em] uppercase">
@@ -119,7 +117,6 @@ export default async function BestCategoryPage({ params }: Props) {
 
           <ul className="divide-text/8 divide-y md:hidden">
             {ranked.map((casino, index) => {
-              const name = localize(casino.name, locale);
               const rank = index + 1;
 
               return (
@@ -138,7 +135,7 @@ export default async function BestCategoryPage({ params }: Props) {
                         href={`/casinos/${casino.slug}`}
                         className="text-text hover:text-accent block text-sm font-semibold tracking-tight break-words transition-colors duration-200"
                       >
-                        {name}
+                        {casino.name}
                       </Link>
                       <RatingStars
                         rating={casino.rating}
@@ -147,7 +144,7 @@ export default async function BestCategoryPage({ params }: Props) {
                         className="mt-1"
                       />
                       <p className="text-text/70 mt-2 text-sm break-words">
-                        {getWelcomeBonus(casino, locale)}
+                        {casino.welcomeBonus}
                       </p>
                       <Button
                         href={`/casinos/${casino.slug}`}
@@ -199,7 +196,6 @@ export default async function BestCategoryPage({ params }: Props) {
               </thead>
               <tbody>
                 {ranked.map((casino, index) => {
-                  const name = localize(casino.name, locale);
                   const rank = index + 1;
 
                   return (
@@ -220,14 +216,14 @@ export default async function BestCategoryPage({ params }: Props) {
                           href={`/casinos/${casino.slug}`}
                           className="hover:text-accent transition-colors duration-200"
                         >
-                          {name}
+                          {casino.name}
                         </Link>
                       </td>
                       <td className="px-3 py-4">
                         <RatingStars rating={casino.rating} showValue size="sm" />
                       </td>
                       <td className="text-text/80 px-3 py-4 text-sm">
-                        {getWelcomeBonus(casino, locale)}
+                        {casino.welcomeBonus}
                       </td>
                       <td className="px-3 py-4 text-right">
                         <Button
@@ -247,21 +243,27 @@ export default async function BestCategoryPage({ params }: Props) {
         </Section>
       ) : null}
 
-      <Section>
-        <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
-          {t("method.title")}
-        </h2>
-        <div className="max-w-2xl space-y-5">
-          {category.methodology.map((paragraph) => (
-            <p
-              key={localize(paragraph, locale)}
-              className="text-text/70 text-base leading-relaxed"
-            >
-              {localize(paragraph, locale)}
-            </p>
-          ))}
-        </div>
-      </Section>
+      {category.methodology ? (
+        <Section>
+          <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
+            {t("method.title")}
+          </h2>
+          <div className="max-w-2xl space-y-5">
+            {category.methodology
+              .split(/\n\n+/)
+              .map((paragraph) => paragraph.trim())
+              .filter(Boolean)
+              .map((paragraph) => (
+                <p
+                  key={paragraph}
+                  className="text-text/70 text-base leading-relaxed"
+                >
+                  {paragraph}
+                </p>
+              ))}
+          </div>
+        </Section>
+      ) : null}
 
       {related.length > 0 ? (
         <Section className="border-text/5 border-t">
@@ -279,10 +281,10 @@ export default async function BestCategoryPage({ params }: Props) {
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="text-text group-hover:text-accent-highlight text-base font-semibold tracking-tight transition-colors duration-200">
-                  {localize(item.title, locale)}
+                  {item.name}
                 </h3>
                 <p className="text-text/55 mt-2 text-sm leading-relaxed">
-                  {localize(item.summary, locale)}
+                  {item.description}
                 </p>
                 <p className="text-accent mt-4 text-sm font-medium">
                   {t("related.cta")}

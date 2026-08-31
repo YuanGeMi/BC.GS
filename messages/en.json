@@ -24,10 +24,11 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "responsibleGambling": "Responsible Gambling",
-    "settings": "Settings",
     "copyright": "© {year} BC.GS. All rights reserved."
   },
   "HomePage": {
+    "seoTitle": "BC.GS — Independent betting & casino reviews",
+    "seoDescription": "Independent editorial reviews, bonus listings, and side-by-side casino comparisons — scored from hands-on testing, not paid placement.",
     "hero": {
       "masthead": "Reviews and ratings",
       "updated": "Reviews updated weekly",
@@ -36,32 +37,7 @@
       "coverCta": "Read the full review",
       "deskLabel": "Also on the desk",
       "browseAll": "Browse all casinos",
-      "methodLink": "How we score operators",
-      "finder": {
-        "kicker": "Find a casino",
-        "title": "What do you want from a casino?",
-        "subtitle": "Choose what matters first. We’ll recommend one casino we’ve reviewed — not a paid placement.",
-        "scoreLabel": "Our rating",
-        "scoreNote": "We opened an account, deposited, and withdrew. This score comes from that review, not from the casino.",
-        "related": "Other casinos we reviewed",
-        "prompts": {
-          "allrounder": "A balanced casino with clear bonus terms",
-          "payout": "Withdrawals that arrive on time",
-          "license": "A license with real player protection",
-          "live": "Live dealer tables that are actually open"
-        },
-        "answers": {
-          "allrounder": "Best all-round casino",
-          "payout": "Best for fast withdrawals",
-          "license": "Best licensed option",
-          "live": "Best for live dealer"
-        }
-      },
-      "index": {
-        "kicker": "This week's ranking",
-        "title": "{count} casinos, ranked",
-        "subtitle": "Highest score first. Every rating is from a review we played, deposited, and cashed out."
-      }
+      "methodLink": "How we score operators"
     },
     "casinos": {
       "title": "Top Rated Casinos",
@@ -91,15 +67,24 @@
     }
   },
   "CasinosPage": {
+    "seoTitle": "All casinos — independent reviews",
+    "seoDescription": "Browse every operator we have reviewed. Filter by license, payments, game studios, and bonus type — ratings from real account testing.",
     "eyebrow": "Directory",
     "title": "All Casinos",
     "description": "Browse operators we have reviewed — filter by license, payments, studios, and bonus type.",
     "cta": "Read review",
     "resultsCount": "{count, plural, one {# casino} other {# casinos}}",
     "loadMore": "Load more",
+    "search": {
+      "label": "Search casinos",
+      "placeholder": "Search by name",
+      "clear": "Clear search and filters"
+    },
     "empty": {
       "title": "No casinos match your filters",
-      "body": "Clear a filter or two and the list will fill back in."
+      "body": "Clear a filter or two and the list will fill back in.",
+      "searchTitle": "No casinos match your search",
+      "searchBody": "Try a different name, or clear your search and filters."
     },
     "sort": {
       "label": "Sort",
@@ -145,6 +130,7 @@
     }
   },
   "CasinoDetail": {
+    "seoFallbackTitle": "{name} Review",
     "eyebrow": "Review",
     "visit": "Visit Casino",
     "facts": {
@@ -173,6 +159,7 @@
       "wagering": "Wagering",
       "minDeposit": "Min deposit",
       "expiry": "Expiry",
+      "code": "Code",
       "cta": "Claim"
     },
     "review": {
@@ -184,6 +171,8 @@
     }
   },
   "BonusesPage": {
+    "seoTitle": "Casino bonuses — current offers",
+    "seoDescription": "Welcome, reload, free spins, and cashback offers tied to reviewed operators — terms summarised, not marketing copy.",
     "eyebrow": "Offers",
     "title": "All Bonuses",
     "description": "Current welcome, reload, spins, and cashback offers — each one tied to a reviewed operator.",
@@ -208,6 +197,8 @@
     }
   },
   "ComparePage": {
+    "seoTitle": "Compare casinos side by side",
+    "seoDescription": "Line up two or three reviewed operators and read the same facts in one place — ratings, payouts, licenses, and bonus terms.",
     "eyebrow": "Side by side",
     "title": "Compare Casinos",
     "description": "Line up two or three operators and read the same facts in one place — ratings, payouts, licenses, and the terms that actually matter.",
@@ -281,24 +272,7 @@
     }
   },
   "LegalPage": {
+    "eyebrow": "Legal",
     "lastUpdated": "Last updated {date}"
-  },
-  "SettingsPage": {
-    "eyebrow": "Workspace",
-    "title": "Settings",
-    "description": "Temporary controls for comparing layouts. Stored in this browser only.",
-    "cards": {
-      "label": "Casino listings",
-      "help": "Switch between the editorial index and the original cards. Your choice stays selected until you change it.",
-      "row": "Index rows",
-      "card": "Cards"
-    },
-    "hero": {
-      "label": "Homepage hero",
-      "help": "Switch between the cover story, the “find a casino” questions, and this week’s ranking. Your choice stays selected until you change it.",
-      "masthead": "Cover story",
-      "finder": "Finder",
-      "index": "Ranking"
-    }
   }
 }

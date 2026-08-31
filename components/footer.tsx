@@ -8,7 +8,6 @@ const LEGAL_LINKS = [
   { href: "/privacy", labelKey: "privacy" as const },
   { href: "/terms", labelKey: "terms" as const },
   { href: "/responsible-gambling", labelKey: "responsibleGambling" as const },
-  { href: "/settings", labelKey: "settings" as const },
 ];
 
 export async function Footer() {

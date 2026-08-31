@@ -1,19 +1,24 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { CasinoCard, CasinoCardList } from "@/components/casino-card";
+import { CasinoReviewJsonLd } from "@/components/casino-review-json-ld";
 import { RatingStars } from "@/components/rating-stars";
 import { Section } from "@/components/section";
 import { StickyVisitCta } from "@/components/sticky-visit-cta";
+import { getBonusesForCasino } from "@/lib/bonuses";
 import {
-  getCasinoProfile,
+  getCasinoBySlug,
+  getCasinoSeoMetadata,
+  getPublishedCasinoSlugs,
   getRelatedCasinos,
-  type CasinoScores,
-} from "@/data/casino-details";
-import { localize, mockCasinos } from "@/data/mock-casinos";
+  type CasinoDetailView,
+} from "@/lib/casinos";
+import { pageAlternates, truncateMetaDescription } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -25,7 +30,7 @@ const SCORE_KEYS = [
   "support",
   "payoutSpeed",
   "trust",
-] as const satisfies ReadonlyArray<keyof CasinoScores>;
+] as const satisfies ReadonlyArray<keyof CasinoDetailView["scores"]>;
 
 function LogoMark({ name, logoUrl }: { name: string; logoUrl?: string }) {
   const initials = name
@@ -56,15 +61,45 @@ function LogoMark({ name, logoUrl }: { name: string; logoUrl?: string }) {
   );
 }
 
-export function generateStaticParams() {
-  return mockCasinos.map((casino) => ({ slug: casino.slug }));
+export async function generateStaticParams() {
+  const slugs = await getPublishedCasinoSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  setRequestLocale(locale);
+
+  const [meta, t] = await Promise.all([
+    getCasinoSeoMetadata(slug, locale),
+    getTranslations("CasinoDetail"),
+  ]);
+
+  if (!meta) {
+    return {};
+  }
+
+  const title =
+    meta.seoTitle?.trim() || t("seoFallbackTitle", { name: meta.name });
+  const description =
+    meta.seoDescription?.trim() ||
+    truncateMetaDescription(meta.reviewFirstParagraph);
+
+  return {
+    title,
+    description,
+    ...pageAlternates(`/casinos/${slug}`),
+  };
 }
 
 export default async function CasinoDetailPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const casino = getCasinoProfile(slug, mockCasinos);
+  const [casino, bonuses] = await Promise.all([
+    getCasinoBySlug(slug, locale),
+    getBonusesForCasino(slug, locale),
+  ]);
 
   if (!casino) {
     notFound();
@@ -72,8 +107,8 @@ export default async function CasinoDetailPage({ params }: Props) {
 
   const t = await getTranslations("CasinoDetail");
   const tFilters = await getTranslations("CasinosPage");
-  const name = localize(casino.name, locale);
-  const related = getRelatedCasinos(casino, mockCasinos, 4);
+  const related = await getRelatedCasinos(slug, locale, 4);
+  const trackVisit = { casinoId: casino.id, locale };
 
   const facts = [
     {
@@ -82,15 +117,15 @@ export default async function CasinoDetailPage({ params }: Props) {
     },
     {
       label: t("facts.established"),
-      value: String(casino.establishedYear),
+      value: casino.establishedYear ? String(casino.establishedYear) : "—",
     },
     {
       label: t("facts.minDeposit"),
-      value: localize(casino.minDeposit, locale),
+      value: casino.minDeposit,
     },
     {
       label: t("facts.withdrawal"),
-      value: localize(casino.withdrawalTime, locale),
+      value: casino.withdrawalTime,
     },
     {
       label: t("facts.payments"),
@@ -104,6 +139,7 @@ export default async function CasinoDetailPage({ params }: Props) {
 
   return (
     <>
+      <CasinoReviewJsonLd casino={casino} locale={locale} slug={slug} />
       <Section className="border-text/5 border-b pb-10 md:pb-12 lg:pb-14">
         <p className="text-accent mb-6 text-xs font-medium tracking-[0.22em] uppercase">
           {t("eyebrow")}
@@ -111,10 +147,10 @@ export default async function CasinoDetailPage({ params }: Props) {
 
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <LogoMark name={name} logoUrl={casino.logoUrl} />
+            <LogoMark name={casino.name} logoUrl={casino.logoUrl} />
             <div className="min-w-0">
               <h1 className="text-text text-3xl font-semibold tracking-tight md:text-4xl">
-                {name}
+                {casino.name}
               </h1>
               <RatingStars
                 rating={casino.rating}
@@ -124,9 +160,7 @@ export default async function CasinoDetailPage({ params }: Props) {
               {casino.badges.length > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {casino.badges.map((badge) => (
-                    <Badge key={localize(badge, locale)}>
-                      {localize(badge, locale)}
-                    </Badge>
+                    <Badge key={badge}>{badge}</Badge>
                   ))}
                 </div>
               ) : null}
@@ -137,6 +171,7 @@ export default async function CasinoDetailPage({ params }: Props) {
             href={casino.affiliateUrl}
             size="lg"
             className="w-full shrink-0 sm:w-auto"
+            trackClick={trackVisit}
           >
             {t("visit")}
           </Button>
@@ -170,13 +205,13 @@ export default async function CasinoDetailPage({ params }: Props) {
             <ul className="space-y-3">
               {casino.pros.map((item) => (
                 <li
-                  key={localize(item, locale)}
+                  key={item}
                   className="flex gap-3 text-sm leading-relaxed"
                 >
                   <span className="text-accent mt-0.5 shrink-0" aria-hidden>
                     ✓
                   </span>
-                  <span className="text-text/75">{localize(item, locale)}</span>
+                  <span className="text-text/75">{item}</span>
                 </li>
               ))}
             </ul>
@@ -188,13 +223,13 @@ export default async function CasinoDetailPage({ params }: Props) {
             <ul className="space-y-3">
               {casino.cons.map((item) => (
                 <li
-                  key={localize(item, locale)}
+                  key={item}
                   className="flex gap-3 text-sm leading-relaxed"
                 >
                   <span className="text-text/35 mt-0.5 shrink-0" aria-hidden>
                     ×
                   </span>
-                  <span className="text-text/75">{localize(item, locale)}</span>
+                  <span className="text-text/75">{item}</span>
                 </li>
               ))}
             </ul>
@@ -202,67 +237,86 @@ export default async function CasinoDetailPage({ params }: Props) {
         </div>
       </Section>
 
-      <Section>
-        <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
-          {t("bonus.title")}
-        </h2>
-        <div className="bg-card ring-text/8 rounded-xl p-6 ring-1 md:p-8">
-          <p className="text-text/50 text-xs font-medium tracking-[0.14em] uppercase">
-            {localize(casino.bonusTerms.title, locale)}
-          </p>
-          <p className="text-accent mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
-            {localize(casino.bonusTerms.value, locale)}
-          </p>
-          <dl className="border-text/8 mt-6 grid grid-cols-2 gap-4 border-t pt-5 sm:grid-cols-4">
-            <div>
-              <dt className="text-text/40 text-[11px] tracking-[0.12em] uppercase">
-                {t("bonus.wagering")}
-              </dt>
-              <dd className="text-text mt-1 text-sm font-medium">
-                {localize(casino.bonusTerms.wagering, locale)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-text/40 text-[11px] tracking-[0.12em] uppercase">
-                {t("bonus.minDeposit")}
-              </dt>
-              <dd className="text-text mt-1 text-sm font-medium">
-                {localize(casino.bonusTerms.minDeposit, locale)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-text/40 text-[11px] tracking-[0.12em] uppercase">
-                {t("bonus.expiry")}
-              </dt>
-              <dd className="text-text mt-1 text-sm font-medium">
-                {localize(casino.bonusTerms.expiry, locale)}
-              </dd>
-            </div>
-            <div className="col-span-2 sm:col-span-1 sm:flex sm:items-end">
-              <Button
-                href={casino.affiliateUrl}
-                variant="secondary"
-                size="sm"
-                className="w-full"
-              >
-                {t("bonus.cta")}
-              </Button>
-            </div>
-          </dl>
-        </div>
-      </Section>
+      {bonuses.length > 0 ? (
+        <Section className="pt-0 md:pt-0 lg:pt-0">
+          <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
+            {t("bonus.title")}
+          </h2>
+          <div className="space-y-5">
+            {bonuses.map((bonus) => {
+              const terms = [
+                bonus.wageringRequirement
+                  ? {
+                      label: t("bonus.wagering"),
+                      value: bonus.wageringRequirement,
+                    }
+                  : null,
+                bonus.minDeposit
+                  ? {
+                      label: t("bonus.minDeposit"),
+                      value: bonus.minDeposit,
+                    }
+                  : null,
+                bonus.expiryDate
+                  ? { label: t("bonus.expiry"), value: bonus.expiryDate }
+                  : null,
+                bonus.code
+                  ? { label: t("bonus.code"), value: bonus.code }
+                  : null,
+              ].filter((item) => item !== null);
+
+              return (
+                <div
+                  key={bonus.id}
+                  className="bg-card ring-text/8 rounded-xl p-6 ring-1 md:p-8"
+                >
+                  <p className="text-text/50 text-xs font-medium tracking-[0.14em] uppercase">
+                    {bonus.title}
+                  </p>
+                  <p className="text-accent mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+                    {bonus.amount}
+                  </p>
+                  <dl className="border-text/8 mt-6 grid grid-cols-2 gap-4 border-t pt-5 sm:grid-cols-4">
+                    {terms.map((term) => (
+                      <div key={term.label}>
+                        <dt className="text-text/40 text-[11px] tracking-[0.12em] uppercase">
+                          {term.label}
+                        </dt>
+                        <dd className="text-text mt-1 text-sm font-medium">
+                          {term.value}
+                        </dd>
+                      </div>
+                    ))}
+                    <div className="col-span-2 sm:col-span-1 sm:flex sm:items-end">
+                      <Button
+                        href={casino.affiliateUrl}
+                        variant="secondary"
+                        size="sm"
+                        className="w-full"
+                        trackClick={{ ...trackVisit, bonusId: bonus.id }}
+                      >
+                        {t("bonus.cta")}
+                      </Button>
+                    </div>
+                  </dl>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      ) : null}
 
       <Section className="pt-0 md:pt-0 lg:pt-0">
         <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
-          {t("review.title", { name })}
+          {t("review.title", { name: casino.name })}
         </h2>
         <div className="max-w-2xl space-y-5">
           {casino.review.map((paragraph) => (
             <p
-              key={localize(paragraph, locale)}
+              key={paragraph}
               className="text-text/70 text-base leading-relaxed"
             >
-              {localize(paragraph, locale)}
+              {paragraph}
             </p>
           ))}
         </div>
@@ -305,14 +359,11 @@ export default async function CasinoDetailPage({ params }: Props) {
             {related.map((item) => (
               <CasinoCard
                 key={item.id}
-                name={localize(item.name, locale)}
+                name={item.name}
                 logoUrl={item.logoUrl}
                 rating={item.rating}
-                badges={item.badges.map((badge) => localize(badge, locale))}
-                highlights={item.highlights.map((row) => ({
-                  label: localize(row.label, locale),
-                  value: localize(row.value, locale),
-                }))}
+                badges={item.badges}
+                highlights={item.highlights}
                 ctaHref={`/casinos/${item.slug}`}
                 ctaLabel={t("related.cta")}
               />
@@ -326,7 +377,8 @@ export default async function CasinoDetailPage({ params }: Props) {
       <StickyVisitCta
         href={casino.affiliateUrl}
         label={t("visit")}
-        name={name}
+        name={casino.name}
+        trackClick={trackVisit}
       />
     </>
   );

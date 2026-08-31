@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
-import { LegalPage } from "@/components/legal-page";
-import { getLegalDocument } from "@/data/legal-content";
-import { localize } from "@/data/mock-casinos";
+import { StaticPage } from "@/components/static-page";
+import { getStaticPage } from "@/lib/static-pages";
+import { pageAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -13,11 +14,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const document = getLegalDocument("responsible-gambling");
+  const page = await getStaticPage("responsible-gambling", locale);
+
+  if (!page) {
+    return {};
+  }
 
   return {
-    title: localize(document.seoTitle, locale),
-    description: localize(document.seoDescription, locale),
+    title: page.seoTitle?.trim() || page.title,
+    description: page.seoDescription ?? undefined,
+    ...pageAlternates("/responsible-gambling"),
   };
 }
 
@@ -25,10 +31,11 @@ export default async function ResponsibleGamblingPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return (
-    <LegalPage
-      locale={locale}
-      document={getLegalDocument("responsible-gambling")}
-    />
-  );
+  const page = await getStaticPage("responsible-gambling", locale);
+
+  if (!page) {
+    notFound();
+  }
+
+  return <StaticPage locale={locale} page={page} />;
 }

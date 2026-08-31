@@ -4,11 +4,10 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { Inter, Newsreader } from "next/font/google";
 import { notFound } from "next/navigation";
 
-import { CardStyleProvider } from "@/components/card-style-provider";
-import { HeroStyleProvider } from "@/components/hero-style-provider";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { routing } from "@/i18n/routing";
+import { siteMetadataBase } from "@/lib/seo";
 
 import "../globals.css";
 
@@ -34,6 +33,7 @@ export async function generateMetadata({
   const t = await getTranslations("Meta");
 
   return {
+    metadataBase: siteMetadataBase,
     title: {
       default: t("title"),
       template: t("template"),
@@ -78,13 +78,9 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="bg-background text-text flex min-h-full min-w-0 flex-col font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
-          <CardStyleProvider>
-            <HeroStyleProvider>
-              <Header />
-              <main className="min-w-0 flex-1">{children}</main>
-              <Footer />
-            </HeroStyleProvider>
-          </CardStyleProvider>
+          <Header />
+          <main className="min-w-0 flex-1">{children}</main>
+          <Footer />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -616,7 +616,12 @@ function ComparisonTable({
               <p className="text-text col-span-2 text-sm font-semibold">
                 {names[index]}
               </p>
-              <Button href={casino.affiliateUrl} size="sm" className="w-full">
+              <Button
+                href={casino.affiliateUrl}
+                size="sm"
+                className="w-full"
+                trackClick={{ casinoId: casino.id, locale }}
+              >
                 {t("table.visit")}
               </Button>
               <Button
@@ -686,7 +691,12 @@ function ComparisonTable({
               {casinos.map((casino) => (
                 <Td key={casino.slug}>
                   <div className="flex flex-col gap-2">
-                    <Button href={casino.affiliateUrl} size="sm" className="w-full">
+                    <Button
+                      href={casino.affiliateUrl}
+                      size="sm"
+                      className="w-full"
+                      trackClick={{ casinoId: casino.id, locale }}
+                    >
                       {t("table.visit")}
                     </Button>
                     <Button

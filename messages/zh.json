@@ -24,10 +24,11 @@
     "privacy": "隐私政策",
     "terms": "服务条款",
     "responsibleGambling": "负责任博彩",
-    "settings": "设置",
     "copyright": "© {year} BC.GS。保留所有权利。"
   },
   "HomePage": {
+    "seoTitle": "BC.GS — 独立博彩与娱乐场评测",
+    "seoDescription": "独立编辑评测、优惠列表与娱乐场并排对比 — 基于实操测试评分，而非付费位置。",
     "hero": {
       "masthead": "评测与评分",
       "updated": "每周更新",
@@ -36,32 +37,7 @@
       "coverCta": "阅读完整评测",
       "deskLabel": "同台关注",
       "browseAll": "浏览全部娱乐场",
-      "methodLink": "我们如何评分",
-      "finder": {
-        "kicker": "找一家娱乐场",
-        "title": "你最看重娱乐场的哪一点？",
-        "subtitle": "先选一个优先条件。我们会推荐一家我们已经评测过的娱乐场 — 不是付费推广。",
-        "scoreLabel": "我们的评分",
-        "scoreNote": "我们开过户、存过款、也出过金。这个分数来自那次评测，不是娱乐场自己给的。",
-        "related": "我们评测过的其他娱乐场",
-        "prompts": {
-          "allrounder": "条款清楚、综合表现稳的娱乐场",
-          "payout": "出款能按时到账",
-          "license": "有真正玩家保障的牌照",
-          "live": "真正开着的真人荷官桌"
-        },
-        "answers": {
-          "allrounder": "综合表现最好的娱乐场",
-          "payout": "出款最快的选择",
-          "license": "牌照最稳妥的选择",
-          "live": "最适合玩真人桌的选择"
-        }
-      },
-      "index": {
-        "kicker": "本周排名",
-        "title": "{count} 家娱乐场，按评分排列",
-        "subtitle": "分数从高到低。每一项评分都来自我们实际游玩、存款并出金的评测。"
-      }
+      "methodLink": "我们如何评分"
     },
     "casinos": {
       "title": "高分娱乐场",
@@ -91,15 +67,24 @@
     }
   },
   "CasinosPage": {
+    "seoTitle": "全部娱乐场 — 独立评测",
+    "seoDescription": "浏览我们评测过的每家运营商。按牌照、支付方式、游戏厂商与优惠类型筛选 — 评分来自真实账户测试。",
     "eyebrow": "目录",
     "title": "全部娱乐场",
     "description": "浏览我们已评测的运营商 — 可按牌照、支付方式、游戏厂商与优惠类型筛选。",
     "cta": "阅读评测",
     "resultsCount": "{count} 家娱乐场",
     "loadMore": "加载更多",
+    "search": {
+      "label": "搜索娱乐场",
+      "placeholder": "按名称搜索",
+      "clear": "清除搜索与筛选"
+    },
     "empty": {
       "title": "没有符合筛选条件的娱乐场",
-      "body": "取消一两项筛选后，列表会重新出现。"
+      "body": "取消一两项筛选后，列表会重新出现。",
+      "searchTitle": "没有符合搜索条件的娱乐场",
+      "searchBody": "试试其他名称，或清除搜索与筛选条件。"
     },
     "sort": {
       "label": "排序",
@@ -145,6 +130,7 @@
     }
   },
   "CasinoDetail": {
+    "seoFallbackTitle": "{name} 评测",
     "eyebrow": "评测",
     "visit": "前往娱乐场",
     "facts": {
@@ -173,6 +159,7 @@
       "wagering": "流水要求",
       "minDeposit": "最低存款",
       "expiry": "有效期",
+      "code": "优惠码",
       "cta": "领取"
     },
     "review": {
@@ -184,6 +171,8 @@
     }
   },
   "BonusesPage": {
+    "seoTitle": "娱乐场优惠 — 当前活动",
+    "seoDescription": "与已评测运营商绑定的迎新、再存、免费旋转与返水优惠 — 条款摘要，不是营销文案。",
     "eyebrow": "优惠",
     "title": "全部优惠",
     "description": "当前的迎新、再存、旋转与返水优惠 — 每项都关联到已评测的运营商。",
@@ -208,6 +197,8 @@
     }
   },
   "ComparePage": {
+    "seoTitle": "并排对比娱乐场",
+    "seoDescription": "将两到三家已评测运营商并列查看 — 评分、出款、牌照与优惠条款，同一页面一目了然。",
     "eyebrow": "对照",
     "title": "对比娱乐场",
     "description": "并排查看两到三家运营商的同一组事实 — 评分、出款、牌照，以及真正重要的条款。",
@@ -281,24 +272,7 @@
     }
   },
   "LegalPage": {
+    "eyebrow": "法律",
     "lastUpdated": "最近更新 {date}"
-  },
-  "SettingsPage": {
-    "eyebrow": "工作区",
-    "title": "设置",
-    "description": "用于对比布局的临时控件。仅保存在本浏览器。",
-    "cards": {
-      "label": "娱乐场列表",
-      "help": "在编辑索引与卡片之间切换。选择会保持，直到你再次更改。",
-      "row": "索引行",
-      "card": "卡片"
-    },
-    "hero": {
-      "label": "首页头图",
-      "help": "在封面故事、“找一家娱乐场”问答与本周排名之间切换。选择会保持，直到你再次更改。",
-      "masthead": "封面故事",
-      "finder": "问答",
-      "index": "排名"
-    }
   }
 }

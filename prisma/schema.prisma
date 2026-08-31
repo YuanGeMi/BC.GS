@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Casino {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  logoUrl         String?
+  license         String?
+  establishedYear Int?
+  minDeposit      Float?
+  withdrawalTime  String?
+  paymentMethods  String[]
+  gameProviders   String[]
+  overallRating   Float?
+  ratingBonuses   Float?
+  ratingGames     Float?
+  ratingSupport   Float?
+  ratingPayout    Float?
+  ratingTrust     Float?
+  affiliateLink   String?
+  status          String   @default("draft") // draft | published
+  translations    CasinoTranslation[]
+  bonuses         Bonus[]
+  categories      CasinoCategory[]
+  affiliateClicks AffiliateClick[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CasinoTranslation {
+  id             String  @id @default(cuid())
+  casinoId       String
+  casino         Casino  @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  locale         String // "en" | "zh" | "th"
+  name           String
+  reviewBody     String  @db.Text
+  pros           String[]
+  cons           String[]
+  seoTitle       String?
+  seoDescription String?
+
+  @@unique([casinoId, locale])
+}
+
+model Bonus {
+  id                  String             @id @default(cuid())
+  casinoId            String
+  casino              Casino             @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  type                String // welcome | no-deposit | free-spins | reload | cashback
+  amount              String?
+  wageringRequirement String?
+  minDeposit          Float?
+  code                String?
+  expiryDate          DateTime?
+  status              String             @default("draft") // draft | published
+  translations        BonusTranslation[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+}
+
+model BonusTranslation {
+  id      String @id @default(cuid())
+  bonusId String
+  bonus   Bonus  @relation(fields: [bonusId], references: [id], onDelete: Cascade)
+  locale  String // "en" | "zh" | "th"
+  title   String
+  terms   String @db.Text
+
+  @@unique([bonusId, locale])
+}
+
+model Category {
+  id           String              @id @default(cuid())
+  slug         String              @unique
+  status       String              @default("draft") // draft | published
+  translations CategoryTranslation[]
+  casinos      CasinoCategory[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
+model CategoryTranslation {
+  id             String   @id @default(cuid())
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  locale         String // "en" | "zh" | "th"
+  name           String
+  description    String?  @db.Text
+  seoTitle       String?
+  seoDescription String?
+  methodology    String?  @db.Text
+
+  @@unique([categoryId, locale])
+}
+
+model CasinoCategory {
+  casinoId   String
+  casino     Casino   @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([casinoId, categoryId])
+}
+
+model AffiliateClick {
+  id        String   @id @default(cuid())
+  casinoId  String
+  casino    Casino   @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  bonusId   String?
+  locale    String
+  referrer  String?
+  createdAt DateTime @default(now())
+}
+
+model StaticPage {
+  id           String                  @id @default(cuid())
+  slug         String                  @unique // privacy | terms | responsible-gambling
+  status       String                  @default("draft") // draft | published
+  translations StaticPageTranslation[]
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+}
+
+model StaticPageTranslation {
+  id             String     @id @default(cuid())
+  pageId         String
+  page           StaticPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  locale         String // en | zh | th
+  title          String
+  content        String     @db.Text // Markdown
+  seoTitle       String?
+  seoDescription String?
+
+  @@unique([pageId, locale])
+}

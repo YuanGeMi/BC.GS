@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/button";
@@ -27,6 +27,31 @@ type Props = {
   locale: string;
   casinos: MockCasino[];
 };
+
+const SEARCH_DEBOUNCE_MS = 250;
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+    >
+      <path
+        d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M16.2 16.2 21 21"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function CheckboxRow({
   checked,
@@ -147,15 +172,33 @@ export function CasinoDirectory({ locale, casinos }: Props) {
   const [sort, setSort] = useState<CasinoSort>("rating");
   const [page, setPage] = useState(1);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchInput);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
 
   const results = useMemo(
-    () => sortCasinos(filterCasinos(casinos, filters), sort),
-    [casinos, filters, sort],
+    () =>
+      sortCasinos(
+        filterCasinos(casinos, filters, {
+          searchQuery: debouncedSearch,
+          locale,
+        }),
+        sort,
+      ),
+    [casinos, debouncedSearch, filters, locale, sort],
   );
 
   const visible = results.slice(0, page * PAGE_SIZE);
   const hasMore = visible.length < results.length;
   const activeCount = countActiveFilters(filters);
+  const hasSearchQuery = debouncedSearch.trim().length > 0;
 
   function handleToggle<K extends FilterFacet>(
     facet: K,
@@ -165,8 +208,20 @@ export function CasinoDirectory({ locale, casinos }: Props) {
     setPage(1);
   }
 
-  function handleClear() {
+  function handleClearFilters() {
     setFilters(EMPTY_FILTERS);
+    setPage(1);
+  }
+
+  function handleClearAll() {
+    setFilters(EMPTY_FILTERS);
+    setSearchInput("");
+    setDebouncedSearch("");
+    setPage(1);
+  }
+
+  function handleSearchChange(value: string) {
+    setSearchInput(value);
     setPage(1);
   }
 
@@ -184,11 +239,28 @@ export function CasinoDirectory({ locale, casinos }: Props) {
         <FilterPanel
           filters={filters}
           onToggle={handleToggle}
-          onClear={handleClear}
+          onClear={handleClearFilters}
         />
       </aside>
 
       <div>
+        <div className="mb-4">
+          <label className="sr-only" htmlFor="casino-directory-search">
+            {t("search.label")}
+          </label>
+          <div className="relative">
+            <SearchIcon className="text-text/35 pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+            <input
+              id="casino-directory-search"
+              type="search"
+              value={searchInput}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              placeholder={t("search.placeholder")}
+              className="bg-card text-text placeholder:text-text/35 ring-text/15 focus:ring-accent/40 h-10 w-full rounded-md pr-3 pl-9 text-sm ring-1 outline-none"
+            />
+          </div>
+        </div>
+
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-text/55 text-sm">
             {t("resultsCount", { count: results.length })}
@@ -228,16 +300,18 @@ export function CasinoDirectory({ locale, casinos }: Props) {
         {results.length === 0 ? (
           <div className="bg-card ring-text/8 flex flex-col items-start rounded-xl p-8 ring-1">
             <p className="text-text text-base font-semibold tracking-tight">
-              {t("empty.title")}
+              {hasSearchQuery ? t("empty.searchTitle") : t("empty.title")}
             </p>
-            <p className="text-text/55 mt-2 text-sm">{t("empty.body")}</p>
+            <p className="text-text/55 mt-2 text-sm">
+              {hasSearchQuery ? t("empty.searchBody") : t("empty.body")}
+            </p>
             <Button
               variant="secondary"
               size="sm"
               className="mt-5"
-              onClick={handleClear}
+              onClick={handleClearAll}
             >
-              {t("filters.clear")}
+              {hasSearchQuery ? t("search.clear") : t("filters.clear")}
             </Button>
           </div>
         ) : (
@@ -310,7 +384,7 @@ export function CasinoDirectory({ locale, casinos }: Props) {
           <FilterPanel
             filters={filters}
             onToggle={handleToggle}
-            onClear={handleClear}
+            onClear={handleClearFilters}
           />
         </aside>
       </div>

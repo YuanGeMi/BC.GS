@@ -5,6 +5,7 @@ import { Section } from "@/components/section";
 import { bestCategories } from "@/data/best-categories";
 import { localize } from "@/data/mock-casinos";
 import { Link } from "@/i18n/navigation";
+import { pageAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: t("seoTitle"),
     description: t("seoDescription"),
+    ...pageAlternates("/best-of"),
   };
 }
 
