@@ -723,10 +723,10 @@ function withdrawalFrom(casino: MockCasino): LocalizedText {
 }
 
 export function toCasinoProfile(casino: MockCasino): CasinoProfile {
-  const extra = drafts[casino.id];
+  const extra = drafts[casino.slug];
 
   if (!extra) {
-    throw new Error(`Missing detail draft for ${casino.id}`);
+    throw new Error(`Missing detail draft for ${casino.slug}`);
   }
 
   return {
