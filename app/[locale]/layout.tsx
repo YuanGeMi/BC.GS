@@ -40,6 +40,22 @@ export async function generateMetadata({
     },
     description: t("description"),
     applicationName: "BC.GS",
+    openGraph: {
+      siteName: "BC.GS",
+      type: "website",
+      images: [
+        {
+          url: "/brand/og.png",
+          width: 1200,
+          height: 630,
+          alt: "BC.GS",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: ["/brand/og.png"],
+    },
     appleWebApp: {
       title: "BC.GS",
     },

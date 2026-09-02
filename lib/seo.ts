@@ -27,8 +27,11 @@ export function buildLanguageAlternates(path: string): Record<Locale, string> {
   ) as Record<Locale, string>;
 }
 
-export function pageAlternates(path: string): Pick<Metadata, "alternates"> {
+export function pageAlternates(
+  path: string,
+): Pick<Metadata, "alternates" | "metadataBase"> {
   return {
+    metadataBase: siteMetadataBase,
     alternates: {
       languages: buildLanguageAlternates(path),
     },

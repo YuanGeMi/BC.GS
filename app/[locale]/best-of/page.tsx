@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Section } from "@/components/section";
-import { bestCategories } from "@/data/best-categories";
-import { localize } from "@/data/mock-casinos";
 import { Link } from "@/i18n/navigation";
+import { getPublishedCategories } from "@/lib/categories";
 import { pageAlternates } from "@/lib/seo";
 
 type Props = {
@@ -29,6 +28,7 @@ export default async function BestOfIndexPage({ params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations("BestOfIndex");
+  const categories = await getPublishedCategories(locale);
 
   return (
     <>
@@ -46,7 +46,7 @@ export default async function BestOfIndexPage({ params }: Props) {
 
       <Section>
         <div className="grid gap-4 sm:grid-cols-2">
-          {bestCategories.map((category, index) => (
+          {categories.map((category, index) => (
             <Link
               key={category.slug}
               href={`/best/${category.slug}`}
@@ -56,10 +56,10 @@ export default async function BestOfIndexPage({ params }: Props) {
                 {String(index + 1).padStart(2, "0")}
               </span>
               <h2 className="text-text group-hover:text-accent-highlight text-lg font-semibold tracking-tight transition-colors duration-200">
-                {localize(category.title, locale)}
+                {category.name}
               </h2>
               <p className="text-text/55 mt-2 text-sm leading-relaxed">
-                {localize(category.summary, locale)}
+                {category.description}
               </p>
             </Link>
           ))}

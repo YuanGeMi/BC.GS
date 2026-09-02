@@ -5,10 +5,10 @@ import { BonusCard } from "@/components/bonus-card";
 import { CasinoCard, CasinoCardList } from "@/components/casino-card";
 import { HomeHero } from "@/components/home-hero";
 import { Section } from "@/components/section";
-import { mockBonuses } from "@/data/mock-bonuses";
-import { localize, mockCasinos } from "@/data/mock-casinos";
-import { mockCategories } from "@/data/mock-categories";
 import { Link } from "@/i18n/navigation";
+import { getBonuses } from "@/lib/bonuses";
+import { getCasinos } from "@/lib/casinos";
+import { getPublishedCategories } from "@/lib/categories";
 import { pageAlternates } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
@@ -136,10 +136,18 @@ export default async function HomePage({ params }: Props) {
 
   const t = await getTranslations("HomePage");
 
-  const [cover, ...restCasinos] = mockCasinos;
+  const [casinos, bonuses, categories] = await Promise.all([
+    getCasinos(locale),
+    getBonuses(locale),
+    getPublishedCategories(locale),
+  ]);
+
+  const [cover, ...restCasinos] = casinos;
   const desk = restCasinos.slice(0, 3);
-  const topCasinos = mockCasinos.slice(0, 8);
-  const featuredBonuses = mockBonuses.slice(0, 6);
+  const topCasinos = casinos.slice(0, 8);
+  const featuredBonuses = [...bonuses]
+    .sort((a, b) => b.valueAmount - a.valueAmount)
+    .slice(0, 6);
 
   const reviewSteps = [
     { icon: "research" as const, title: t("review.researchTitle"), body: t("review.researchBody") },
@@ -150,7 +158,7 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      <HomeHero locale={locale} cover={cover} desk={desk} />
+      {cover ? <HomeHero locale={locale} cover={cover} desk={desk} /> : null}
 
       {/* Top-rated casinos */}
       <Section>
@@ -163,13 +171,13 @@ export default async function HomePage({ params }: Props) {
           {topCasinos.map((casino) => (
             <CasinoCard
               key={casino.id}
-              name={localize(casino.name, locale)}
+              name={casino.name.en}
               logoUrl={casino.logoUrl}
               rating={casino.rating}
-              badges={casino.badges.map((badge) => localize(badge, locale))}
+              badges={casino.badges.map((badge) => badge.en)}
               highlights={casino.highlights.map((item) => ({
-                label: localize(item.label, locale),
-                value: localize(item.value, locale),
+                label: item.label.en,
+                value: item.value.en,
               }))}
               ctaHref={`/casinos/${casino.slug}`}
               ctaLabel={t("casinos.cta")}
@@ -189,10 +197,10 @@ export default async function HomePage({ params }: Props) {
           {featuredBonuses.map((bonus) => (
             <BonusCard
               key={bonus.id}
-              casinoName={localize(bonus.casinoName, locale)}
+              casinoName={bonus.casinoName.en}
               logoUrl={bonus.logoUrl}
-              title={localize(bonus.title, locale)}
-              bonusValue={localize(bonus.bonusValue, locale)}
+              title={bonus.title.en}
+              bonusValue={bonus.bonusValue.en}
               ctaHref={`/casinos/${bonus.casinoSlug}`}
               ctaLabel={t("bonuses.cta")}
             />
@@ -204,9 +212,9 @@ export default async function HomePage({ params }: Props) {
       <Section>
         <SectionHeader title={t("categories.title")} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {mockCategories.map((category, index) => (
+          {categories.map((category, index) => (
             <Link
-              key={category.id}
+              key={category.slug}
               href={`/best/${category.slug}`}
               className={cn(
                 "bg-card group ring-text/8 hover:ring-accent/30 rounded-xl p-5 ring-1 transition-all duration-300 ease-out hover:-translate-y-0.5",
@@ -216,10 +224,10 @@ export default async function HomePage({ params }: Props) {
                 {String(index + 1).padStart(2, "0")}
               </span>
               <h3 className="text-text group-hover:text-accent-highlight text-base font-semibold tracking-tight transition-colors duration-200">
-                {localize(category.title, locale)}
+                {category.name}
               </h3>
               <p className="text-text/55 mt-2 text-sm leading-relaxed">
-                {localize(category.description, locale)}
+                {category.description}
               </p>
             </Link>
           ))}

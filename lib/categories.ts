@@ -187,6 +187,29 @@ export async function getRelatedCategories(
   });
 }
 
+export async function getPublishedCategories(
+  locale: string,
+): Promise<RelatedCategoryView[]> {
+  const rows = await prisma.category.findMany({
+    where: { status: "published" },
+    include: { translations: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return rows.flatMap((category) => {
+    const translation = pickTranslation(category.translations, locale);
+    if (!translation) return [];
+
+    return [
+      {
+        slug: category.slug,
+        name: translation.name,
+        description: translation.description ?? "",
+      },
+    ];
+  });
+}
+
 export async function getPublishedCategorySlugs(): Promise<string[]> {
   const rows = await prisma.category.findMany({
     where: { status: "published" },
