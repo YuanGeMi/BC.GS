@@ -9,6 +9,10 @@ import {
   legalDocumentToMarkdown,
   STATIC_PAGE_LOCALES,
 } from "./legal-to-markdown";
+import {
+  payoutSpeedOptions,
+  payoutSpeedSlugByWithdrawalTime,
+} from "./payout-speed-options";
 
 const prisma = new PrismaClient();
 
@@ -18,8 +22,46 @@ function parseMinDeposit(value: string): number | null {
 }
 
 async function main() {
+  const payoutSpeedIdsBySlug = new Map<string, string>();
+
+  for (const option of payoutSpeedOptions) {
+    const row = await prisma.payoutSpeedOption.upsert({
+      where: { slug: option.slug },
+      update: { sortOrder: option.sortOrder },
+      create: {
+        slug: option.slug,
+        sortOrder: option.sortOrder,
+      },
+      select: { id: true, slug: true },
+    });
+
+    payoutSpeedIdsBySlug.set(row.slug, row.id);
+
+    for (const [locale, label] of Object.entries(option.labels)) {
+      await prisma.payoutSpeedOptionTranslation.upsert({
+        where: {
+          optionId_locale: {
+            optionId: row.id,
+            locale,
+          },
+        },
+        update: { label },
+        create: {
+          optionId: row.id,
+          locale,
+          label,
+        },
+      });
+    }
+  }
+
   for (const mock of mockCasinos) {
     const profile = toCasinoProfile(mock);
+    const payoutSpeedSlug =
+      payoutSpeedSlugByWithdrawalTime[profile.withdrawalTime.en];
+    const payoutSpeedId = payoutSpeedSlug
+      ? payoutSpeedIdsBySlug.get(payoutSpeedSlug)
+      : undefined;
 
     const data = {
       slug: profile.slug,
@@ -27,7 +69,7 @@ async function main() {
       license: profile.licenses.join(", ") || null,
       establishedYear: profile.establishedYear,
       minDeposit: parseMinDeposit(profile.minDeposit.en),
-      withdrawalTime: profile.withdrawalTime.en,
+      payoutSpeedId: payoutSpeedId ?? null,
       paymentMethods: profile.payments,
       gameProviders: profile.providers,
       overallRating: profile.rating,

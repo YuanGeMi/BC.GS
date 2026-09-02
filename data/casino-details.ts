@@ -718,7 +718,7 @@ const drafts: Record<string, DetailDraft> = {
 };
 
 function withdrawalFrom(casino: MockCasino): LocalizedText {
-  const row = casino.highlights.find((item) => item.label.en.toLowerCase().includes("payout"));
+  const row = casino.highlights[1];
   return row?.value ?? PHRASE.oneToTwoDays;
 }
 

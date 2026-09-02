@@ -1,4 +1,11 @@
-import type { Bonus, Casino, CasinoTranslation } from "@prisma/client";
+import type {
+  Bonus,
+  Casino,
+  CasinoTranslation,
+  PayoutSpeedOption,
+  PayoutSpeedOptionTranslation,
+} from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 
 import {
   type BonusTypeId,
@@ -26,6 +33,28 @@ function pickTranslation(
   );
 }
 
+function pickLocaleTranslation<T extends { locale: string }>(
+  translations: T[],
+  locale: string,
+): T | undefined {
+  return (
+    translations.find((item) => item.locale === locale) ??
+    translations.find((item) => item.locale === "en")
+  );
+}
+
+type PayoutSpeedOptionWithTranslations = PayoutSpeedOption & {
+  translations: PayoutSpeedOptionTranslation[];
+};
+
+export function getPayoutSpeedLabel(
+  option: PayoutSpeedOptionWithTranslations | null,
+  locale: string,
+): string {
+  if (!option) return "—";
+  return pickLocaleTranslation(option.translations, locale)?.label ?? "—";
+}
+
 function asIds<T extends string>(values: string[], allowed: readonly T[]): T[] {
   const allowedSet = new Set<string>(allowed);
   return values.filter((value): value is T => allowedSet.has(value));
@@ -39,17 +68,29 @@ function parseLicenses(license: string | null): LicenseId[] {
   );
 }
 
-function toHighlights(casino: Casino): MockCasinoHighlight[] {
+type CasinoHighlightLabels = {
+  minDeposit: string;
+  payoutSpeed: string;
+  license: string;
+};
+
+function toHighlights(
+  casino: Pick<Casino, "license" | "minDeposit"> & {
+    payoutSpeed: PayoutSpeedOptionWithTranslations | null;
+  },
+  locale: string,
+  labels: CasinoHighlightLabels,
+): MockCasinoHighlight[] {
   const deposit =
     casino.minDeposit == null ? "—" : `$${casino.minDeposit}`;
 
   return [
-    { label: { en: "Min deposit" }, value: { en: deposit } },
+    { label: { en: labels.minDeposit }, value: { en: deposit } },
     {
-      label: { en: "Payout speed" },
-      value: { en: casino.withdrawalTime ?? "—" },
+      label: { en: labels.payoutSpeed },
+      value: { en: getPayoutSpeedLabel(casino.payoutSpeed, locale) },
     },
-    { label: { en: "License" }, value: { en: casino.license ?? "—" } },
+    { label: { en: labels.license }, value: { en: casino.license ?? "—" } },
   ];
 }
 
@@ -73,9 +114,13 @@ function deriveBonusFields(bonuses: Bonus[]): {
 }
 
 function toDirectoryCasino(
-  casino: Casino,
+  casino: Casino & {
+    payoutSpeed: PayoutSpeedOptionWithTranslations | null;
+  },
   translation: CasinoTranslation,
   bonuses: Bonus[],
+  locale: string,
+  labels: CasinoHighlightLabels,
 ): MockCasino {
   const { bonusTypes, bonusValue } = deriveBonusFields(bonuses);
 
@@ -86,7 +131,7 @@ function toDirectoryCasino(
     logoUrl: casino.logoUrl ?? undefined,
     name: { en: translation.name },
     badges: [],
-    highlights: toHighlights(casino),
+    highlights: toHighlights(casino, locale, labels),
     licenses: parseLicenses(casino.license),
     payments: asIds(casino.paymentMethods, PAYMENT_OPTIONS),
     providers: asIds(casino.gameProviders, PROVIDER_OPTIONS),
@@ -97,19 +142,29 @@ function toDirectoryCasino(
 }
 
 export async function getCasinos(locale: string): Promise<MockCasino[]> {
-  const rows = await prisma.casino.findMany({
-    where: { status: "published" },
-    include: {
-      translations: true,
-      bonuses: { where: { status: "published" } },
-    },
-    orderBy: { overallRating: "desc" },
-  });
+  const [rows, t] = await Promise.all([
+    prisma.casino.findMany({
+      where: { status: "published" },
+      include: {
+        translations: true,
+        payoutSpeed: { include: { translations: true } },
+        bonuses: { where: { status: "published" } },
+      },
+      orderBy: { overallRating: "desc" },
+    }),
+    getTranslations({ locale, namespace: "CasinoDetail" }),
+  ]);
+
+  const labels = {
+    minDeposit: t("facts.minDeposit"),
+    payoutSpeed: t("scores.payoutSpeed"),
+    license: t("facts.license"),
+  };
 
   return rows.flatMap((casino) => {
     const translation = pickTranslation(casino.translations, locale);
     if (!translation) return [];
-    return [toDirectoryCasino(casino, translation, casino.bonuses)];
+    return [toDirectoryCasino(casino, translation, casino.bonuses, locale, labels)];
   });
 }
 
@@ -159,8 +214,11 @@ function splitReviewBody(body: string): string[] {
 }
 
 function toDetailView(
-  casino: Casino,
+  casino: Casino & {
+    payoutSpeed: PayoutSpeedOptionWithTranslations | null;
+  },
   translation: CasinoTranslation,
+  locale: string,
 ): CasinoDetailView {
   return {
     id: casino.id,
@@ -175,7 +233,7 @@ function toDetailView(
     establishedYear: casino.establishedYear,
     minDeposit:
       casino.minDeposit == null ? "—" : `$${casino.minDeposit}`,
-    withdrawalTime: casino.withdrawalTime ?? "—",
+    withdrawalTime: getPayoutSpeedLabel(casino.payoutSpeed, locale),
     affiliateUrl: casino.affiliateLink ?? "#",
     scores: {
       bonuses: casino.ratingBonuses ?? 0,
@@ -211,7 +269,10 @@ export async function getCasinoBySlug(
 ): Promise<CasinoDetailView | null> {
   const row = await prisma.casino.findUnique({
     where: { slug },
-    include: { translations: true },
+    include: {
+      translations: true,
+      payoutSpeed: { include: { translations: true } },
+    },
   });
 
   if (!row || row.status !== "published") return null;
@@ -219,7 +280,7 @@ export async function getCasinoBySlug(
   const translation = pickTranslation(row.translations, locale);
   if (!translation) return null;
 
-  return toDetailView(row, translation);
+  return toDetailView(row, translation, locale);
 }
 
 export async function getRelatedCasinos(

@@ -4,8 +4,11 @@ import type {
   Casino,
   CasinoTranslation,
   CategoryTranslation,
+  PayoutSpeedOption,
+  PayoutSpeedOptionTranslation,
 } from "@prisma/client";
 
+import { getPayoutSpeedLabel } from "@/lib/casinos";
 import { prisma } from "@/lib/prisma";
 
 function pickTranslation<T extends { locale: string }>(
@@ -91,13 +94,19 @@ function toCategoryView(
 }
 
 function toCategoryCasino(
-  casino: Casino,
+  casino: Casino & {
+    payoutSpeed:
+      | (PayoutSpeedOption & {
+          translations: PayoutSpeedOptionTranslation[];
+        })
+      | null;
+  },
   translation: CasinoTranslation,
   bonuses: Array<Bonus & { translations: BonusTranslation[] }>,
   locale: string,
 ): CategoryCasinoView {
   const bonus = pickBonus(bonuses, locale);
-  const payout = casino.withdrawalTime?.trim();
+  const payout = getPayoutSpeedLabel(casino.payoutSpeed, locale);
 
   return {
     id: casino.id,
@@ -110,7 +119,7 @@ function toCategoryCasino(
       ? { label: bonus.title, value: bonus.amount }
       : {
           label: "",
-          value: payout || "—",
+          value: payout,
         },
     welcomeBonus: bonus?.amount ?? "—",
     lede: firstParagraph(translation.reviewBody),
@@ -150,6 +159,7 @@ export async function getCasinosForCategory(
         include: { translations: true },
         orderBy: { createdAt: "desc" },
       },
+      payoutSpeed: { include: { translations: true } },
     },
     orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
   });

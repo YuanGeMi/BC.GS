@@ -9,13 +9,14 @@ datasource db {
 }
 
 model Casino {
-  id              String   @id @default(cuid())
-  slug            String   @unique
+  id              String              @id @default(cuid())
+  slug            String              @unique
   logoUrl         String?
   license         String?
   establishedYear Int?
   minDeposit      Float?
-  withdrawalTime  String?
+  payoutSpeedId   String?
+  payoutSpeed     PayoutSpeedOption?  @relation(fields: [payoutSpeedId], references: [id], onDelete: SetNull)
   paymentMethods  String[]
   gameProviders   String[]
   overallRating   Float?
@@ -25,22 +26,40 @@ model Casino {
   ratingPayout    Float?
   ratingTrust     Float?
   affiliateLink   String?
-  status          String   @default("draft") // draft | published
+  status          String              @default("draft") // draft | published
   translations    CasinoTranslation[]
   bonuses         Bonus[]
   categories      CasinoCategory[]
   affiliateClicks AffiliateClick[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model PayoutSpeedOption {
+  id           String                         @id @default(cuid())
+  slug         String                         @unique
+  sortOrder    Int                            @default(0)
+  translations PayoutSpeedOptionTranslation[]
+  casinos      Casino[]
+}
+
+model PayoutSpeedOptionTranslation {
+  id       String            @id @default(cuid())
+  optionId String
+  option   PayoutSpeedOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  locale   String
+  label    String
+
+  @@unique([optionId, locale])
 }
 
 model CasinoTranslation {
-  id             String  @id @default(cuid())
+  id             String   @id @default(cuid())
   casinoId       String
-  casino         Casino  @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  casino         Casino   @relation(fields: [casinoId], references: [id], onDelete: Cascade)
   locale         String // "en" | "zh" | "th"
   name           String
-  reviewBody     String  @db.Text
+  reviewBody     String   @db.Text
   pros           String[]
   cons           String[]
   seoTitle       String?
@@ -77,13 +96,13 @@ model BonusTranslation {
 }
 
 model Category {
-  id           String              @id @default(cuid())
-  slug         String              @unique
-  status       String              @default("draft") // draft | published
+  id           String                @id @default(cuid())
+  slug         String                @unique
+  status       String                @default("draft") // draft | published
   translations CategoryTranslation[]
   casinos      CasinoCategory[]
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 }
 
 model CategoryTranslation {

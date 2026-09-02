@@ -10,7 +10,7 @@ export type BonusCardProps = {
   title: string;
   bonusValue: string;
   badge?: string;
-  ctaLabel?: string;
+  ctaLabel: string;
   ctaHref?: string;
   className?: string;
 };
@@ -56,7 +56,7 @@ export function BonusCard({
   title,
   bonusValue,
   badge,
-  ctaLabel = "Claim",
+  ctaLabel,
   ctaHref = "#",
   className,
 }: BonusCardProps) {
