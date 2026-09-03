@@ -32,6 +32,7 @@ model Casino {
   licenses        CasinoLicense[]
   markets         CasinoMarket[]
   affiliateClicks AffiliateClick[]
+  userReviews     UserReview[]
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 }
@@ -172,12 +173,28 @@ model CasinoCategoryNote {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String       @id @default(cuid())
+  email        String       @unique
   passwordHash String
-  role         String   @default("user")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         String       @default("user")
+  reviews      UserReview[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model UserReview {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  casinoId  String
+  casino    Casino   @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  rating    Int // 1-5
+  body      String   @db.Text
+  status    String   @default("pending") // "pending" | "published" | "rejected"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, casinoId])
 }
 
 model Market {

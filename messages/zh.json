@@ -198,6 +198,30 @@
     "review": {
       "title": "{name} 评测"
     },
+    "userReviews": {
+      "title": "用户评价",
+      "write": "写评价",
+      "alreadyReviewed": "你已经评价过这家娱乐场",
+      "emptyTitle": "暂无评价",
+      "emptyBody": "成为第一个评价这家娱乐场的人。",
+      "modalTitle": "写评价",
+      "modalBody": "评价会先经过审核，才会公开显示。",
+      "ratingLabel": "评分",
+      "starLabel": "{count} 星",
+      "bodyLabel": "你的评价",
+      "submit": "提交评价",
+      "submitting": "提交中...",
+      "cancel": "取消",
+      "close": "关闭",
+      "errors": {
+        "unauthenticated": "请先登录再提交评价。",
+        "invalidRating": "请选择 1 到 5 星。",
+        "emptyBody": "请写下对这家娱乐场的评价。",
+        "bodyTooLong": "评价请控制在 2,000 字以内。",
+        "alreadyReviewed": "你已经评价过这家娱乐场。",
+        "casinoNotFound": "这家娱乐场目前无法评价。"
+      }
+    },
     "related": {
       "title": "相关娱乐场",
       "cta": "阅读评测"

@@ -8,14 +8,15 @@ import { signup, type AuthFormState } from "@/lib/auth/actions";
 
 type SignupFormProps = {
   locale: string;
+  next?: string;
 };
 
 const initialState: AuthFormState = {};
 
-export function SignupForm({ locale }: SignupFormProps) {
+export function SignupForm({ locale, next }: SignupFormProps) {
   const t = useTranslations("Auth");
   const [state, formAction, pending] = useActionState(
-    signup.bind(null, locale),
+    signup.bind(null, locale, next),
     initialState,
   );
 

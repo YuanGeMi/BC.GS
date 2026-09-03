@@ -22,8 +22,28 @@ function homePath(locale: string) {
   return `/${locale}`;
 }
 
+function safeRedirectPath(locale: string, next: unknown) {
+  if (typeof next !== "string") return homePath(locale);
+
+  const value = next.trim();
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("://")) {
+    return homePath(locale);
+  }
+
+  if (value === `/${locale}` || value.startsWith(`/${locale}/`)) {
+    return value;
+  }
+
+  if (value.startsWith("/en/") || value.startsWith("/zh/") || value.startsWith("/th/")) {
+    return homePath(locale);
+  }
+
+  return `/${locale}${value}`;
+}
+
 export async function signup(
   locale: string,
+  next: string | undefined,
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
@@ -67,7 +87,7 @@ export async function signup(
   await signIn("credentials", {
     email,
     password,
-    redirectTo: homePath(locale),
+    redirectTo: safeRedirectPath(locale, next),
   });
 
   return {};
@@ -75,6 +95,7 @@ export async function signup(
 
 export async function login(
   locale: string,
+  next: string | undefined,
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
@@ -89,7 +110,7 @@ export async function login(
     await signIn("credentials", {
       email,
       password,
-      redirectTo: homePath(locale),
+      redirectTo: safeRedirectPath(locale, next),
     });
   } catch (error) {
     if (error instanceof AuthError) {

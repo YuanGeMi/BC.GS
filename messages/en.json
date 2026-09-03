@@ -198,6 +198,30 @@
     "review": {
       "title": "{name} review"
     },
+    "userReviews": {
+      "title": "User reviews",
+      "write": "Write a review",
+      "alreadyReviewed": "You've already reviewed this casino",
+      "emptyTitle": "No reviews yet",
+      "emptyBody": "Be the first to review this casino.",
+      "modalTitle": "Write a review",
+      "modalBody": "Your review will be checked before it appears publicly.",
+      "ratingLabel": "Rating",
+      "starLabel": "{count, plural, one {# star} other {# stars}}",
+      "bodyLabel": "Your review",
+      "submit": "Submit review",
+      "submitting": "Submitting...",
+      "cancel": "Cancel",
+      "close": "Close",
+      "errors": {
+        "unauthenticated": "Log in to submit a review.",
+        "invalidRating": "Choose a rating from 1 to 5 stars.",
+        "emptyBody": "Write a few words about this casino.",
+        "bodyTooLong": "Keep the review under 2,000 characters.",
+        "alreadyReviewed": "You've already reviewed this casino.",
+        "casinoNotFound": "This casino is not available for reviews."
+      }
+    },
     "related": {
       "title": "Related casinos",
       "cta": "Read review"

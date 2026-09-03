@@ -33,7 +33,7 @@ export function CasinoCard({
   return (
     <article
       className={cn(
-        "group border-text/10 hover:bg-card/50 grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-4 border-b py-5 transition-colors duration-200 sm:grid-cols-[6.5rem_minmax(0,1.3fr)_minmax(0,2fr)_auto] sm:items-center sm:gap-x-6",
+        "group border-text/10 hover:bg-card/50 grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-4 border-b py-5 pr-2 transition-colors duration-200 sm:grid-cols-[6.5rem_minmax(0,1.3fr)_minmax(0,2fr)_auto] sm:items-center sm:gap-x-6 sm:pr-3",
         className,
       )}
     >
@@ -74,7 +74,7 @@ export function CasinoCard({
       <div className="col-start-2 mt-4 sm:col-start-auto sm:mt-0 sm:justify-self-end">
         <Link
           href={ctaHref ?? "#"}
-          className="text-text/70 hover:text-accent inline-flex items-center gap-1.5 text-sm transition-colors duration-200"
+          className="text-text/70 hover:text-accent inline-flex items-center gap-1.5 pe-0.5 text-sm transition-colors duration-200"
         >
           {ctaLabel}
           <span

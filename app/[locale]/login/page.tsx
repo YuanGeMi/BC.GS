@@ -6,6 +6,7 @@ import { LoginForm } from "@/components/auth/login-form";
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ next?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -19,8 +20,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function LoginPage({ params }: Props) {
-  const { locale } = await params;
+export default async function LoginPage({ params, searchParams }: Props) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
   const t = await getTranslations("Auth.login");
 
@@ -30,7 +31,7 @@ export default async function LoginPage({ params }: Props) {
       title={t("title")}
       description={t("description")}
     >
-      <LoginForm locale={locale} />
+      <LoginForm locale={locale} next={query.next} />
     </AuthFormShell>
   );
 }

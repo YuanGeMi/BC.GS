@@ -198,6 +198,30 @@
     "review": {
       "title": "รีวิว {name}"
     },
+    "userReviews": {
+      "title": "รีวิวจากผู้ใช้",
+      "write": "เขียนรีวิว",
+      "alreadyReviewed": "คุณรีวิวคาสิโนนี้ไปแล้ว",
+      "emptyTitle": "ยังไม่มีรีวิว",
+      "emptyBody": "เป็นคนแรกที่รีวิวคาสิโนนี้",
+      "modalTitle": "เขียนรีวิว",
+      "modalBody": "รีวิวจะได้รับการตรวจก่อนแสดงต่อสาธารณะ",
+      "ratingLabel": "คะแนน",
+      "starLabel": "{count} ดาว",
+      "bodyLabel": "รีวิวของคุณ",
+      "submit": "ส่งรีวิว",
+      "submitting": "กำลังส่ง...",
+      "cancel": "ยกเลิก",
+      "close": "ปิด",
+      "errors": {
+        "unauthenticated": "เข้าสู่ระบบเพื่อส่งรีวิว",
+        "invalidRating": "เลือกคะแนน 1 ถึง 5 ดาว",
+        "emptyBody": "เขียนรีวิวเกี่ยวกับคาสิโนนี้สักเล็กน้อย",
+        "bodyTooLong": "เขียนไม่เกิน 2,000 ตัวอักษร",
+        "alreadyReviewed": "คุณรีวิวคาสิโนนี้ไปแล้ว",
+        "casinoNotFound": "คาสิโนนี้ยังไม่เปิดให้รีวิว"
+      }
+    },
     "related": {
       "title": "คาสิโนที่เกี่ยวข้อง",
       "cta": "อ่านรีวิว"

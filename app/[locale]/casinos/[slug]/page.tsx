@@ -10,6 +10,9 @@ import { CasinoReviewJsonLd } from "@/components/casino-review-json-ld";
 import { RatingStars } from "@/components/rating-stars";
 import { Section } from "@/components/section";
 import { StickyVisitCta } from "@/components/sticky-visit-cta";
+import { UserReviewList } from "@/components/reviews/user-review-list";
+import { WriteReview } from "@/components/reviews/write-review";
+import { auth } from "@/auth";
 import { getBonusesForCasino } from "@/lib/bonuses";
 import {
   getCasinoBySlug,
@@ -18,6 +21,10 @@ import {
   getRelatedCasinos,
   type CasinoDetailView,
 } from "@/lib/casinos";
+import {
+  getPublishedUserReviews,
+  hasUserReviewedCasino,
+} from "@/lib/reviews/queries";
 import { pageAlternates, truncateMetaDescription } from "@/lib/seo";
 
 type Props = {
@@ -107,13 +114,21 @@ export default async function CasinoDetailPage({ params }: Props) {
 
   const t = await getTranslations("CasinoDetail");
   const tFilters = await getTranslations("CasinosPage");
-  const related = await getRelatedCasinos(slug, locale, 4);
+  const session = await auth();
+  const userId = session?.user?.id;
+  const [related, userReviews, hasReviewed] = await Promise.all([
+    getRelatedCasinos(slug, locale, 4),
+    getPublishedUserReviews(casino.id),
+    hasUserReviewedCasino(userId, casino.id),
+  ]);
   const trackVisit = { casinoId: casino.id, locale };
 
   const facts = [
     {
       label: t("facts.license"),
-      value: casino.licenses.map((id) => tFilters(`licenses.${id}`)).join(" · "),
+      value: casino.licenses
+        .map((id) => tFilters(`licenses.${id}`))
+        .join(" · "),
     },
     {
       label: t("facts.established"),
@@ -129,11 +144,15 @@ export default async function CasinoDetailPage({ params }: Props) {
     },
     {
       label: t("facts.payments"),
-      value: casino.payments.map((id) => tFilters(`payments.${id}`)).join(" · "),
+      value: casino.payments
+        .map((id) => tFilters(`payments.${id}`))
+        .join(" · "),
     },
     {
       label: t("facts.providers"),
-      value: casino.providers.map((id) => tFilters(`providers.${id}`)).join(" · "),
+      value: casino.providers
+        .map((id) => tFilters(`providers.${id}`))
+        .join(" · "),
     },
   ];
 
@@ -152,11 +171,7 @@ export default async function CasinoDetailPage({ params }: Props) {
               <h1 className="text-text text-3xl font-semibold tracking-tight md:text-4xl">
                 {casino.name}
               </h1>
-              <RatingStars
-                rating={casino.rating}
-                showValue
-                className="mt-2"
-              />
+              <RatingStars rating={casino.rating} showValue className="mt-2" />
               {casino.badges.length > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {casino.badges.map((badge) => (
@@ -179,7 +194,7 @@ export default async function CasinoDetailPage({ params }: Props) {
       </Section>
 
       <Section className="py-8 md:py-10 lg:py-12">
-        <dl className="border-text/8 bg-card/40 grid grid-cols-2 gap-px overflow-hidden rounded-xl ring-1 ring-text/8 sm:grid-cols-3">
+        <dl className="border-text/8 bg-card/40 ring-text/8 grid grid-cols-2 gap-px overflow-hidden rounded-xl ring-1 sm:grid-cols-3">
           {facts.map((fact) => (
             <div key={fact.label} className="bg-background/60 px-4 py-4">
               <dt className="text-text/40 text-[11px] tracking-[0.14em] uppercase">
@@ -193,7 +208,7 @@ export default async function CasinoDetailPage({ params }: Props) {
         </dl>
       </Section>
 
-      <Section className="bg-card/30 border-y border-text/5">
+      <Section className="bg-card/30 border-text/5 border-y">
         <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
           {t("verdict.title")}
         </h2>
@@ -204,10 +219,7 @@ export default async function CasinoDetailPage({ params }: Props) {
             </p>
             <ul className="space-y-3">
               {casino.pros.map((item) => (
-                <li
-                  key={item}
-                  className="flex gap-3 text-sm leading-relaxed"
-                >
+                <li key={item} className="flex gap-3 text-sm leading-relaxed">
                   <span className="text-accent mt-0.5 shrink-0" aria-hidden>
                     ✓
                   </span>
@@ -222,10 +234,7 @@ export default async function CasinoDetailPage({ params }: Props) {
             </p>
             <ul className="space-y-3">
               {casino.cons.map((item) => (
-                <li
-                  key={item}
-                  className="flex gap-3 text-sm leading-relaxed"
-                >
+                <li key={item} className="flex gap-3 text-sm leading-relaxed">
                   <span className="text-text/35 mt-0.5 shrink-0" aria-hidden>
                     ×
                   </span>
@@ -320,6 +329,26 @@ export default async function CasinoDetailPage({ params }: Props) {
             </p>
           ))}
         </div>
+      </Section>
+
+      <Section className="pt-0 md:pt-0 lg:pt-0">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-text text-xl font-semibold tracking-tight md:text-2xl">
+            {t("userReviews.title")}
+          </h2>
+          <WriteReview
+            casinoId={casino.id}
+            casinoSlug={slug}
+            isLoggedIn={Boolean(userId)}
+            hasReviewed={hasReviewed}
+          />
+        </div>
+        <UserReviewList
+          reviews={userReviews}
+          locale={locale}
+          emptyTitle={t("userReviews.emptyTitle")}
+          emptyBody={t("userReviews.emptyBody")}
+        />
       </Section>
 
       <Section className="pt-0 md:pt-0 lg:pt-0">
