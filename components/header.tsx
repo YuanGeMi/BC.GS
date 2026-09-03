@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { Logo } from "@/components/logo";
 import { Link, usePathname } from "@/i18n/navigation";
+import { logout } from "@/lib/auth/actions";
 import { MAIN_NAV } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,12 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-export function Header() {
+type HeaderProps = {
+  locale: string;
+  user: { email: string } | null;
+};
+
+export function Header({ locale, user }: HeaderProps) {
   const t = useTranslations("Nav");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -78,10 +84,41 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden items-center md:flex">
+        <div className="hidden items-center gap-4 md:flex">
           <Suspense fallback={null}>
             <LocaleSwitcher />
           </Suspense>
+
+          {user ? (
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="text-text/65 max-w-44 truncate text-sm">
+                {user.email}
+              </span>
+              <form action={logout.bind(null, locale)}>
+                <button
+                  type="submit"
+                  className="text-text/70 hover:text-accent text-sm font-medium transition-colors"
+                >
+                  {t("logout")}
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="text-text/70 hover:text-text text-sm font-medium transition-colors"
+              >
+                {t("login")}
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-accent text-background hover:bg-accent-highlight inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition-colors"
+              >
+                {t("signup")}
+              </Link>
+            </div>
+          )}
         </div>
 
         <button
@@ -134,6 +171,39 @@ export function Header() {
             <Suspense fallback={null}>
               <LocaleSwitcher />
             </Suspense>
+          </div>
+
+          <div className="border-text/8 mt-3 border-t pt-4">
+            {user ? (
+              <div className="space-y-3 px-3">
+                <p className="text-text/65 truncate text-sm">{user.email}</p>
+                <form action={logout.bind(null, locale)}>
+                  <button
+                    type="submit"
+                    className="text-text/75 hover:text-accent text-sm font-medium transition-colors"
+                  >
+                    {t("logout")}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 px-3">
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="text-text/75 hover:bg-card rounded-md px-3 py-2.5 text-center text-sm font-medium transition-colors"
+                >
+                  {t("login")}
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setOpen(false)}
+                  className="bg-accent text-background hover:bg-accent-highlight rounded-md px-3 py-2.5 text-center text-sm font-medium transition-colors"
+                >
+                  {t("signup")}
+                </Link>
+              </div>
+            )}
           </div>
         </nav>
       </div>

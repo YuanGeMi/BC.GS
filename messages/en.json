@@ -4,6 +4,9 @@
     "bonuses": "Bonuses",
     "compare": "Compare",
     "bestOf": "Best Of",
+    "login": "Log in",
+    "signup": "Sign up",
+    "logout": "Log out",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "primary": "Primary",
@@ -11,6 +14,36 @@
   },
   "LocaleSwitcher": {
     "label": "Language"
+  },
+  "Auth": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "login": {
+      "seoTitle": "Log in",
+      "seoDescription": "Log in to your BC.GS account.",
+      "eyebrow": "Account",
+      "title": "Log in",
+      "description": "Access your account with your email and password.",
+      "submit": "Log in",
+      "pending": "Logging in..."
+    },
+    "signup": {
+      "seoTitle": "Sign up",
+      "seoDescription": "Create a BC.GS account.",
+      "eyebrow": "Account",
+      "title": "Create account",
+      "description": "Use an email and password to create your account.",
+      "submit": "Sign up",
+      "pending": "Creating account..."
+    },
+    "errors": {
+      "invalidEmail": "Enter a valid email address.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "signupFailed": "We could not create that account. Try another email or try again.",
+      "invalidCredentials": "The email or password is incorrect."
+    }
   },
   "Meta": {
     "title": "BC.GS — Independent betting & casino reviews",

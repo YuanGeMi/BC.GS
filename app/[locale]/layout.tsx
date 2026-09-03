@@ -1,9 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
 import { Inter, Newsreader } from "next/font/google";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { routing } from "@/i18n/routing";
@@ -85,7 +90,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   setRequestLocale(locale);
 
-  const messages = await getMessages();
+  const [messages, session] = await Promise.all([getMessages(), auth()]);
 
   return (
     <html
@@ -94,7 +99,16 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="bg-background text-text flex min-h-full min-w-0 flex-col font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
-          <Header />
+          <Header
+            locale={locale}
+            user={
+              session?.user?.email
+                ? {
+                    email: session.user.email,
+                  }
+                : null
+            }
+          />
           <main className="min-w-0 flex-1">{children}</main>
           <Footer />
         </NextIntlClientProvider>

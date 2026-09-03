@@ -13,6 +13,8 @@ import {
   payoutSpeedOptions,
   payoutSpeedSlugByWithdrawalTime,
 } from "./payout-speed-options";
+import { seedCasinoLicenses, seedLicenseCatalog } from "./seed-licenses";
+import { seedMarkets } from "./seed-markets";
 
 const prisma = new PrismaClient();
 
@@ -22,6 +24,9 @@ function parseMinDeposit(value: string): number | null {
 }
 
 async function main() {
+  await seedMarkets(prisma);
+  await seedLicenseCatalog(prisma);
+
   const payoutSpeedIdsBySlug = new Map<string, string>();
 
   for (const option of payoutSpeedOptions) {
@@ -66,7 +71,6 @@ async function main() {
     const data = {
       slug: profile.slug,
       logoUrl: profile.logoUrl ?? null,
-      license: profile.licenses.join(", ") || null,
       establishedYear: profile.establishedYear,
       minDeposit: parseMinDeposit(profile.minDeposit.en),
       payoutSpeedId: payoutSpeedId ?? null,
@@ -107,6 +111,8 @@ async function main() {
       },
     });
   }
+
+  await seedCasinoLicenses(prisma);
 
   await prisma.bonus.deleteMany();
 
@@ -217,6 +223,11 @@ async function main() {
 
   const casinoCount = await prisma.casino.count();
   const categoryCount = await prisma.category.count();
+  const licenseCount = await prisma.license.count();
+  const casinoLicenseCount = await prisma.casinoLicense.count();
+  const marketCount = await prisma.market.count();
+  const marketTranslationCount = await prisma.marketTranslation.count();
+  const casinoMarketCount = await prisma.casinoMarket.count();
 
   for (const slug of legalSlugs) {
     const document = legalDocuments[slug];
@@ -254,7 +265,7 @@ async function main() {
 
   const staticPageCount = await prisma.staticPage.count();
   console.log(
-    `Seeded ${casinoCount} casinos, ${bonusesCreated} bonuses, ${categoryCount} categories, ${linksCreated} casino-category links, and ${staticPageCount} static pages (en/zh/th translations).`,
+    `Seeded ${casinoCount} casinos, ${bonusesCreated} bonuses, ${categoryCount} categories, ${linksCreated} casino-category links, ${licenseCount} licenses, ${casinoLicenseCount} casino-license links, ${marketCount} markets, ${marketTranslationCount} market translations, ${casinoMarketCount} casino-market links, and ${staticPageCount} static pages (en/zh/th translations).`,
   );
   if (bonusesSkipped > 0) {
     console.log(`Skipped ${bonusesSkipped} bonuses with no matching casino.`);

@@ -1,7 +1,10 @@
 import type {
   Bonus,
   Casino,
+  CasinoLicense,
   CasinoTranslation,
+  License,
+  LicenseTranslation,
   PayoutSpeedOption,
   PayoutSpeedOptionTranslation,
 } from "@prisma/client";
@@ -47,6 +50,14 @@ type PayoutSpeedOptionWithTranslations = PayoutSpeedOption & {
   translations: PayoutSpeedOptionTranslation[];
 };
 
+type LicenseWithTranslations = License & {
+  translations: LicenseTranslation[];
+};
+
+type CasinoLicenseWithLicense = CasinoLicense & {
+  license: LicenseWithTranslations;
+};
+
 export function getPayoutSpeedLabel(
   option: PayoutSpeedOptionWithTranslations | null,
   locale: string,
@@ -60,12 +71,28 @@ function asIds<T extends string>(values: string[], allowed: readonly T[]): T[] {
   return values.filter((value): value is T => allowedSet.has(value));
 }
 
-function parseLicenses(license: string | null): LicenseId[] {
-  if (!license) return [];
+function licenseIdsFromRelations(
+  licenses: CasinoLicenseWithLicense[],
+): LicenseId[] {
   return asIds(
-    license.split(",").map((part) => part.trim()),
+    licenses.map((row) => row.license.slug),
     LICENSE_OPTIONS,
   );
+}
+
+function formatLicenseNames(
+  licenses: CasinoLicenseWithLicense[],
+  locale: string,
+): string {
+  const names = licenses
+    .map(
+      (row) =>
+        pickLocaleTranslation(row.license.translations, locale)?.name ??
+        row.license.slug,
+    )
+    .filter(Boolean);
+
+  return names.length > 0 ? names.join(" · ") : "—";
 }
 
 type CasinoHighlightLabels = {
@@ -75,8 +102,10 @@ type CasinoHighlightLabels = {
 };
 
 function toHighlights(
-  casino: Pick<Casino, "license" | "minDeposit"> & {
+  casino: {
+    minDeposit: number | null;
     payoutSpeed: PayoutSpeedOptionWithTranslations | null;
+    licenses: CasinoLicenseWithLicense[];
   },
   locale: string,
   labels: CasinoHighlightLabels,
@@ -90,7 +119,10 @@ function toHighlights(
       label: { en: labels.payoutSpeed },
       value: { en: getPayoutSpeedLabel(casino.payoutSpeed, locale) },
     },
-    { label: { en: labels.license }, value: { en: casino.license ?? "—" } },
+    {
+      label: { en: labels.license },
+      value: { en: formatLicenseNames(casino.licenses, locale) },
+    },
   ];
 }
 
@@ -113,10 +145,13 @@ function deriveBonusFields(bonuses: Bonus[]): {
   };
 }
 
+type CasinoWithRelations = Casino & {
+  payoutSpeed: PayoutSpeedOptionWithTranslations | null;
+  licenses: CasinoLicenseWithLicense[];
+};
+
 function toDirectoryCasino(
-  casino: Casino & {
-    payoutSpeed: PayoutSpeedOptionWithTranslations | null;
-  },
+  casino: CasinoWithRelations,
   translation: CasinoTranslation,
   bonuses: Bonus[],
   locale: string,
@@ -132,7 +167,7 @@ function toDirectoryCasino(
     name: { en: translation.name },
     badges: [],
     highlights: toHighlights(casino, locale, labels),
-    licenses: parseLicenses(casino.license),
+    licenses: licenseIdsFromRelations(casino.licenses),
     payments: asIds(casino.paymentMethods, PAYMENT_OPTIONS),
     providers: asIds(casino.gameProviders, PROVIDER_OPTIONS),
     bonusTypes,
@@ -140,6 +175,10 @@ function toDirectoryCasino(
     bonusValue,
   };
 }
+
+const casinoLicenseInclude = {
+  license: { include: { translations: true } },
+} as const;
 
 export async function getCasinos(locale: string): Promise<MockCasino[]> {
   const [rows, t] = await Promise.all([
@@ -149,6 +188,7 @@ export async function getCasinos(locale: string): Promise<MockCasino[]> {
         translations: true,
         payoutSpeed: { include: { translations: true } },
         bonuses: { where: { status: "published" } },
+        licenses: { include: casinoLicenseInclude },
       },
       orderBy: { overallRating: "desc" },
     }),
@@ -214,9 +254,7 @@ function splitReviewBody(body: string): string[] {
 }
 
 function toDetailView(
-  casino: Casino & {
-    payoutSpeed: PayoutSpeedOptionWithTranslations | null;
-  },
+  casino: CasinoWithRelations,
   translation: CasinoTranslation,
   locale: string,
 ): CasinoDetailView {
@@ -227,7 +265,7 @@ function toDetailView(
     logoUrl: casino.logoUrl ?? undefined,
     rating: casino.overallRating ?? 0,
     badges: [],
-    licenses: parseLicenses(casino.license),
+    licenses: licenseIdsFromRelations(casino.licenses),
     payments: asIds(casino.paymentMethods, PAYMENT_OPTIONS),
     providers: asIds(casino.gameProviders, PROVIDER_OPTIONS),
     establishedYear: casino.establishedYear,
@@ -272,6 +310,7 @@ export async function getCasinoBySlug(
     include: {
       translations: true,
       payoutSpeed: { include: { translations: true } },
+      licenses: { include: casinoLicenseInclude },
     },
   });
 

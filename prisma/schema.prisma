@@ -12,7 +12,6 @@ model Casino {
   id              String              @id @default(cuid())
   slug            String              @unique
   logoUrl         String?
-  license         String?
   establishedYear Int?
   minDeposit      Float?
   payoutSpeedId   String?
@@ -30,9 +29,40 @@ model Casino {
   translations    CasinoTranslation[]
   bonuses         Bonus[]
   categories      CasinoCategory[]
+  licenses        CasinoLicense[]
+  markets         CasinoMarket[]
   affiliateClicks AffiliateClick[]
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
+}
+
+model License {
+  id           String               @id @default(cuid())
+  slug         String               @unique
+  translations LicenseTranslation[]
+  casinos      CasinoLicense[]
+}
+
+model LicenseTranslation {
+  id        String  @id @default(cuid())
+  licenseId String
+  license   License @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  locale    String
+  name      String
+
+  @@unique([licenseId, locale])
+}
+
+model CasinoLicense {
+  casinoId        String
+  casino          Casino  @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  licenseId       String
+  license         License @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  licenseNumber   String?
+  verified        Boolean @default(false)
+  verificationUrl String?
+
+  @@id([casinoId, licenseId])
 }
 
 model PayoutSpeedOption {
@@ -121,11 +151,61 @@ model CategoryTranslation {
 
 model CasinoCategory {
   casinoId   String
-  casino     Casino   @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  casino     Casino               @relation(fields: [casinoId], references: [id], onDelete: Cascade)
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category   Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  rank       Int?
+  notes      CasinoCategoryNote[]
 
   @@id([casinoId, categoryId])
+}
+
+model CasinoCategoryNote {
+  id             String         @id @default(cuid())
+  casinoId       String
+  categoryId     String
+  casinoCategory CasinoCategory @relation(fields: [casinoId, categoryId], references: [casinoId, categoryId], onDelete: Cascade)
+  locale         String
+  editorialNote  String         @db.Text
+
+  @@unique([casinoId, categoryId, locale])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("user")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Market {
+  id           String              @id @default(cuid())
+  code         String              @unique // ISO 3166-1 alpha-2, e.g. "US", "TH", "GB"
+  translations MarketTranslation[]
+  casinos      CasinoMarket[]
+}
+
+model MarketTranslation {
+  id       String @id @default(cuid())
+  marketId String
+  market   Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  locale   String
+  name     String
+
+  @@unique([marketId, locale])
+}
+
+model CasinoMarket {
+  casinoId      String
+  casino        Casino  @relation(fields: [casinoId], references: [id], onDelete: Cascade)
+  marketId      String
+  market        Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  status        String  @default("available") // "available" | "restricted"
+  affiliateLink String?
+
+  @@id([casinoId, marketId])
 }
 
 model AffiliateClick {

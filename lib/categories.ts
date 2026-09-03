@@ -147,24 +147,31 @@ export async function getCasinosForCategory(
   categoryId: string,
   locale: string,
 ): Promise<CategoryCasinoView[]> {
-  const rows = await prisma.casino.findMany({
+  const rows = await prisma.casinoCategory.findMany({
     where: {
-      status: "published",
-      categories: { some: { categoryId } },
+      categoryId,
+      casino: { status: "published" },
     },
     include: {
-      translations: true,
-      bonuses: {
-        where: { status: "published" },
-        include: { translations: true },
-        orderBy: { createdAt: "desc" },
+      casino: {
+        include: {
+          translations: true,
+          bonuses: {
+            where: { status: "published" },
+            include: { translations: true },
+            orderBy: { createdAt: "desc" },
+          },
+          payoutSpeed: { include: { translations: true } },
+        },
       },
-      payoutSpeed: { include: { translations: true } },
     },
-    orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
+    orderBy: [
+      { rank: { sort: "asc", nulls: "last" } },
+      { casino: { slug: "asc" } },
+    ],
   });
 
-  return rows.flatMap((casino) => {
+  return rows.flatMap(({ casino }) => {
     const translation = pickTranslation(casino.translations, locale);
     if (!translation) return [];
     return [toCategoryCasino(casino, translation, casino.bonuses, locale)];
