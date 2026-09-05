@@ -64,6 +64,9 @@ export async function generateMetadata({
     appleWebApp: {
       title: "BC.GS",
     },
+    other: {
+      google: "notranslate",
+    },
   };
 }
 
