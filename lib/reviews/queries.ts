@@ -49,20 +49,25 @@ export async function getPublishedUserReviewsPage(
   casinoId: string,
   cursor?: ReviewPageCursor | null,
 ): Promise<PublishedUserReviewPage> {
-  const cursorDate = cursor ? new Date(cursor.createdAt) : null;
+  const cursorFilter = cursor
+    ? {
+        OR: [
+          { createdAt: { lt: new Date(cursor.createdAt) } },
+          {
+            AND: [
+              { createdAt: new Date(cursor.createdAt) },
+              { id: { lt: cursor.id } },
+            ],
+          },
+        ],
+      }
+    : {};
 
   const rows = await prisma.userReview.findMany({
     where: {
       casinoId,
       status: "published",
-      ...(cursorDate
-        ? {
-            OR: [
-              { createdAt: { lt: cursorDate } },
-              { AND: [{ createdAt: cursorDate }, { id: { lt: cursor.id } }] },
-            ],
-          }
-        : {}),
+      ...cursorFilter,
     },
     take: REVIEW_PAGE_SIZE + 1,
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
