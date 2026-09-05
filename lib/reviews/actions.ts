@@ -2,8 +2,14 @@
 
 import { Prisma } from "@prisma/client";
 
-import { auth } from "@/auth";
+import { ensureUserProfile } from "@/lib/auth/profile";
+import { getAuthUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { isValidDisplayName, normalizeDisplayName } from "@/lib/reviews/display-name";
+import {
+  getPublishedUserReviewsPage,
+  type ReviewPageCursor,
+} from "@/lib/reviews/queries";
 
 export type SubmitReviewState = {
   error?: string;
@@ -28,16 +34,30 @@ export async function submitReview(
   _state: SubmitReviewState,
   formData: FormData,
 ): Promise<SubmitReviewState> {
-  const session = await auth();
-  const userId = session?.user?.id;
+  const user = await getAuthUser();
 
-  if (!userId) {
+  if (!user) {
     return { error: "unauthenticated" };
   }
+
+  await ensureUserProfile(user);
+  const userId = user.id;
 
   const rating = parseRating(formData.get("rating"));
   if (rating == null) {
     return { error: "invalidRating" };
+  }
+
+  const submittedName = normalizeDisplayName(formData.get("displayName"));
+  if (submittedName && !isValidDisplayName(submittedName)) {
+    return { error: "invalidName" };
+  }
+
+  if (submittedName) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { displayName: submittedName },
+    });
   }
 
   const rawBody = formData.get("body");
@@ -82,4 +102,11 @@ export async function submitReview(
   }
 
   return { success: true };
+}
+
+export async function loadMoreReviews(
+  casinoId: string,
+  cursor: ReviewPageCursor,
+) {
+  return getPublishedUserReviewsPage(casinoId, cursor);
 }

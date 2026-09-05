@@ -8,10 +8,10 @@ import {
 import { Inter, Newsreader } from "next/font/google";
 import { notFound } from "next/navigation";
 
-import { auth } from "@/auth";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { routing } from "@/i18n/routing";
+import { getHeaderUser } from "@/lib/auth/session";
 import { siteMetadataBase } from "@/lib/seo";
 
 import "../globals.css";
@@ -90,7 +90,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   setRequestLocale(locale);
 
-  const [messages, session] = await Promise.all([getMessages(), auth()]);
+  const [messages, user] = await Promise.all([getMessages(), getHeaderUser()]);
 
   return (
     <html
@@ -99,16 +99,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="bg-background text-text flex min-h-full min-w-0 flex-col font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
-          <Header
-            locale={locale}
-            user={
-              session?.user?.email
-                ? {
-                    email: session.user.email,
-                  }
-                : null
-            }
-          />
+          <Header locale={locale} user={user} />
           <main className="min-w-0 flex-1">{children}</main>
           <Footer />
         </NextIntlClientProvider>

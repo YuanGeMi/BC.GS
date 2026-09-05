@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { AccountControls, SignOutIcon } from "@/components/account-menu";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { Logo } from "@/components/logo";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -37,7 +38,7 @@ function MenuIcon({ open }: { open: boolean }) {
 
 type HeaderProps = {
   locale: string;
-  user: { email: string } | null;
+  user: { name: string; initials: string } | null;
 };
 
 export function Header({ locale, user }: HeaderProps) {
@@ -90,19 +91,11 @@ export function Header({ locale, user }: HeaderProps) {
           </Suspense>
 
           {user ? (
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="text-text/65 max-w-44 truncate text-sm">
-                {user.email}
-              </span>
-              <form action={logout.bind(null, locale)}>
-                <button
-                  type="submit"
-                  className="text-text/70 hover:text-accent text-sm font-medium transition-colors"
-                >
-                  {t("logout")}
-                </button>
-              </form>
-            </div>
+            <AccountControls
+              locale={locale}
+              name={user.name}
+              initials={user.initials}
+            />
           ) : (
             <div className="flex items-center gap-3">
               <Link
@@ -175,14 +168,17 @@ export function Header({ locale, user }: HeaderProps) {
 
           <div className="border-text/8 mt-3 border-t pt-4">
             {user ? (
-              <div className="space-y-3 px-3">
-                <p className="text-text/65 truncate text-sm">{user.email}</p>
+              <div className="flex items-center justify-between gap-3 px-3">
+                <p className="font-display text-text text-xl leading-tight tracking-tight">
+                  {user.name}
+                </p>
                 <form action={logout.bind(null, locale)}>
                   <button
                     type="submit"
-                    className="text-text/75 hover:text-accent text-sm font-medium transition-colors"
+                    aria-label={t("logout")}
+                    className="text-text/50 hover:text-accent inline-flex size-10 items-center justify-center rounded-full transition-colors"
                   >
-                    {t("logout")}
+                    <SignOutIcon className="size-5" />
                   </button>
                 </form>
               </div>

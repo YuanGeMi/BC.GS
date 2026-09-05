@@ -15,16 +15,17 @@
     "prisma:studio": "prisma studio",
     "seed": "prisma db seed",
     "seed:markets": "tsx prisma/seed-markets.ts",
-    "seed:translations": "tsx prisma/seed-translations.ts"
+    "seed:translations": "tsx prisma/seed-translations.ts",
+    "seed:reviews": "tsx prisma/seed-reviews.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "bcrypt": "^6.0.0",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.99.0",
     "next": "16.3.2",
-    "next-auth": "^5.0.0-beta.32",
     "next-intl": "^4.13.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -33,7 +34,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -12,7 +12,7 @@ import { Section } from "@/components/section";
 import { StickyVisitCta } from "@/components/sticky-visit-cta";
 import { UserReviewList } from "@/components/reviews/user-review-list";
 import { WriteReview } from "@/components/reviews/write-review";
-import { auth } from "@/auth";
+import { getAuthUser } from "@/lib/auth/session";
 import { getBonusesForCasino } from "@/lib/bonuses";
 import {
   getCasinoBySlug,
@@ -22,8 +22,9 @@ import {
   type CasinoDetailView,
 } from "@/lib/casinos";
 import {
-  getPublishedUserReviews,
+  getPublishedUserReviewsPage,
   hasUserReviewedCasino,
+  userNeedsDisplayName,
 } from "@/lib/reviews/queries";
 import { pageAlternates, truncateMetaDescription } from "@/lib/seo";
 
@@ -114,12 +115,13 @@ export default async function CasinoDetailPage({ params }: Props) {
 
   const t = await getTranslations("CasinoDetail");
   const tFilters = await getTranslations("CasinosPage");
-  const session = await auth();
-  const userId = session?.user?.id;
-  const [related, userReviews, hasReviewed] = await Promise.all([
+  const authUser = await getAuthUser();
+  const userId = authUser?.id;
+  const [related, reviewPage, hasReviewed, askForName] = await Promise.all([
     getRelatedCasinos(slug, locale, 4),
-    getPublishedUserReviews(casino.id),
+    getPublishedUserReviewsPage(casino.id),
     hasUserReviewedCasino(userId, casino.id),
+    userNeedsDisplayName(userId),
   ]);
   const trackVisit = { casinoId: casino.id, locale };
 
@@ -247,7 +249,7 @@ export default async function CasinoDetailPage({ params }: Props) {
       </Section>
 
       {bonuses.length > 0 ? (
-        <Section className="pt-0 md:pt-0 lg:pt-0">
+        <Section className="!pt-16 md:!pt-20 lg:!pt-24">
           <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
             {t("bonus.title")}
           </h2>
@@ -341,13 +343,14 @@ export default async function CasinoDetailPage({ params }: Props) {
             casinoSlug={slug}
             isLoggedIn={Boolean(userId)}
             hasReviewed={hasReviewed}
+            askForName={askForName}
           />
         </div>
         <UserReviewList
-          reviews={userReviews}
+          casinoId={casino.id}
+          initialReviews={reviewPage.reviews}
+          initialCursor={reviewPage.nextCursor}
           locale={locale}
-          emptyTitle={t("userReviews.emptyTitle")}
-          emptyBody={t("userReviews.emptyBody")}
         />
       </Section>
 

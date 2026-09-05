@@ -6,7 +6,9 @@
     "bestOf": "精选",
     "login": "登录",
     "signup": "注册",
-    "logout": "退出登录",
+    "logout": "退出",
+    "account": "账户",
+    "accountMenu": "账户菜单",
     "openMenu": "打开菜单",
     "closeMenu": "关闭菜单",
     "primary": "主导航",
@@ -17,6 +19,7 @@
   },
   "Auth": {
     "email": "电子邮箱",
+    "name": "姓名",
     "password": "密码",
     "confirmPassword": "确认密码",
     "login": {
@@ -26,23 +29,65 @@
       "title": "登录",
       "description": "使用电子邮箱和密码访问你的账户。",
       "submit": "登录",
-      "pending": "正在登录..."
+      "pending": "正在登录...",
+      "noAccount": "还没有账户？",
+      "toSignup": "注册"
     },
     "signup": {
       "seoTitle": "注册",
       "seoDescription": "创建 BC.GS 账户。",
       "eyebrow": "账户",
       "title": "创建账户",
-      "description": "使用电子邮箱和密码创建你的账户。",
+      "description": "使用电子邮箱和密码创建账户。登录前请先点击确认邮件中的链接。",
       "submit": "注册",
-      "pending": "正在创建账户..."
+      "pending": "正在创建账户...",
+      "checkEmail": "请查收确认邮件。确认邮箱后即可登录。",
+      "hasAccount": "已有账户？",
+      "toLogin": "登录"
+    },
+    "forgot": {
+      "seoTitle": "重置密码",
+      "seoDescription": "为你的 BC.GS 账户申请密码重置链接。",
+      "eyebrow": "账户",
+      "title": "忘记密码",
+      "description": "输入电子邮箱。如果该账户存在，我们将发送重置链接。",
+      "submit": "发送重置链接",
+      "pending": "正在发送...",
+      "link": "忘记密码？",
+      "sent": "如果该邮箱已注册，我们已发送重置链接。请检查收件箱和垃圾邮件。",
+      "backToLogin": "返回登录"
+    },
+    "reset": {
+      "seoTitle": "设置新密码",
+      "seoDescription": "为你的 BC.GS 账户设置新密码。",
+      "eyebrow": "账户",
+      "title": "新密码",
+      "description": "为账户设置新密码。",
+      "expired": "该重置链接无效或已过期。请重新申请。",
+      "newPassword": "新密码",
+      "submit": "更新密码",
+      "pending": "正在更新...",
+      "updated": "密码已更新。",
+      "toLogin": "登录",
+      "requestAgain": "重新申请重置链接"
+    },
+    "resend": {
+      "submit": "重新发送确认邮件",
+      "pending": "正在发送..."
     },
     "errors": {
       "invalidEmail": "请输入有效的电子邮箱地址。",
+      "invalidName": "请输入至少 2 个字符的姓名。",
       "passwordTooShort": "密码至少需要 8 个字符。",
       "passwordMismatch": "两次输入的密码不一致。",
       "signupFailed": "无法创建该账户。请尝试其他邮箱或稍后重试。",
-      "invalidCredentials": "邮箱或密码不正确。"
+      "invalidCredentials": "邮箱或密码不正确。",
+      "emailNotConfirmed": "请先确认邮箱后再登录。",
+      "callbackFailed": "确认或重置链接无效或已过期。",
+      "rateLimited": "发送过于频繁，请稍后再试。",
+      "samePassword": "请设置与当前密码不同的新密码。",
+      "resetExpired": "重置会话已过期，请重新申请链接。",
+      "generic": "出现问题，请再试一次。"
     }
   },
   "Meta": {
@@ -204,6 +249,9 @@
       "alreadyReviewed": "你已经评价过这家娱乐场",
       "emptyTitle": "暂无评价",
       "emptyBody": "成为第一个评价这家娱乐场的人。",
+      "loadMore": "加载更多评价",
+      "loadingMore": "加载中...",
+      "nameLabel": "你的姓名",
       "modalTitle": "写评价",
       "modalBody": "评价会先经过审核，才会公开显示。",
       "ratingLabel": "评分",
@@ -217,6 +265,7 @@
         "unauthenticated": "请先登录再提交评价。",
         "invalidRating": "请选择 1 到 5 星。",
         "emptyBody": "请写下对这家娱乐场的评价。",
+        "invalidName": "请输入至少 2 个字符的姓名。",
         "bodyTooLong": "评价请控制在 2,000 字以内。",
         "alreadyReviewed": "你已经评价过这家娱乐场。",
         "casinoNotFound": "这家娱乐场目前无法评价。"

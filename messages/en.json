@@ -6,7 +6,9 @@
     "bestOf": "Best Of",
     "login": "Log in",
     "signup": "Sign up",
-    "logout": "Log out",
+    "logout": "Sign out",
+    "account": "Account",
+    "accountMenu": "Account menu",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "primary": "Primary",
@@ -17,6 +19,7 @@
   },
   "Auth": {
     "email": "Email",
+    "name": "Name",
     "password": "Password",
     "confirmPassword": "Confirm password",
     "login": {
@@ -26,23 +29,65 @@
       "title": "Log in",
       "description": "Access your account with your email and password.",
       "submit": "Log in",
-      "pending": "Logging in..."
+      "pending": "Logging in...",
+      "noAccount": "No account yet?",
+      "toSignup": "Sign up"
     },
     "signup": {
       "seoTitle": "Sign up",
       "seoDescription": "Create a BC.GS account.",
       "eyebrow": "Account",
       "title": "Create account",
-      "description": "Use an email and password to create your account.",
+      "description": "Use an email and password to create your account. We will send a confirmation link before you can log in.",
       "submit": "Sign up",
-      "pending": "Creating account..."
+      "pending": "Creating account...",
+      "checkEmail": "Check your inbox for a confirmation link. You can log in after you confirm your email.",
+      "hasAccount": "Already have an account?",
+      "toLogin": "Log in"
+    },
+    "forgot": {
+      "seoTitle": "Reset password",
+      "seoDescription": "Request a password reset link for your BC.GS account.",
+      "eyebrow": "Account",
+      "title": "Forgot password",
+      "description": "Enter your email and we will send a reset link if an account exists.",
+      "submit": "Send reset link",
+      "pending": "Sending...",
+      "link": "Forgot password?",
+      "sent": "If that email is registered, we sent a reset link. Check your inbox and spam folder.",
+      "backToLogin": "Back to log in"
+    },
+    "reset": {
+      "seoTitle": "Set a new password",
+      "seoDescription": "Choose a new password for your BC.GS account.",
+      "eyebrow": "Account",
+      "title": "New password",
+      "description": "Choose a new password for your account.",
+      "expired": "This reset link is invalid or has expired. Request a new one.",
+      "newPassword": "New password",
+      "submit": "Update password",
+      "pending": "Updating...",
+      "updated": "Your password has been updated.",
+      "toLogin": "Log in",
+      "requestAgain": "Request a new reset link"
+    },
+    "resend": {
+      "submit": "Resend confirmation email",
+      "pending": "Sending..."
     },
     "errors": {
       "invalidEmail": "Enter a valid email address.",
+      "invalidName": "Enter a name with at least 2 characters.",
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordMismatch": "Passwords do not match.",
       "signupFailed": "We could not create that account. Try another email or try again.",
-      "invalidCredentials": "The email or password is incorrect."
+      "invalidCredentials": "The email or password is incorrect.",
+      "emailNotConfirmed": "Confirm your email before logging in.",
+      "callbackFailed": "That confirmation or reset link is invalid or has expired.",
+      "rateLimited": "Too many emails sent. Wait a few minutes and try again.",
+      "samePassword": "Choose a password that is different from your current one.",
+      "resetExpired": "This reset session has expired. Request a new link.",
+      "generic": "Something went wrong. Try again."
     }
   },
   "Meta": {
@@ -204,6 +249,9 @@
       "alreadyReviewed": "You've already reviewed this casino",
       "emptyTitle": "No reviews yet",
       "emptyBody": "Be the first to review this casino.",
+      "loadMore": "Load more reviews",
+      "loadingMore": "Loading...",
+      "nameLabel": "Your name",
       "modalTitle": "Write a review",
       "modalBody": "Your review will be checked before it appears publicly.",
       "ratingLabel": "Rating",
@@ -217,6 +265,7 @@
         "unauthenticated": "Log in to submit a review.",
         "invalidRating": "Choose a rating from 1 to 5 stars.",
         "emptyBody": "Write a few words about this casino.",
+        "invalidName": "Enter a name with at least 2 characters.",
         "bodyTooLong": "Keep the review under 2,000 characters.",
         "alreadyReviewed": "You've already reviewed this casino.",
         "casinoNotFound": "This casino is not available for reviews."

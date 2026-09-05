@@ -173,9 +173,10 @@ model CasinoCategoryNote {
 }
 
 model User {
-  id           String       @id @default(cuid())
+  id           String       @id // auth.users.id
   email        String       @unique
-  passwordHash String
+  displayName  String?
+  passwordHash String?
   role         String       @default("user")
   reviews      UserReview[]
   createdAt    DateTime     @default(now())

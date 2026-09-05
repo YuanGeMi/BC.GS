@@ -2,17 +2,16 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AuthFormShell } from "@/components/auth/auth-form-shell";
-import { LoginForm } from "@/components/auth/login-form";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string; error?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("Auth.login");
+  const t = await getTranslations("Auth.forgot");
 
   return {
     title: t("seoTitle"),
@@ -20,10 +19,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function LoginPage({ params, searchParams }: Props) {
-  const [{ locale }, query] = await Promise.all([params, searchParams]);
+export default async function ForgotPasswordPage({ params }: Props) {
+  const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("Auth.login");
+  const t = await getTranslations("Auth.forgot");
 
   return (
     <AuthFormShell
@@ -31,11 +30,7 @@ export default async function LoginPage({ params, searchParams }: Props) {
       title={t("title")}
       description={t("description")}
     >
-      <LoginForm
-        locale={locale}
-        next={query.next}
-        callbackError={query.error === "auth"}
-      />
+      <ForgotPasswordForm locale={locale} />
     </AuthFormShell>
   );
 }

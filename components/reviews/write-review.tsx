@@ -12,6 +12,7 @@ type WriteReviewProps = {
   casinoSlug: string;
   isLoggedIn: boolean;
   hasReviewed: boolean;
+  askForName: boolean;
 };
 
 const initialState: SubmitReviewState = {};
@@ -49,6 +50,7 @@ export function WriteReview({
   casinoSlug,
   isLoggedIn,
   hasReviewed,
+  askForName,
 }: WriteReviewProps) {
   const t = useTranslations("CasinoDetail.userReviews");
   const titleId = useId();
@@ -154,6 +156,27 @@ export function WriteReview({
                   className="bg-background/70 text-text ring-text/12 focus:ring-accent/55 w-full rounded-md px-3 py-2.5 text-sm ring-1 transition outline-none"
                 />
               </div>
+
+              {askForName ? (
+                <div>
+                  <label
+                    htmlFor="review-name"
+                    className="text-text/75 mb-1.5 block text-sm font-medium"
+                  >
+                    {t("nameLabel")}
+                  </label>
+                  <input
+                    id="review-name"
+                    name="displayName"
+                    type="text"
+                    autoComplete="name"
+                    minLength={2}
+                    maxLength={80}
+                    required
+                    className="bg-background/70 text-text ring-text/12 focus:ring-accent/55 h-11 w-full rounded-md px-3 text-sm ring-1 transition outline-none"
+                  />
+                </div>
+              ) : null}
 
               {state.error ? (
                 <p className="text-sm font-medium text-red-300" role="alert">
