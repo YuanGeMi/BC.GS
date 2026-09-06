@@ -211,6 +211,11 @@
     "seoFallbackTitle": "{name} 评测",
     "eyebrow": "评测",
     "visit": "前往娱乐场",
+    "ratings": {
+      "editorial": "BC.GS 评分",
+      "user": "用户评分",
+      "userValue": "{average}/5（{count} 条评价）"
+    },
     "facts": {
       "license": "牌照",
       "established": "成立年份",

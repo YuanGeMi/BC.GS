@@ -33,7 +33,7 @@ export function CasinoCard({
   return (
     <article
       className={cn(
-        "group border-text/10 hover:bg-card/50 grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-4 border-b py-5 pr-2 transition-colors duration-200 sm:grid-cols-[6.5rem_minmax(0,1.3fr)_minmax(0,2fr)_auto] sm:items-center sm:gap-x-6 sm:pr-3",
+        "group border-text/10 hover:bg-card/50 grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-4 border-b px-2 py-5 transition-colors duration-200 sm:grid-cols-[6.5rem_minmax(0,1.3fr)_minmax(0,2fr)_auto] sm:items-center sm:gap-x-6 sm:px-3",
         className,
       )}
     >

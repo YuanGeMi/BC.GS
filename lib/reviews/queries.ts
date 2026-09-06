@@ -26,6 +26,11 @@ export type PublishedUserReviewPage = {
   nextCursor: ReviewPageCursor | null;
 };
 
+export type UserRatingSummary = {
+  average: number | null;
+  count: number;
+};
+
 function mapReview(row: {
   id: string;
   rating: number;
@@ -42,6 +47,25 @@ function mapReview(row: {
     createdAt: row.createdAt,
     authorName: formatReviewDisplayName(fullName),
     authorInitials: reviewInitials(fullName),
+  };
+}
+
+export async function getUserRatingSummary(
+  casinoId: string,
+): Promise<UserRatingSummary> {
+  const { _avg, _count } = await prisma.userReview.aggregate({
+    where: { casinoId, status: "published" },
+    _avg: { rating: true },
+    _count: true,
+  });
+
+  if (_count === 0 || _avg.rating == null) {
+    return { average: null, count: 0 };
+  }
+
+  return {
+    average: Math.round(_avg.rating * 10) / 10,
+    count: _count,
   };
 }
 

@@ -211,6 +211,11 @@
     "seoFallbackTitle": "{name} Review",
     "eyebrow": "Review",
     "visit": "Visit Casino",
+    "ratings": {
+      "editorial": "BC.GS Rating",
+      "user": "User Rating",
+      "userValue": "{average}/5 ({count, plural, one {# review} other {# reviews}})"
+    },
     "facts": {
       "license": "License",
       "established": "Established",

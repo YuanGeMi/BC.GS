@@ -23,6 +23,7 @@ import {
 } from "@/lib/casinos";
 import {
   getPublishedUserReviewsPage,
+  getUserRatingSummary,
   hasUserReviewedCasino,
   userNeedsDisplayName,
 } from "@/lib/reviews/queries";
@@ -117,12 +118,14 @@ export default async function CasinoDetailPage({ params }: Props) {
   const tFilters = await getTranslations("CasinosPage");
   const authUser = await getAuthUser();
   const userId = authUser?.id;
-  const [related, reviewPage, hasReviewed, askForName] = await Promise.all([
-    getRelatedCasinos(slug, locale, 4),
-    getPublishedUserReviewsPage(casino.id),
-    hasUserReviewedCasino(userId, casino.id),
-    userNeedsDisplayName(userId),
-  ]);
+  const [related, reviewPage, userRating, hasReviewed, askForName] =
+    await Promise.all([
+      getRelatedCasinos(slug, locale, 4),
+      getPublishedUserReviewsPage(casino.id),
+      getUserRatingSummary(casino.id),
+      hasUserReviewedCasino(userId, casino.id),
+      userNeedsDisplayName(userId),
+    ]);
   const trackVisit = { casinoId: casino.id, locale };
 
   const facts = [
@@ -173,7 +176,37 @@ export default async function CasinoDetailPage({ params }: Props) {
               <h1 className="text-text text-3xl font-semibold tracking-tight md:text-4xl">
                 {casino.name}
               </h1>
-              <RatingStars rating={casino.rating} showValue className="mt-2" />
+              <div className="mt-3 flex flex-wrap items-start gap-x-6 gap-y-3">
+                <div>
+                  <p className="text-text/40 text-[11px] tracking-[0.14em] uppercase">
+                    {t("ratings.editorial")}
+                  </p>
+                  <RatingStars
+                    rating={casino.rating}
+                    showValue
+                    className="mt-1 h-4"
+                  />
+                </div>
+                {userRating.count > 0 && userRating.average != null ? (
+                  <>
+                    <span
+                      className="bg-text/12 hidden w-px self-stretch sm:block"
+                      aria-hidden
+                    />
+                    <div>
+                      <p className="text-text/40 text-[11px] tracking-[0.14em] uppercase">
+                        {t("ratings.user")}
+                      </p>
+                      <p className="text-text/70 mt-1 flex h-4 items-center text-xs font-medium tabular-nums">
+                        {t("ratings.userValue", {
+                          average: userRating.average.toFixed(1),
+                          count: userRating.count,
+                        })}
+                      </p>
+                    </div>
+                  </>
+                ) : null}
+              </div>
               {casino.badges.length > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {casino.badges.map((badge) => (

@@ -211,6 +211,11 @@
     "seoFallbackTitle": "รีวิว {name}",
     "eyebrow": "รีวิว",
     "visit": "ไปที่คาสิโน",
+    "ratings": {
+      "editorial": "คะแนน BC.GS",
+      "user": "คะแนนผู้ใช้",
+      "userValue": "{average}/5 ({count} รีวิว)"
+    },
     "facts": {
       "license": "ใบอนุญาต",
       "established": "ก่อตั้ง",
