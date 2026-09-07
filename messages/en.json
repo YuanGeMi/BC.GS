@@ -252,6 +252,7 @@
       "title": "User reviews",
       "write": "Write a review",
       "alreadyReviewed": "You've already reviewed this casino",
+      "submittedToast": "Thanks — your review is with the editors and will appear after approval.",
       "emptyTitle": "No reviews yet",
       "emptyBody": "Be the first to review this casino.",
       "loadMore": "Load more reviews",

@@ -56,10 +56,21 @@ export function WriteReview({
   const titleId = useId();
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
+  const [toastVisible, setToastVisible] = useState(false);
   const [state, formAction, pending] = useActionState(
     submitReview.bind(null, casinoId),
     initialState,
   );
+  const submitted = hasReviewed || Boolean(state.success);
+
+  useEffect(() => {
+    if (!state.success) return;
+
+    setOpen(false);
+    setToastVisible(true);
+    const timer = window.setTimeout(() => setToastVisible(false), 5600);
+    return () => window.clearTimeout(timer);
+  }, [state.success]);
 
   useEffect(() => {
     if (!open) return;
@@ -71,10 +82,6 @@ export function WriteReview({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
-
-  if (hasReviewed || state.success) {
-    return <p className="text-text/55 text-sm">{t("alreadyReviewed")}</p>;
-  }
 
   if (!isLoggedIn) {
     return (
@@ -90,14 +97,29 @@ export function WriteReview({
 
   return (
     <>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        onClick={() => setOpen(true)}
-      >
-        {t("write")}
-      </Button>
+      {submitted ? (
+        <p className="text-text/55 text-sm">{t("alreadyReviewed")}</p>
+      ) : (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => setOpen(true)}
+        >
+          {t("write")}
+        </Button>
+      )}
+
+      {toastVisible ? (
+        <div
+          role="status"
+          className="bg-card ring-accent/25 pointer-events-none fixed inset-x-4 bottom-24 z-70 mx-auto max-w-sm rounded-lg px-4 py-3 ring-1 sm:inset-x-auto sm:right-6 sm:bottom-8 sm:left-auto sm:mx-0"
+        >
+          <p className="text-text text-sm leading-relaxed">
+            {t("submittedToast")}
+          </p>
+        </div>
+      ) : null}
 
       {open ? (
         <div className="fixed inset-0 z-60 flex items-end justify-center p-4 sm:items-center">

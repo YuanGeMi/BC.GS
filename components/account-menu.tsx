@@ -52,7 +52,7 @@ export function AccountControls({
           variant="monogram"
         />
       </span>
-      <form action={logout.bind(null, locale)}>
+      <form action={logout.bind(null, locale)} className="hidden md:block">
         <button
           type="submit"
           aria-label={t("logout")}

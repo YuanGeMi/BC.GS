@@ -252,6 +252,7 @@
       "title": "用户评价",
       "write": "写评价",
       "alreadyReviewed": "你已经评价过这家娱乐场",
+      "submittedToast": "感谢提交。评价会先经编辑审核，通过后才会显示。",
       "emptyTitle": "暂无评价",
       "emptyBody": "成为第一个评价这家娱乐场的人。",
       "loadMore": "加载更多评价",

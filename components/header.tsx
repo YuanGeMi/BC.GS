@@ -85,10 +85,12 @@ export function Header({ locale, user }: HeaderProps) {
           })}
         </nav>
 
-        <div className="hidden items-center gap-4 md:flex">
-          <Suspense fallback={null}>
-            <LocaleSwitcher />
-          </Suspense>
+        <div className="flex items-center gap-1.5 md:gap-4">
+          <div className="hidden md:block">
+            <Suspense fallback={null}>
+              <LocaleSwitcher />
+            </Suspense>
+          </div>
 
           {user ? (
             <AccountControls
@@ -97,33 +99,33 @@ export function Header({ locale, user }: HeaderProps) {
               initials={user.initials}
             />
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <Link
                 href="/login"
-                className="text-text/70 hover:text-text text-sm font-medium transition-colors"
+                className="text-text/55 hover:text-text text-[11px] font-medium tracking-[0.08em] transition-colors md:text-sm md:tracking-wide"
               >
                 {t("login")}
               </Link>
               <Link
                 href="/signup"
-                className="bg-accent text-background hover:bg-accent-highlight inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition-colors"
+                className="bg-accent text-background hover:bg-accent-highlight inline-flex h-7 items-center rounded-full px-2.5 text-[11px] font-medium tracking-[0.06em] transition-colors md:h-9 md:rounded-md md:px-3 md:text-sm md:tracking-wide"
               >
                 {t("signup")}
               </Link>
             </div>
           )}
-        </div>
 
-        <button
-          type="button"
-          className="text-text hover:bg-card ring-text/10 inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 transition-colors md:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          aria-label={open ? t("closeMenu") : t("openMenu")}
-          onClick={() => setOpen((value) => !value)}
-        >
-          <MenuIcon open={open} />
-        </button>
+          <button
+            type="button"
+            className="text-text/60 hover:text-text inline-flex size-9 items-center justify-center transition-colors md:hidden"
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            aria-label={open ? t("closeMenu") : t("openMenu")}
+            onClick={() => setOpen((value) => !value)}
+          >
+            <MenuIcon open={open} />
+          </button>
+        </div>
       </div>
 
       <div
@@ -160,46 +162,26 @@ export function Header({ locale, user }: HeaderProps) {
             );
           })}
 
-          <div className="border-text/8 mt-3 border-t pt-4">
+          <div className="border-text/8 mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t px-3 pt-4">
             <Suspense fallback={null}>
               <LocaleSwitcher />
             </Suspense>
-          </div>
-
-          <div className="border-text/8 mt-3 border-t pt-4">
             {user ? (
-              <div className="flex items-center justify-between gap-3 px-3">
-                <p className="font-display text-text text-xl leading-tight tracking-tight">
-                  {user.name}
-                </p>
+              <>
+                <span aria-hidden className="text-text/25 text-xs">
+                  |
+                </span>
                 <form action={logout.bind(null, locale)}>
                   <button
                     type="submit"
-                    aria-label={t("logout")}
-                    className="text-text/50 hover:text-accent inline-flex size-10 items-center justify-center rounded-full transition-colors"
+                    className="text-text/50 hover:text-accent inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wide transition-colors"
                   >
-                    <SignOutIcon className="size-5" />
+                    <SignOutIcon className="size-3.5" />
+                    {t("logout")}
                   </button>
                 </form>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 px-3">
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="text-text/75 hover:bg-card rounded-md px-3 py-2.5 text-center text-sm font-medium transition-colors"
-                >
-                  {t("login")}
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setOpen(false)}
-                  className="bg-accent text-background hover:bg-accent-highlight rounded-md px-3 py-2.5 text-center text-sm font-medium transition-colors"
-                >
-                  {t("signup")}
-                </Link>
-              </div>
-            )}
+              </>
+            ) : null}
           </div>
         </nav>
       </div>
