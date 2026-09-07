@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/button";
@@ -21,6 +21,12 @@ export function SignupForm({ locale, next }: SignupFormProps) {
     signup.bind(null, locale, next),
     initialState,
   );
+
+  useEffect(() => {
+    if (state.debug) {
+      console.error("[signup debug]", state.debug);
+    }
+  }, [state.debug]);
 
   const loginHref = next
     ? `/login?next=${encodeURIComponent(next)}`

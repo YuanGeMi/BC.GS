@@ -20,6 +20,11 @@ import { createClient } from "@/lib/supabase/server";
 
 export type AuthFormState = {
   error?: string;
+  debug?: {
+    message?: string;
+    status?: number;
+    code?: string;
+  };
   checkEmail?: boolean;
   resetSent?: boolean;
   passwordUpdated?: boolean;
@@ -53,22 +58,39 @@ export async function signup(
   }
 
   const origin = await getRequestOrigin();
+  const emailRedirectTo = emailCallbackUrl(
+    origin,
+    safeRedirectPath(locale, next),
+  );
+  console.error("[signup] emailRedirectTo", emailRedirectTo);
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { display_name: displayName },
-      emailRedirectTo: emailCallbackUrl(origin, safeRedirectPath(locale, next)),
+      emailRedirectTo,
     },
   });
 
   if (error) {
-    return { error: mapSupabaseAuthError(error) };
+    const debug = {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+    };
+    console.error("[signup] supabase.auth.signUp", debug);
+    return { error: mapSupabaseAuthError(error), debug };
   }
 
   if (data.session && data.user) {
-    await ensureUserProfile(data.user, displayName);
+    try {
+      await ensureUserProfile(data.user, displayName);
+    } catch (profileError) {
+      console.error("[signup] ensureUserProfile", profileError);
+      throw profileError;
+    }
     redirect(safeRedirectPath(locale, next));
   }
 
