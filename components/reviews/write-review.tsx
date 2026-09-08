@@ -4,15 +4,18 @@ import { useActionState, useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/button";
-import { submitReview, type SubmitReviewState } from "@/lib/reviews/actions";
+import {
+  getWriteReviewGate,
+  submitReview,
+  type SubmitReviewState,
+  type WriteReviewGate,
+} from "@/lib/reviews/actions";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 type WriteReviewProps = {
   casinoId: string;
   casinoSlug: string;
-  isLoggedIn: boolean;
-  hasReviewed: boolean;
-  askForName: boolean;
 };
 
 const initialState: SubmitReviewState = {};
@@ -45,15 +48,10 @@ function StarButton({
   );
 }
 
-export function WriteReview({
-  casinoId,
-  casinoSlug,
-  isLoggedIn,
-  hasReviewed,
-  askForName,
-}: WriteReviewProps) {
+export function WriteReview({ casinoId, casinoSlug }: WriteReviewProps) {
   const t = useTranslations("CasinoDetail.userReviews");
   const titleId = useId();
+  const [gate, setGate] = useState<WriteReviewGate | null>(null);
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [toastVisible, setToastVisible] = useState(false);
@@ -61,12 +59,43 @@ export function WriteReview({
     submitReview.bind(null, casinoId),
     initialState,
   );
+  const isLoggedIn = gate?.isLoggedIn ?? false;
+  const hasReviewed = gate?.hasReviewed ?? false;
+  const askForName = gate?.askForName ?? false;
   const submitted = hasReviewed || Boolean(state.success);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function refreshGate() {
+      const next = await getWriteReviewGate(casinoId);
+      if (!cancelled) setGate(next);
+    }
+
+    void refreshGate();
+
+    const supabase = createClient();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void refreshGate();
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [casinoId]);
 
   useEffect(() => {
     if (!state.success) return;
 
     setOpen(false);
+    setGate((current) =>
+      current
+        ? { ...current, hasReviewed: true, askForName: false }
+        : { isLoggedIn: true, hasReviewed: true, askForName: false },
+    );
     setToastVisible(true);
     const timer = window.setTimeout(() => setToastVisible(false), 5600);
     return () => window.clearTimeout(timer);
@@ -82,6 +111,15 @@ export function WriteReview({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
+
+  if (!gate) {
+    return (
+      <div
+        aria-hidden
+        className="bg-text/8 h-9 w-[7.5rem] animate-pulse rounded-md"
+      />
+    );
+  }
 
   if (!isLoggedIn) {
     return (

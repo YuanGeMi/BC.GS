@@ -101,6 +101,69 @@ export async function getBonuses(locale: string): Promise<MockBonus[]> {
   });
 }
 
+/**
+ * Homepage featured bonuses. Ranking uses parsed dollar amounts (not a DB
+ * column), so we load published listing bonuses, sort by value, then take.
+ */
+export async function getFeaturedBonuses(
+  locale: string,
+  limit = 6,
+): Promise<MockBonus[]> {
+  const rows = await prisma.bonus.findMany({
+    where: {
+      status: "published",
+      type: { in: [...LISTING_BONUS_TYPES] },
+      casino: { status: "published" },
+    },
+    include: {
+      translations: true,
+      casino: {
+        select: {
+          id: true,
+          slug: true,
+          logoUrl: true,
+          translations: {
+            select: {
+              locale: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const mapped: MockBonus[] = [];
+
+  for (const bonus of rows) {
+    const type = asBonusType(bonus.type);
+    const translation = pickTranslation(bonus.translations, locale);
+    const casinoTranslation = pickTranslation(bonus.casino.translations, locale);
+    if (!type || !translation || !casinoTranslation) continue;
+
+    mapped.push({
+      id: bonus.id,
+      slug: bonus.id,
+      casinoSlug: bonus.casino.slug,
+      casinoName: { en: casinoTranslation.name },
+      logoUrl: bonus.casino.logoUrl ?? undefined,
+      title: { en: translation.title },
+      bonusValue: { en: bonus.amount ?? "—" },
+      type,
+      valueAmount: parseValueAmount(bonus.amount),
+      listedAt: bonus.createdAt.toISOString(),
+      expiresAt: bonus.expiryDate
+        ? bonus.expiryDate.toISOString()
+        : "9999-12-31",
+      wagering: { en: bonus.wageringRequirement ?? "—" },
+    });
+  }
+
+  return mapped
+    .sort((a, b) => b.valueAmount - a.valueAmount)
+    .slice(0, limit);
+}
+
 export type CasinoBonusTermsView = {
   id: string;
   title: string;

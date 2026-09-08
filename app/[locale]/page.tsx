@@ -6,8 +6,8 @@ import { CasinoCard, CasinoCardList } from "@/components/casino-card";
 import { HomeHero } from "@/components/home-hero";
 import { Section } from "@/components/section";
 import { Link } from "@/i18n/navigation";
-import { getBonuses } from "@/lib/bonuses";
-import { getCasinos } from "@/lib/casinos";
+import { getFeaturedBonuses } from "@/lib/bonuses";
+import { getTopCasinos } from "@/lib/casinos";
 import { getPublishedCategories } from "@/lib/categories";
 import { pageAlternates } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -136,18 +136,15 @@ export default async function HomePage({ params }: Props) {
 
   const t = await getTranslations("HomePage");
 
-  const [casinos, bonuses, categories] = await Promise.all([
-    getCasinos(locale),
-    getBonuses(locale),
+  const [casinos, featuredBonuses, categories] = await Promise.all([
+    getTopCasinos(locale, 8),
+    getFeaturedBonuses(locale, 6),
     getPublishedCategories(locale),
   ]);
 
   const [cover, ...restCasinos] = casinos;
   const desk = restCasinos.slice(0, 3);
-  const topCasinos = casinos.slice(0, 8);
-  const featuredBonuses = [...bonuses]
-    .sort((a, b) => b.valueAmount - a.valueAmount)
-    .slice(0, 6);
+  const topCasinos = casinos;
 
   const reviewSteps = [
     { icon: "research" as const, title: t("review.researchTitle"), body: t("review.researchBody") },

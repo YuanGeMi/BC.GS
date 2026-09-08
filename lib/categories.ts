@@ -7,6 +7,7 @@ import type {
   PayoutSpeedOption,
   PayoutSpeedOptionTranslation,
 } from "@prisma/client";
+import { cache } from "react";
 
 import { getPayoutSpeedLabel } from "@/lib/casinos";
 import { prisma } from "@/lib/prisma";
@@ -126,22 +127,21 @@ function toCategoryCasino(
   };
 }
 
-export async function getCategoryBySlug(
-  slug: string,
-  locale: string,
-): Promise<CategoryView | null> {
-  const row = await prisma.category.findUnique({
-    where: { slug },
-    include: { translations: true },
-  });
+export const getCategoryBySlug = cache(
+  async (slug: string, locale: string): Promise<CategoryView | null> => {
+    const row = await prisma.category.findUnique({
+      where: { slug },
+      include: { translations: true },
+    });
 
-  if (!row || row.status !== "published") return null;
+    if (!row || row.status !== "published") return null;
 
-  const translation = pickTranslation(row.translations, locale);
-  if (!translation) return null;
+    const translation = pickTranslation(row.translations, locale);
+    if (!translation) return null;
 
-  return toCategoryView(row.slug, row.id, translation);
-}
+    return toCategoryView(row.slug, row.id, translation);
+  },
+);
 
 export async function getCasinosForCategory(
   categoryId: string,
