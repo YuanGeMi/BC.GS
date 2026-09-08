@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CompareTool } from "@/components/compare-tool";
 import { Section } from "@/components/section";
-import { getCasinos } from "@/lib/casinos";
+import { getCasinoPickerList } from "@/lib/casinos";
 import { pageAlternates } from "@/lib/seo";
 
 type Props = {
@@ -31,7 +30,7 @@ export default async function ComparePage({ params, searchParams }: Props) {
 
   const query = await searchParams;
   const t = await getTranslations("ComparePage");
-  const casinos = await getCasinos(locale);
+  const casinos = await getCasinoPickerList(locale);
   const initialQuery = Array.isArray(query.casinos)
     ? query.casinos[0]
     : query.casinos;
@@ -51,27 +50,12 @@ export default async function ComparePage({ params, searchParams }: Props) {
       </Section>
 
       <Section containerClassName="max-w-7xl">
-        <Suspense fallback={<CompareFallback />}>
-          <CompareTool
-            locale={locale}
-            casinos={casinos}
-            initialQuery={initialQuery}
-          />
-        </Suspense>
+        <CompareTool
+          locale={locale}
+          casinos={casinos}
+          initialQuery={initialQuery}
+        />
       </Section>
     </>
-  );
-}
-
-function CompareFallback() {
-  return (
-    <div className="grid gap-3 md:grid-cols-3">
-      {[0, 1, 2].map((slot) => (
-        <div
-          key={slot}
-          className="bg-card/40 ring-text/8 h-28 animate-pulse rounded-xl ring-1"
-        />
-      ))}
-    </div>
   );
 }

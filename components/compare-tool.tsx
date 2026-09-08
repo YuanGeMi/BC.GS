@@ -1,30 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { RatingStars } from "@/components/rating-stars";
 import {
-  toCasinoProfile,
-  type CasinoProfile,
-  type CasinoScores,
-} from "@/data/casino-details";
-import { localize, type MockCasino } from "@/data/mock-casinos";
-import { useRouter } from "@/i18n/navigation";
-import {
   COMPARE_MAX,
-  COMPARE_PARAM,
   parseCompareSlugs,
   serializeCompareSlots,
   setCompareSlot,
   suggestedCompareCasinos,
+  syncCompareQueryToUrl,
   toCompareSlots,
   type CompareSlots,
 } from "@/lib/compare";
+import { fetchCasinoCompareDetail } from "@/lib/compare/actions";
+import type {
+  CasinoCompareDetail,
+  CasinoDetailScores,
+  CasinoPickerItem,
+} from "@/lib/casinos";
+import type { LicenseId, PaymentId, ProviderId } from "@/data/mock-casinos";
 import { cn } from "@/lib/utils";
 
 const SCORE_KEYS = [
@@ -33,54 +39,100 @@ const SCORE_KEYS = [
   "support",
   "payoutSpeed",
   "trust",
-] as const satisfies ReadonlyArray<keyof CasinoScores>;
+] as const satisfies ReadonlyArray<keyof CasinoDetailScores>;
 
 type Props = {
   locale: string;
-  casinos: MockCasino[];
+  casinos: CasinoPickerItem[];
+  /** From the server's first `?casinos=` read — used only for initial state. */
   initialQuery?: string;
 };
 
 export function CompareTool({ locale, casinos, initialQuery }: Props) {
   const tFilters = useTranslations("CasinosPage");
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const validSlugs = useMemo(
-    () => new Set(casinos.map((casino) => casino.slug)),
-    [casinos],
+  const [slots, setSlots] = useState<CompareSlots>(() => {
+    const validSlugs = new Set(casinos.map((casino) => casino.slug));
+    return toCompareSlots(parseCompareSlugs(initialQuery, validSlugs));
+  });
+
+  const [detailsBySlug, setDetailsBySlug] = useState<
+    Record<string, CasinoCompareDetail>
+  >({});
+  const [loadingSlugs, setLoadingSlugs] = useState<ReadonlySet<string>>(
+    () => new Set(),
   );
 
-  const urlKey = searchParams.get(COMPARE_PARAM) ?? initialQuery ?? "";
-
-  const [slots, setSlots] = useState<CompareSlots>(() =>
-    toCompareSlots(parseCompareSlugs(urlKey, validSlugs)),
+  const cacheRef = useRef(detailsBySlug);
+  const inflightRef = useRef(
+    new Map<string, Promise<CasinoCompareDetail | null>>(),
   );
 
   useEffect(() => {
-    const next = toCompareSlots(parseCompareSlugs(urlKey, validSlugs));
-    setSlots((current) =>
-      serializeCompareSlots(current) === serializeCompareSlots(next)
-        ? current
-        : next,
-    );
-  }, [urlKey, validSlugs]);
+    cacheRef.current = detailsBySlug;
+  }, [detailsBySlug]);
 
-  const selected = useMemo(
-    () =>
-      slots
-        .filter((slug): slug is string => Boolean(slug))
-        .map((slug) => {
-          const casino = casinos.find((item) => item.slug === slug);
-          return casino ? toCasinoProfile(casino) : undefined;
+  const ensureDetail = useCallback(
+    (slug: string) => {
+      if (cacheRef.current[slug]) {
+        return Promise.resolve(cacheRef.current[slug]);
+      }
+
+      const existing = inflightRef.current.get(slug);
+      if (existing) return existing;
+
+      setLoadingSlugs((prev) => {
+        if (prev.has(slug)) return prev;
+        const next = new Set(prev);
+        next.add(slug);
+        return next;
+      });
+
+      const promise = fetchCasinoCompareDetail(slug, locale)
+        .then((detail) => {
+          if (detail) {
+            cacheRef.current = { ...cacheRef.current, [slug]: detail };
+            setDetailsBySlug((prev) =>
+              prev[slug] ? prev : { ...prev, [slug]: detail },
+            );
+          }
+          return detail;
         })
-        .filter((item): item is CasinoProfile => Boolean(item)),
-    [casinos, slots],
+        .finally(() => {
+          inflightRef.current.delete(slug);
+          setLoadingSlugs((prev) => {
+            if (!prev.has(slug)) return prev;
+            const next = new Set(prev);
+            next.delete(slug);
+            return next;
+          });
+        });
+
+      inflightRef.current.set(slug, promise);
+      return promise;
+    },
+    [locale],
   );
 
-  const selectedSet = useMemo(
-    () => new Set(selected.map((casino) => casino.slug)),
-    [selected],
+  useEffect(() => {
+    for (const slug of slots) {
+      if (slug) void ensureDetail(slug);
+    }
+  }, [slots, ensureDetail]);
+
+  const selectedSlugs = useMemo(
+    () => slots.filter((slug): slug is string => Boolean(slug)),
+    [slots],
+  );
+
+  const selectedSet = useMemo(() => new Set(selectedSlugs), [selectedSlugs]);
+
+  const loadedDetails = useMemo(
+    () =>
+      selectedSlugs
+        .map((slug) => detailsBySlug[slug])
+        .filter((item): item is CasinoCompareDetail => Boolean(item)),
+    [detailsBySlug, selectedSlugs],
   );
 
   const suggestions = useMemo(
@@ -90,15 +142,7 @@ export function CompareTool({ locale, casinos, initialQuery }: Props) {
 
   function commit(next: CompareSlots) {
     setSlots(next);
-    const query = serializeCompareSlots(next);
-    if (query === (searchParams.get(COMPARE_PARAM) ?? "")) return;
-
-    router.replace(
-      query
-        ? { pathname: "/compare", query: { [COMPARE_PARAM]: query } }
-        : "/compare",
-      { scroll: false },
-    );
+    syncCompareQueryToUrl(serializeCompareSlots(next));
   }
 
   function selectAt(index: number, slug: string) {
@@ -115,18 +159,32 @@ export function CompareTool({ locale, casinos, initialQuery }: Props) {
     commit(setCompareSlot(slots, emptyIndex, slug));
   }
 
+  const readyForTable =
+    selectedSlugs.length >= 2 &&
+    selectedSlugs.every((slug) => Boolean(detailsBySlug[slug]));
+
+  const tableLoading =
+    selectedSlugs.length >= 2 &&
+    selectedSlugs.some((slug) => loadingSlugs.has(slug));
+
   return (
     <div>
       <div className="flex flex-col gap-2 md:grid md:grid-cols-3 md:gap-3">
         {slots.map((slug, index) => {
-          const casino = selected.find((item) => item.slug === slug);
+          const picker = slug
+            ? casinos.find((item) => item.slug === slug)
+            : undefined;
+          const detail = slug ? detailsBySlug[slug] : undefined;
+          const loading = Boolean(slug && loadingSlugs.has(slug) && !detail);
 
           return (
             <CasinoSlot
               key={index}
               index={index}
-              locale={locale}
-              casino={casino}
+              slug={slug}
+              picker={picker}
+              detail={detail}
+              loading={loading}
               options={casinos.filter((item) => !selectedSet.has(item.slug))}
               onSelect={(next) => selectAt(index, next)}
               onClear={() => clearAt(index)}
@@ -135,20 +193,21 @@ export function CompareTool({ locale, casinos, initialQuery }: Props) {
         })}
       </div>
 
-      {selected.length >= 2 ? (
+      {readyForTable ? (
         <ComparisonTable
           locale={locale}
-          casinos={selected}
+          casinos={loadedDetails}
           licenseLabel={(id) => tFilters(`licenses.${id}`)}
           paymentLabel={(id) => tFilters(`payments.${id}`)}
           providerLabel={(id) => tFilters(`providers.${id}`)}
         />
+      ) : tableLoading ? (
+        <div className="bg-card/40 ring-text/8 mt-8 h-40 animate-pulse rounded-xl ring-1 md:mt-10" />
       ) : (
         <EmptyCompare
-          selectedCount={selected.length}
+          selectedCount={selectedSlugs.length}
           suggestions={suggestions}
-          locale={locale}
-          canAdd={selected.length < COMPARE_MAX}
+          canAdd={selectedSlugs.length < COMPARE_MAX}
           onAdd={addSuggested}
         />
       )}
@@ -158,16 +217,20 @@ export function CompareTool({ locale, casinos, initialQuery }: Props) {
 
 function CasinoSlot({
   index,
-  locale,
-  casino,
+  slug,
+  picker,
+  detail,
+  loading,
   options,
   onSelect,
   onClear,
 }: {
   index: number;
-  locale: string;
-  casino?: CasinoProfile;
-  options: MockCasino[];
+  slug: string | null;
+  picker?: CasinoPickerItem;
+  detail?: CasinoCompareDetail;
+  loading: boolean;
+  options: CasinoPickerItem[];
   onSelect: (slug: string) => void;
   onClear: () => void;
 }) {
@@ -180,10 +243,8 @@ function CasinoSlot({
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return options;
-    return options.filter((item) =>
-      localize(item.name, locale).toLowerCase().includes(needle),
-    );
-  }, [locale, options, query]);
+    return options.filter((item) => item.name.toLowerCase().includes(needle));
+  }, [options, query]);
 
   useEffect(() => {
     if (!open) return;
@@ -213,14 +274,17 @@ function CasinoSlot({
     }
   }, [open]);
 
-  const name = casino ? localize(casino.name, locale) : "";
+  const name = detail?.name ?? picker?.name ?? "";
+  const logoUrl = detail?.logoUrl ?? picker?.logoUrl;
+  const rating = detail?.rating ?? picker?.rating;
+  const filled = Boolean(slug);
 
   return (
     <div
       ref={rootRef}
       className={cn(
         "bg-card/50 relative rounded-xl p-3 ring-1 transition-colors duration-200 md:p-4",
-        casino ? "ring-text/10" : "ring-text/8",
+        filled ? "ring-text/10" : "ring-text/8",
         open && "ring-accent/35",
       )}
     >
@@ -230,19 +294,29 @@ function CasinoSlot({
         </p>
 
         <div className="min-w-0 flex-1">
-          {casino && !open ? (
+          {loading ? (
             <div className="flex items-center gap-3 md:items-start">
-              <LogoMark name={name} logoUrl={casino.logoUrl} size="sm" />
+              <div className="bg-text/8 h-10 w-10 animate-pulse rounded-md" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="bg-text/8 h-4 w-2/3 animate-pulse rounded" />
+                <div className="bg-text/8 hidden h-3 w-16 animate-pulse rounded md:block" />
+              </div>
+            </div>
+          ) : filled && !open ? (
+            <div className="flex items-center gap-3 md:items-start">
+              <LogoMark name={name} logoUrl={logoUrl} size="sm" />
               <div className="min-w-0 flex-1">
                 <p className="text-text truncate text-sm font-semibold tracking-tight">
                   {name}
                 </p>
-                <RatingStars
-                  rating={casino.rating}
-                  showValue
-                  size="sm"
-                  className="mt-1 hidden md:inline-flex"
-                />
+                {rating != null ? (
+                  <RatingStars
+                    rating={rating}
+                    showValue
+                    size="sm"
+                    className="mt-1 hidden md:inline-flex"
+                  />
+                ) : null}
                 <div className="mt-0 flex flex-wrap gap-3 md:mt-3 md:gap-2">
                   <button
                     type="button"
@@ -267,7 +341,7 @@ function CasinoSlot({
               onClick={() => setOpen(true)}
               className="border-text/15 text-text/45 hover:border-accent/40 hover:text-text/70 flex h-11 w-full items-center justify-center rounded-lg border border-dashed px-3 text-sm transition-colors md:h-16"
             >
-              {casino ? name : t("slots.empty")}
+              {filled ? name : t("slots.empty")}
             </button>
           )}
         </div>
@@ -284,41 +358,40 @@ function CasinoSlot({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t("slots.placeholder")}
-            className="text-text placeholder:text-text/35 w-full border-b border-text/8 bg-transparent px-3 py-2.5 text-sm outline-none"
+            className="text-text placeholder:text-text/35 border-text/8 w-full border-b bg-transparent px-3 py-2.5 text-sm outline-none"
           />
-          <ul className="max-h-[50vh] overflow-y-auto py-1 md:max-h-56" role="listbox">
+          <ul
+            className="max-h-[50vh] overflow-y-auto py-1 md:max-h-56"
+            role="listbox"
+          >
             {filtered.length === 0 ? (
               <li className="text-text/45 px-3 py-3 text-sm">
                 {t("slots.noResults")}
               </li>
             ) : (
-              filtered.map((item) => {
-                const itemName = localize(item.name, locale);
-
-                return (
-                  <li key={item.slug}>
-                    <button
-                      type="button"
-                      role="option"
-                      onClick={() => {
-                        onSelect(item.slug);
-                        setOpen(false);
-                      }}
-                      className="hover:bg-text/5 flex w-full items-center gap-3 px-3 py-2 text-left transition-colors"
-                    >
-                      <LogoMark name={itemName} logoUrl={item.logoUrl} size="xs" />
-                      <span className="min-w-0 flex-1">
-                        <span className="text-text block truncate text-sm font-medium">
-                          {itemName}
-                        </span>
-                        <span className="text-text/40 text-xs tabular-nums">
-                          {item.rating.toFixed(1)}
-                        </span>
+              filtered.map((item) => (
+                <li key={item.slug}>
+                  <button
+                    type="button"
+                    role="option"
+                    onClick={() => {
+                      onSelect(item.slug);
+                      setOpen(false);
+                    }}
+                    className="hover:bg-text/5 flex w-full items-center gap-3 px-3 py-2 text-left transition-colors"
+                  >
+                    <LogoMark name={item.name} logoUrl={item.logoUrl} size="xs" />
+                    <span className="min-w-0 flex-1">
+                      <span className="text-text block truncate text-sm font-medium">
+                        {item.name}
                       </span>
-                    </button>
-                  </li>
-                );
-              })
+                      <span className="text-text/40 text-xs tabular-nums">
+                        {item.rating.toFixed(1)}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))
             )}
           </ul>
         </div>
@@ -330,13 +403,11 @@ function CasinoSlot({
 function EmptyCompare({
   selectedCount,
   suggestions,
-  locale,
   canAdd,
   onAdd,
 }: {
   selectedCount: number;
-  suggestions: MockCasino[];
-  locale: string;
+  suggestions: CasinoPickerItem[];
   canAdd: boolean;
   onAdd: (slug: string) => void;
 }) {
@@ -364,7 +435,7 @@ function EmptyCompare({
                 size="sm"
                 onClick={() => onAdd(casino.slug)}
               >
-                {localize(casino.name, locale)}
+                {casino.name}
               </Button>
             ))}
           </div>
@@ -382,14 +453,14 @@ function ComparisonTable({
   providerLabel,
 }: {
   locale: string;
-  casinos: CasinoProfile[];
-  licenseLabel: (id: CasinoProfile["licenses"][number]) => string;
-  paymentLabel: (id: CasinoProfile["payments"][number]) => string;
-  providerLabel: (id: CasinoProfile["providers"][number]) => string;
+  casinos: CasinoCompareDetail[];
+  licenseLabel: (id: LicenseId) => string;
+  paymentLabel: (id: PaymentId) => string;
+  providerLabel: (id: ProviderId) => string;
 }) {
   const t = useTranslations("ComparePage");
   const bestRating = Math.max(...casinos.map((casino) => casino.rating));
-  const names = casinos.map((casino) => localize(casino.name, locale));
+  const names = casinos.map((casino) => casino.name);
 
   const lines: Array<{
     id: string;
@@ -413,23 +484,25 @@ function ComparisonTable({
       id: "license",
       label: t("table.license"),
       muted: true,
-      values: casinos.map((casino) => casino.licenses.map(licenseLabel).join(" · ")),
+      values: casinos.map((casino) =>
+        casino.licenses.map(licenseLabel).join(" · "),
+      ),
     },
     {
       id: "established",
       label: t("table.established"),
-      values: casinos.map((casino) => casino.establishedYear),
+      values: casinos.map((casino) => casino.establishedYear ?? "—"),
     },
     {
       id: "minDeposit",
       label: t("table.minDeposit"),
       muted: true,
-      values: casinos.map((casino) => localize(casino.minDeposit, locale)),
+      values: casinos.map((casino) => casino.minDeposit),
     },
     {
       id: "withdrawal",
       label: t("table.withdrawal"),
-      values: casinos.map((casino) => localize(casino.withdrawalTime, locale)),
+      values: casinos.map((casino) => casino.withdrawalTime),
     },
     {
       id: "payments",
@@ -446,7 +519,9 @@ function ComparisonTable({
     {
       id: "providers",
       label: t("table.providers"),
-      values: casinos.map((casino) => casino.providers.map(providerLabel).join(" · ")),
+      values: casinos.map((casino) =>
+        casino.providers.map(providerLabel).join(" · "),
+      ),
     },
     {
       id: "bonus",
@@ -455,10 +530,10 @@ function ComparisonTable({
       values: casinos.map((casino) => (
         <div key={casino.slug} className="text-right md:text-left">
           <p className="text-accent font-medium">
-            {localize(casino.bonusTerms.value, locale)}
+            {casino.bonus?.value ?? "—"}
           </p>
           <p className="text-text/45 mt-1 text-xs">
-            {t("table.wagering")}: {localize(casino.bonusTerms.wagering, locale)}
+            {t("table.wagering")}: {casino.bonus?.wagering ?? "—"}
           </p>
         </div>
       )),
@@ -490,14 +565,11 @@ function ComparisonTable({
       values: casinos.map((casino) => (
         <ul key={casino.slug} className="space-y-2">
           {casino.pros.slice(0, 2).map((item) => (
-            <li
-              key={localize(item, locale)}
-              className="flex gap-2 text-sm leading-relaxed"
-            >
+            <li key={item} className="flex gap-2 text-sm leading-relaxed">
               <span className="text-accent mt-0.5 shrink-0" aria-hidden>
                 ✓
               </span>
-              <span className="text-text/70">{localize(item, locale)}</span>
+              <span className="text-text/70">{item}</span>
             </li>
           ))}
         </ul>
@@ -509,14 +581,11 @@ function ComparisonTable({
       values: casinos.map((casino) => (
         <ul key={casino.slug} className="space-y-2">
           {casino.cons.slice(0, 2).map((item) => (
-            <li
-              key={localize(item, locale)}
-              className="flex gap-2 text-sm leading-relaxed"
-            >
+            <li key={item} className="flex gap-2 text-sm leading-relaxed">
               <span className="text-text/35 mt-0.5 shrink-0" aria-hidden>
                 ×
               </span>
-              <span className="text-text/70">{localize(item, locale)}</span>
+              <span className="text-text/70">{item}</span>
             </li>
           ))}
         </ul>
@@ -547,7 +616,6 @@ function ComparisonTable({
                 label={line.label}
                 casinos={casinos}
                 names={names}
-                locale={locale}
                 wageringLabel={t("table.wagering")}
                 minDepositLabel={t("table.minDeposit")}
               />
@@ -567,7 +635,6 @@ function ComparisonTable({
                 muted={line.muted}
                 casinos={casinos}
                 names={names}
-                locale={locale}
                 kind={line.id}
               />
             ) : isWrapLine(line.id) ? (
@@ -585,12 +652,14 @@ function ComparisonTable({
             ) : (
               <div
                 key={line.id}
-                className={line.muted ? "bg-text/[0.02] -mx-4 px-4 py-3" : undefined}
+                className={
+                  line.muted ? "bg-text/[0.02] -mx-4 px-4 py-3" : undefined
+                }
               >
                 <p className="text-text/40 text-[11px] font-medium tracking-[0.14em] uppercase">
                   {line.label}
                 </p>
-                <ul className="mt-2 divide-text/8 divide-y">
+                <ul className="divide-text/8 mt-2 divide-y">
                   {casinos.map((casino, index) => (
                     <li
                       key={casino.slug}
@@ -658,14 +727,18 @@ function ComparisonTable({
                   className="border-text/8 border-b px-3 py-4 text-left align-top"
                 >
                   <div className="flex items-center gap-3">
-                    <LogoMark name={names[index]} logoUrl={casino.logoUrl} size="sm" />
+                    <LogoMark
+                      name={names[index]}
+                      logoUrl={casino.logoUrl}
+                      size="sm"
+                    />
                     <div className="min-w-0">
                       <p className="text-text truncate text-sm font-semibold tracking-tight normal-case">
                         {names[index]}
                       </p>
                       {casino.badges[0] ? (
                         <div className="mt-1">
-                          <Badge>{localize(casino.badges[0], locale)}</Badge>
+                          <Badge>{casino.badges[0]}</Badge>
                         </div>
                       ) : null}
                     </div>
@@ -801,11 +874,11 @@ function MobileWrapCompare({
   id: "license" | "payments" | "providers";
   label: string;
   muted?: boolean;
-  casinos: CasinoProfile[];
+  casinos: CasinoCompareDetail[];
   names: string[];
-  licenseLabel: (id: CasinoProfile["licenses"][number]) => string;
-  paymentLabel: (id: CasinoProfile["payments"][number]) => string;
-  providerLabel: (id: CasinoProfile["providers"][number]) => string;
+  licenseLabel: (id: LicenseId) => string;
+  paymentLabel: (id: PaymentId) => string;
+  providerLabel: (id: ProviderId) => string;
 }) {
   return (
     <div className={muted ? "bg-text/[0.02] -mx-4 px-4 py-3" : undefined}>
@@ -851,9 +924,9 @@ function MobileScoreCompare({
 }: {
   label: string;
   muted?: boolean;
-  casinos: CasinoProfile[];
+  casinos: CasinoCompareDetail[];
   names: string[];
-  scoreKey: keyof CasinoScores;
+  scoreKey: keyof CasinoDetailScores;
 }) {
   const best = Math.max(...casinos.map((casino) => casino.scores[scoreKey]));
 
@@ -862,14 +935,16 @@ function MobileScoreCompare({
       <p className="text-text/40 text-[11px] font-medium tracking-[0.14em] uppercase">
         {label}
       </p>
-      <ul className="mt-2 divide-text/8 divide-y">
+      <ul className="divide-text/8 mt-2 divide-y">
         {casinos.map((casino, index) => {
           const value = casino.scores[scoreKey];
 
           return (
             <li key={casino.slug} className="py-2.5">
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-text/50 truncate text-sm">{names[index]}</span>
+                <span className="text-text/50 truncate text-sm">
+                  {names[index]}
+                </span>
                 <span
                   className={cn(
                     "text-sm tabular-nums",
@@ -893,14 +968,12 @@ function MobileVerdictCompare({
   muted,
   casinos,
   names,
-  locale,
   kind,
 }: {
   label: string;
   muted?: boolean;
-  casinos: CasinoProfile[];
+  casinos: CasinoCompareDetail[];
   names: string[];
-  locale: string;
   kind: "pros" | "cons";
 }) {
   const positive = kind === "pros";
@@ -916,10 +989,7 @@ function MobileVerdictCompare({
             <p className="text-text text-sm font-semibold">{names[index]}</p>
             <ul className="mt-2 space-y-2">
               {casino[kind].slice(0, 2).map((item) => (
-                <li
-                  key={localize(item, locale)}
-                  className="flex gap-2 text-sm leading-relaxed"
-                >
+                <li key={item} className="flex gap-2 text-sm leading-relaxed">
                   <span
                     className={cn(
                       "mt-0.5 shrink-0",
@@ -929,7 +999,7 @@ function MobileVerdictCompare({
                   >
                     {positive ? "✓" : "×"}
                   </span>
-                  <span className="text-text/70 min-w-0">{localize(item, locale)}</span>
+                  <span className="text-text/70 min-w-0">{item}</span>
                 </li>
               ))}
             </ul>
@@ -944,14 +1014,12 @@ function MobileBonusCompare({
   label,
   casinos,
   names,
-  locale,
   wageringLabel,
   minDepositLabel,
 }: {
   label: string;
-  casinos: CasinoProfile[];
+  casinos: CasinoCompareDetail[];
   names: string[];
-  locale: string;
   wageringLabel: string;
   minDepositLabel: string;
 }) {
@@ -970,10 +1038,10 @@ function MobileBonusCompare({
               {names[index]}
             </p>
             <p className="text-text mt-0.5 truncate text-sm font-semibold tracking-tight">
-              {localize(casino.bonusTerms.title, locale)}
+              {casino.bonus?.title ?? "—"}
             </p>
             <p className="text-accent mt-0.5 text-sm font-semibold tracking-tight">
-              {localize(casino.bonusTerms.value, locale)}
+              {casino.bonus?.value ?? "—"}
             </p>
             <dl className="border-text/8 mt-2 grid grid-cols-2 gap-3 border-t pt-2">
               <div>
@@ -981,7 +1049,7 @@ function MobileBonusCompare({
                   {wageringLabel}
                 </dt>
                 <dd className="text-text mt-0.5 text-xs font-medium">
-                  {localize(casino.bonusTerms.wagering, locale)}
+                  {casino.bonus?.wagering ?? "—"}
                 </dd>
               </div>
               <div>
@@ -989,7 +1057,7 @@ function MobileBonusCompare({
                   {minDepositLabel}
                 </dt>
                 <dd className="text-text mt-0.5 text-xs font-medium">
-                  {localize(casino.bonusTerms.minDeposit, locale)}
+                  {casino.bonus?.minDeposit ?? "—"}
                 </dd>
               </div>
             </dl>
@@ -1012,7 +1080,12 @@ function ScoreBar({
   return (
     <div className={cn("w-full", className)}>
       {showValue ? <p className="tabular-nums">{value.toFixed(1)}</p> : null}
-      <div className={cn("bg-text/8 h-1 overflow-hidden rounded-full", showValue && "mt-1.5")}>
+      <div
+        className={cn(
+          "bg-text/8 h-1 overflow-hidden rounded-full",
+          showValue && "mt-1.5",
+        )}
+      >
         <div
           className="bg-accent h-full rounded-full"
           style={{ width: `${(value / 5) * 100}%` }}
@@ -1038,7 +1111,11 @@ function LogoMark({
     .join("");
 
   const box =
-    size === "xs" ? "h-8 w-8 text-[10px]" : size === "sm" ? "h-10 w-10 text-xs" : "h-12 w-12 text-sm";
+    size === "xs"
+      ? "h-8 w-8 text-[10px]"
+      : size === "sm"
+        ? "h-10 w-10 text-xs"
+        : "h-12 w-12 text-sm";
 
   if (logoUrl) {
     const px = size === "xs" ? 32 : size === "sm" ? 40 : 48;

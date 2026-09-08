@@ -209,6 +209,154 @@ export async function getCasinos(locale: string): Promise<MockCasino[]> {
   });
 }
 
+/** Lean list for the compare picker — name/logo/rating only. */
+export type CasinoPickerItem = {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl?: string;
+  rating: number;
+};
+
+export type CasinoCompareBonus = {
+  title: string;
+  value: string;
+  wagering: string;
+  minDeposit: string;
+};
+
+/** Full row for the compare table — Prisma fields, no review body. */
+export type CasinoCompareDetail = {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl?: string;
+  rating: number;
+  badges: string[];
+  licenses: LicenseId[];
+  payments: PaymentId[];
+  providers: ProviderId[];
+  establishedYear: number | null;
+  minDeposit: string;
+  withdrawalTime: string;
+  affiliateUrl: string;
+  scores: CasinoDetailScores;
+  pros: string[];
+  cons: string[];
+  bonus: CasinoCompareBonus | null;
+};
+
+export async function getCasinoPickerList(
+  locale: string,
+): Promise<CasinoPickerItem[]> {
+  const rows = await prisma.casino.findMany({
+    where: { status: "published" },
+    orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
+    select: {
+      id: true,
+      slug: true,
+      logoUrl: true,
+      overallRating: true,
+      translations: {
+        select: { locale: true, name: true },
+      },
+    },
+  });
+
+  return rows.flatMap((row) => {
+    const translation = pickLocaleTranslation(row.translations, locale);
+    if (!translation) return [];
+    return [
+      {
+        id: row.id,
+        slug: row.slug,
+        name: translation.name,
+        logoUrl: row.logoUrl ?? undefined,
+        rating: row.overallRating ?? 0,
+      },
+    ];
+  });
+}
+
+export async function getCasinoCompareDetail(
+  slug: string,
+  locale: string,
+): Promise<CasinoCompareDetail | null> {
+  const [row, bonusRows] = await Promise.all([
+    prisma.casino.findUnique({
+      where: { slug },
+      include: {
+        translations: {
+          select: {
+            locale: true,
+            name: true,
+            pros: true,
+            cons: true,
+          },
+        },
+        payoutSpeed: { include: { translations: true } },
+        licenses: { include: casinoLicenseInclude },
+      },
+    }),
+    prisma.bonus.findMany({
+      where: {
+        status: "published",
+        casino: { slug, status: "published" },
+      },
+      include: { translations: true },
+      orderBy: { createdAt: "desc" },
+      take: 1,
+    }),
+  ]);
+
+  if (!row || row.status !== "published") return null;
+
+  const translation = pickLocaleTranslation(row.translations, locale);
+  if (!translation) return null;
+
+  const primaryBonus = bonusRows[0];
+  const bonusTranslation = primaryBonus
+    ? pickLocaleTranslation(primaryBonus.translations, locale)
+    : undefined;
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: translation.name,
+    logoUrl: row.logoUrl ?? undefined,
+    rating: row.overallRating ?? 0,
+    badges: [],
+    licenses: licenseIdsFromRelations(row.licenses),
+    payments: asIds(row.paymentMethods, PAYMENT_OPTIONS),
+    providers: asIds(row.gameProviders, PROVIDER_OPTIONS),
+    establishedYear: row.establishedYear,
+    minDeposit: row.minDeposit == null ? "—" : `$${row.minDeposit}`,
+    withdrawalTime: getPayoutSpeedLabel(row.payoutSpeed, locale),
+    affiliateUrl: row.affiliateLink ?? "#",
+    scores: {
+      bonuses: row.ratingBonuses ?? 0,
+      gameVariety: row.ratingGames ?? 0,
+      support: row.ratingSupport ?? 0,
+      payoutSpeed: row.ratingPayout ?? 0,
+      trust: row.ratingTrust ?? 0,
+    },
+    pros: translation.pros,
+    cons: translation.cons,
+    bonus:
+      primaryBonus && bonusTranslation
+        ? {
+            title: bonusTranslation.title,
+            value: primaryBonus.amount ?? "—",
+            wagering: primaryBonus.wageringRequirement ?? "—",
+            minDeposit:
+              primaryBonus.minDeposit == null
+                ? "—"
+                : `$${primaryBonus.minDeposit}`,
+          }
+        : null,
+  };
+}
+
 /**
  * Homepage top-rated strip + hero. Caps at `limit` in SQL and skips the
  * directory-only bonus payload while keeping card highlight fields
