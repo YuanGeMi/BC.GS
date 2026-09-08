@@ -8,6 +8,7 @@ import type {
   PayoutSpeedOption,
   PayoutSpeedOptionTranslation,
 } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { cache } from "react";
 
@@ -26,6 +27,7 @@ import {
   PROVIDER_OPTIONS,
 } from "@/lib/casino-directory";
 import { prisma } from "@/lib/prisma";
+import { casinoCompareDetailTag } from "@/lib/revalidate";
 
 function pickTranslation(
   translations: CasinoTranslation[],
@@ -278,7 +280,7 @@ export async function getCasinoPickerList(
   });
 }
 
-export async function getCasinoCompareDetail(
+async function loadCasinoCompareDetail(
   slug: string,
   locale: string,
 ): Promise<CasinoCompareDetail | null> {
@@ -356,6 +358,28 @@ export async function getCasinoCompareDetail(
         : null,
   };
 }
+
+/**
+ * Compare-slot detail. Safe to cache across visitors (no auth / personalization).
+ * - React cache(): dedupe within a single request
+ * - unstable_cache + tag: reuse across requests until revalidateCasinoPage(slug)
+ */
+export const getCasinoCompareDetail = cache(
+  async (
+    slug: string,
+    locale: string,
+  ): Promise<CasinoCompareDetail | null> => {
+    return unstable_cache(
+      () => loadCasinoCompareDetail(slug, locale),
+      ["casino-compare-detail", slug, locale],
+      {
+        // On-demand only — same model as SSG pages + revalidatePath.
+        revalidate: false,
+        tags: [casinoCompareDetailTag(slug)],
+      },
+    )();
+  },
+);
 
 /**
  * Homepage top-rated strip + hero. Caps at `limit` in SQL and skips the

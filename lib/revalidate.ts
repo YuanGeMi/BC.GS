@@ -1,9 +1,27 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { routing } from "@/i18n/routing";
 
+/** Tag for unstable_cache entries from getCasinoCompareDetail(slug, locale). */
+export function casinoCompareDetailTag(slug: string) {
+  return `casino-compare-detail:${slug}`;
+}
+
 /**
- * Bust the cached casino detail HTML for every locale.
+ * Bust the cached compare-slot detail for one casino (all locales share the tag).
+ *
+ * Prefer calling revalidateCasinoPage(slug), which also invalidates the detail
+ * page HTML. Use this alone only when you intentionally skip path revalidation.
+ *
+ * Not wired to any action yet — import from admin flows when those exist.
+ */
+export function revalidateCasinoCompareDetail(slug: string) {
+  revalidateTag(casinoCompareDetailTag(slug), "max");
+}
+
+/**
+ * Bust the cached casino detail HTML for every locale, and the compare-slot
+ * detail cache for that casino.
  *
  * Call this after:
  * - editorial casino content changes (review body, scores, facts, bonuses, etc.), or
@@ -15,6 +33,7 @@ export function revalidateCasinoPage(slug: string) {
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}/casinos/${slug}`);
   }
+  revalidateCasinoCompareDetail(slug);
 }
 
 /**
