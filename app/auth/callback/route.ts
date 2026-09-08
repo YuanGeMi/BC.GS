@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import { localeFromPath, safeCallbackNext } from "@/lib/auth/paths";
 import { ensureUserProfile } from "@/lib/auth/profile";
@@ -16,18 +16,23 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     return NextResponse.redirect(`${origin}/${locale}/login?error=auth`);
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   if (user) {
-    await ensureUserProfile(user);
+    after(async () => {
+      try {
+        await ensureUserProfile(user);
+      } catch (profileError) {
+        console.error("[auth/callback] ensureUserProfile", profileError);
+      }
+    });
   }
 
   return NextResponse.redirect(`${origin}${next}`);
