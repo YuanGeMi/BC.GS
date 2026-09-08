@@ -64,9 +64,6 @@ export function CompareTool({ locale, casinos }: Props) {
   const [detailsBySlug, setDetailsBySlug] = useState<
     Record<string, CasinoCompareDetail>
   >({});
-  const [loadingSlugs, setLoadingSlugs] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
 
   const cacheRef = useRef(detailsBySlug);
   const inflightRef = useRef(
@@ -86,13 +83,6 @@ export function CompareTool({ locale, casinos }: Props) {
       const existing = inflightRef.current.get(slug);
       if (existing) return existing;
 
-      setLoadingSlugs((prev) => {
-        if (prev.has(slug)) return prev;
-        const next = new Set(prev);
-        next.add(slug);
-        return next;
-      });
-
       const promise = fetchCasinoCompareDetail(slug, locale)
         .then((detail) => {
           if (detail) {
@@ -105,12 +95,6 @@ export function CompareTool({ locale, casinos }: Props) {
         })
         .finally(() => {
           inflightRef.current.delete(slug);
-          setLoadingSlugs((prev) => {
-            if (!prev.has(slug)) return prev;
-            const next = new Set(prev);
-            next.delete(slug);
-            return next;
-          });
         });
 
       inflightRef.current.set(slug, promise);
@@ -168,9 +152,11 @@ export function CompareTool({ locale, casinos }: Props) {
     selectedSlugs.length >= 2 &&
     selectedSlugs.every((slug) => Boolean(detailsBySlug[slug]));
 
-  const tableLoading =
+  // ≥2 selected but not all details ready yet (covers the frame before
+  // ensureDetail marks loadingSlugs, and the fetch itself).
+  const tablePending =
     selectedSlugs.length >= 2 &&
-    selectedSlugs.some((slug) => loadingSlugs.has(slug));
+    selectedSlugs.some((slug) => !detailsBySlug[slug]);
 
   return (
     <div>
@@ -180,7 +166,7 @@ export function CompareTool({ locale, casinos }: Props) {
             ? casinos.find((item) => item.slug === slug)
             : undefined;
           const detail = slug ? detailsBySlug[slug] : undefined;
-          const loading = Boolean(slug && loadingSlugs.has(slug) && !detail);
+          const loading = Boolean(slug && !detail);
 
           return (
             <CasinoSlot
@@ -206,8 +192,8 @@ export function CompareTool({ locale, casinos }: Props) {
           paymentLabel={(id) => tFilters(`payments.${id}`)}
           providerLabel={(id) => tFilters(`providers.${id}`)}
         />
-      ) : tableLoading ? (
-        <div className="bg-card/40 ring-text/8 mt-8 h-40 animate-pulse rounded-xl ring-1 md:mt-10" />
+      ) : tablePending ? (
+        <ComparisonTableSkeleton columnCount={selectedSlugs.length} />
       ) : (
         <EmptyCompare
           selectedCount={selectedSlugs.length}
@@ -446,6 +432,110 @@ function EmptyCompare({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function ComparisonTableSkeleton({ columnCount }: { columnCount: number }) {
+  const columns = Math.min(Math.max(columnCount, 2), COMPARE_MAX);
+  const rows = [
+    "h-5 w-24",
+    "h-4 w-32",
+    "h-4 w-16",
+    "h-4 w-20",
+    "h-4 w-28",
+    "h-8 w-full",
+    "h-4 w-36",
+    "h-10 w-full",
+    "h-5 w-12",
+    "h-5 w-12",
+    "h-5 w-12",
+  ];
+
+  return (
+    <div className="mt-8 md:mt-10" aria-busy="true" aria-live="polite">
+      {/* Mobile: stacked attribute blocks */}
+      <div className="md:hidden">
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: columns }, (_, i) => (
+            <div
+              key={i}
+              className="bg-card/50 ring-text/8 flex items-center gap-2 rounded-lg px-2.5 py-2 ring-1"
+            >
+              <div className="bg-text/8 h-8 w-8 shrink-0 animate-pulse rounded-md" />
+              <div className="bg-text/8 h-3 w-24 animate-pulse rounded" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 space-y-5">
+          {rows.slice(0, 7).map((bar, rowIndex) => (
+            <div
+              key={rowIndex}
+              className={
+                rowIndex % 2 === 1 ? "bg-text/[0.02] -mx-4 px-4 py-3" : undefined
+              }
+            >
+              <div className="bg-text/8 mb-3 h-2.5 w-20 animate-pulse rounded" />
+              <ul className="divide-text/8 divide-y">
+                {Array.from({ length: columns }, (_, col) => (
+                  <li
+                    key={col}
+                    className="flex items-center justify-between gap-4 py-2.5"
+                  >
+                    <div className="bg-text/8 h-3 w-16 animate-pulse rounded" />
+                    <div
+                      className={cn("bg-text/8 animate-pulse rounded", bar)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: table-shaped skeleton */}
+      <div className="ring-text/8 hidden overflow-hidden rounded-xl ring-1 md:block">
+        <table className="w-full min-w-[40rem] border-collapse text-left">
+          <thead>
+            <tr>
+              <th className="border-text/8 w-36 border-b px-3 py-4">
+                <span className="sr-only">Loading comparison</span>
+              </th>
+              {Array.from({ length: columns }, (_, i) => (
+                <th key={i} className="border-text/8 border-b px-3 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-text/8 h-10 w-10 animate-pulse rounded-md" />
+                    <div className="space-y-2">
+                      <div className="bg-text/8 h-3.5 w-28 animate-pulse rounded" />
+                      <div className="bg-text/8 h-3 w-16 animate-pulse rounded" />
+                    </div>
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((bar, rowIndex) => (
+              <tr
+                key={rowIndex}
+                className={rowIndex % 2 === 1 ? "bg-text/[0.02]" : undefined}
+              >
+                <th className="border-text/8 border-b px-3 py-4">
+                  <div className="bg-text/8 h-2.5 w-20 animate-pulse rounded" />
+                </th>
+                {Array.from({ length: columns }, (_, col) => (
+                  <td key={col} className="border-text/8 border-b px-3 py-4">
+                    <div
+                      className={cn("bg-text/8 animate-pulse rounded", bar)}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
