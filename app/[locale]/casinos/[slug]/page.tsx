@@ -12,7 +12,6 @@ import { Section } from "@/components/section";
 import { StickyVisitCta } from "@/components/sticky-visit-cta";
 import { UserReviewList } from "@/components/reviews/user-review-list";
 import { WriteReview } from "@/components/reviews/write-review";
-import { getAuthUser } from "@/lib/auth/session";
 import { getBonusesForCasino } from "@/lib/bonuses";
 import {
   getCasinoBySlug,
@@ -24,8 +23,6 @@ import {
 import {
   getPublishedUserReviewsPage,
   getUserRatingSummary,
-  hasUserReviewedCasino,
-  userNeedsDisplayName,
 } from "@/lib/reviews/queries";
 import { pageAlternates, truncateMetaDescription } from "@/lib/seo";
 
@@ -116,16 +113,11 @@ export default async function CasinoDetailPage({ params }: Props) {
 
   const t = await getTranslations("CasinoDetail");
   const tFilters = await getTranslations("CasinosPage");
-  const authUser = await getAuthUser();
-  const userId = authUser?.id;
-  const [related, reviewPage, userRating, hasReviewed, askForName] =
-    await Promise.all([
-      getRelatedCasinos(slug, locale, 4),
-      getPublishedUserReviewsPage(casino.id),
-      getUserRatingSummary(casino.id),
-      hasUserReviewedCasino(userId, casino.id),
-      userNeedsDisplayName(userId),
-    ]);
+  const [related, reviewPage, userRating] = await Promise.all([
+    getRelatedCasinos(slug, locale, 4),
+    getPublishedUserReviewsPage(casino.id),
+    getUserRatingSummary(casino.id),
+  ]);
   const trackVisit = { casinoId: casino.id, locale };
 
   const facts = [
@@ -371,13 +363,7 @@ export default async function CasinoDetailPage({ params }: Props) {
           <h2 className="text-text text-xl font-semibold tracking-tight md:text-2xl">
             {t("userReviews.title")}
           </h2>
-          <WriteReview
-            casinoId={casino.id}
-            casinoSlug={slug}
-            isLoggedIn={Boolean(userId)}
-            hasReviewed={hasReviewed}
-            askForName={askForName}
-          />
+          <WriteReview casinoId={casino.id} casinoSlug={slug} />
         </div>
         <UserReviewList
           casinoId={casino.id}

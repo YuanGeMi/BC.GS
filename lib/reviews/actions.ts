@@ -8,6 +8,8 @@ import { prisma } from "@/lib/prisma";
 import { isValidDisplayName, normalizeDisplayName } from "@/lib/reviews/display-name";
 import {
   getPublishedUserReviewsPage,
+  hasUserReviewedCasino,
+  userNeedsDisplayName,
   type ReviewPageCursor,
 } from "@/lib/reviews/queries";
 
@@ -109,4 +111,31 @@ export async function loadMoreReviews(
   cursor: ReviewPageCursor,
 ) {
   return getPublishedUserReviewsPage(casinoId, cursor);
+}
+
+export type WriteReviewGate = {
+  isLoggedIn: boolean;
+  hasReviewed: boolean;
+  askForName: boolean;
+};
+
+/** Client-only gate for the write-review CTA — safe to call after mount. */
+export async function getWriteReviewGate(
+  casinoId: string,
+): Promise<WriteReviewGate> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { isLoggedIn: false, hasReviewed: false, askForName: false };
+  }
+
+  const [hasReviewed, needsName] = await Promise.all([
+    hasUserReviewedCasino(user.id, casinoId),
+    userNeedsDisplayName(user.id),
+  ]);
+
+  return {
+    isLoggedIn: true,
+    hasReviewed,
+    askForName: needsName,
+  };
 }

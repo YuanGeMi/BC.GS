@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { prisma } from "@/lib/prisma";
 
 export type StaticPageSlug = "privacy" | "terms" | "responsible-gambling";
@@ -21,26 +23,28 @@ function pickTranslation<T extends { locale: string }>(
   );
 }
 
-export async function getStaticPage(
-  slug: StaticPageSlug,
-  locale: string,
-): Promise<StaticPageView | null> {
-  const row = await prisma.staticPage.findUnique({
-    where: { slug },
-    include: { translations: true },
-  });
+export const getStaticPage = cache(
+  async (
+    slug: StaticPageSlug,
+    locale: string,
+  ): Promise<StaticPageView | null> => {
+    const row = await prisma.staticPage.findUnique({
+      where: { slug },
+      include: { translations: true },
+    });
 
-  if (!row || row.status !== "published") return null;
+    if (!row || row.status !== "published") return null;
 
-  const translation = pickTranslation(row.translations, locale);
-  if (!translation) return null;
+    const translation = pickTranslation(row.translations, locale);
+    if (!translation) return null;
 
-  return {
-    slug: row.slug as StaticPageSlug,
-    title: translation.title,
-    content: translation.content,
-    seoTitle: translation.seoTitle,
-    seoDescription: translation.seoDescription,
-    updatedAt: row.updatedAt,
-  };
-}
+    return {
+      slug: row.slug as StaticPageSlug,
+      title: translation.title,
+      content: translation.content,
+      seoTitle: translation.seoTitle,
+      seoDescription: translation.seoDescription,
+      updatedAt: row.updatedAt,
+    };
+  },
+);

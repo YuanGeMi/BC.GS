@@ -9,6 +9,7 @@ import type {
   PayoutSpeedOptionTranslation,
 } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
+import { cache } from "react";
 
 import {
   type BonusTypeId,
@@ -208,6 +209,43 @@ export async function getCasinos(locale: string): Promise<MockCasino[]> {
   });
 }
 
+/**
+ * Homepage top-rated strip + hero. Caps at `limit` in SQL and skips the
+ * directory-only bonus payload while keeping card highlight fields
+ * (min deposit, payout speed, license names).
+ */
+export async function getTopCasinos(
+  locale: string,
+  limit = 8,
+): Promise<MockCasino[]> {
+  const [rows, t] = await Promise.all([
+    prisma.casino.findMany({
+      where: { status: "published" },
+      orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
+      take: limit,
+      include: {
+        translations: true,
+        payoutSpeed: { include: { translations: true } },
+        licenses: { include: casinoLicenseInclude },
+      },
+    }),
+    getTranslations({ locale, namespace: "CasinoDetail" }),
+  ]);
+
+  const labels = {
+    minDeposit: t("facts.minDeposit"),
+    payoutSpeed: t("scores.payoutSpeed"),
+    license: t("facts.license"),
+  };
+
+  return rows.flatMap((casino) => {
+    const translation = pickTranslation(casino.translations, locale);
+    if (!translation) return [];
+    // Homepage cards do not use bonusTypes / bonusValue — pass empty bonuses.
+    return [toDirectoryCasino(casino, translation, [], locale, labels)];
+  });
+}
+
 export type CasinoDetailScores = {
   bonuses: number;
   gameVariety: number;
@@ -286,26 +324,59 @@ function toDetailView(
   };
 }
 
-function toRelatedCard(casino: MockCasino): RelatedCasinoCard {
+function mapRelatedCasinoRow(
+  row: RelatedCasinoRow,
+  locale: string,
+): RelatedCasinoCard | null {
+  const translation = pickLocaleTranslation(row.translations, locale);
+  if (!translation) return null;
+
   return {
-    id: casino.id,
-    slug: casino.slug,
-    name: casino.name.en,
-    logoUrl: casino.logoUrl,
-    rating: casino.rating,
-    badges: casino.badges.map((badge) => badge.en),
-    highlights: casino.highlights.map((row) => ({
-      label: row.label.en,
-      value: row.value.en,
-    })),
+    id: row.id,
+    slug: row.slug,
+    name: translation.name,
+    logoUrl: row.logoUrl ?? undefined,
+    rating: row.overallRating ?? 0,
+    badges: [],
+    highlights: [],
   };
 }
 
-export async function getCasinoBySlug(
-  slug: string,
-  locale: string,
-): Promise<CasinoDetailView | null> {
-  const row = await prisma.casino.findUnique({
+type RelatedCasinoRow = {
+  id: string;
+  slug: string;
+  logoUrl: string | null;
+  overallRating: number | null;
+  translations: Array<{ locale: string; name: string }>;
+};
+
+const relatedCasinoSelect = {
+  id: true,
+  slug: true,
+  logoUrl: true,
+  overallRating: true,
+  translations: {
+    select: { locale: true, name: true },
+  },
+} as const;
+
+function sortByRatingProximity<T extends { overallRating: number | null }>(
+  rows: T[],
+  targetRating: number,
+): T[] {
+  return [...rows].sort(
+    (a, b) =>
+      Math.abs((a.overallRating ?? 0) - targetRating) -
+      Math.abs((b.overallRating ?? 0) - targetRating),
+  );
+}
+
+/**
+ * Shared casino row for detail + SEO metadata. React cache() dedupes within a
+ * single request so generateMetadata and the page share one Prisma round-trip.
+ */
+const getPublishedCasinoDetailRow = cache(async (slug: string) => {
+  return prisma.casino.findUnique({
     where: { slug },
     include: {
       translations: true,
@@ -313,44 +384,94 @@ export async function getCasinoBySlug(
       licenses: { include: casinoLicenseInclude },
     },
   });
+});
 
-  if (!row || row.status !== "published") return null;
+export const getCasinoBySlug = cache(
+  async (
+    slug: string,
+    locale: string,
+  ): Promise<CasinoDetailView | null> => {
+    const row = await getPublishedCasinoDetailRow(slug);
 
-  const translation = pickTranslation(row.translations, locale);
-  if (!translation) return null;
+    if (!row || row.status !== "published") return null;
 
-  return toDetailView(row, translation, locale);
-}
+    const translation = pickTranslation(row.translations, locale);
+    if (!translation) return null;
 
+    return toDetailView(row, translation, locale);
+  },
+);
+
+/**
+ * Related = other published casinos that share at least one license,
+ * ordered by closest editorial rating. Falls back to any other published
+ * casino if fewer than `count` share a license.
+ */
 export async function getRelatedCasinos(
   slug: string,
   locale: string,
   count = 4,
 ): Promise<RelatedCasinoCard[]> {
-  const casinos = await getCasinos(locale);
-  const current = casinos.find((item) => item.slug === slug);
+  const current = await prisma.casino.findUnique({
+    where: { slug },
+    select: {
+      overallRating: true,
+      status: true,
+      licenses: {
+        select: { license: { select: { slug: true } } },
+      },
+    },
+  });
 
-  if (!current) return casinos.slice(0, count).map(toRelatedCard);
+  if (!current || current.status !== "published") {
+    return [];
+  }
 
-  const sameLicense = casinos.filter(
-    (item) =>
-      item.slug !== slug &&
-      item.licenses.some((license) => current.licenses.includes(license)),
-  );
+  const targetRating = current.overallRating ?? 0;
+  const licenseSlugs = current.licenses.map((row) => row.license.slug);
+  const selected: RelatedCasinoCard[] = [];
+  const selectedIds = new Set<string>();
 
-  const pool =
-    sameLicense.length >= count
-      ? sameLicense
-      : casinos.filter((item) => item.slug !== slug);
+  const pushRows = (rows: RelatedCasinoRow[]) => {
+    for (const row of sortByRatingProximity(rows, targetRating)) {
+      if (selected.length >= count || selectedIds.has(row.id)) continue;
+      const card = mapRelatedCasinoRow(row, locale);
+      if (!card) continue;
+      selected.push(card);
+      selectedIds.add(row.id);
+    }
+  };
 
-  return [...pool]
-    .sort(
-      (a, b) =>
-        Math.abs(a.rating - current.rating) -
-        Math.abs(b.rating - current.rating),
-    )
-    .slice(0, count)
-    .map(toRelatedCard);
+  if (licenseSlugs.length > 0) {
+    // Lean same-license candidates only (no bonuses / nested license trees).
+    const sameLicense = await prisma.casino.findMany({
+      where: {
+        status: "published",
+        slug: { not: slug },
+        licenses: {
+          some: { license: { slug: { in: licenseSlugs } } },
+        },
+      },
+      select: relatedCasinoSelect,
+    });
+    pushRows(sameLicense);
+  }
+
+  if (selected.length < count) {
+    const fillers = await prisma.casino.findMany({
+      where: {
+        status: "published",
+        slug: { not: slug },
+        ...(selectedIds.size > 0
+          ? { id: { notIn: [...selectedIds] } }
+          : {}),
+      },
+      select: relatedCasinoSelect,
+    });
+    pushRows(fillers);
+  }
+
+  return selected;
 }
 
 export async function getPublishedCasinoSlugs(): Promise<string[]> {
@@ -369,26 +490,25 @@ export type CasinoSeoMetadata = {
   reviewFirstParagraph: string;
 };
 
-export async function getCasinoSeoMetadata(
-  slug: string,
-  locale: string,
-): Promise<CasinoSeoMetadata | null> {
-  const row = await prisma.casino.findUnique({
-    where: { slug },
-    include: { translations: true },
-  });
+export const getCasinoSeoMetadata = cache(
+  async (
+    slug: string,
+    locale: string,
+  ): Promise<CasinoSeoMetadata | null> => {
+    const row = await getPublishedCasinoDetailRow(slug);
 
-  if (!row || row.status !== "published") return null;
+    if (!row || row.status !== "published") return null;
 
-  const translation = pickTranslation(row.translations, locale);
-  if (!translation) return null;
+    const translation = pickTranslation(row.translations, locale);
+    if (!translation) return null;
 
-  const reviewParagraphs = splitReviewBody(translation.reviewBody);
+    const reviewParagraphs = splitReviewBody(translation.reviewBody);
 
-  return {
-    name: translation.name,
-    seoTitle: translation.seoTitle,
-    seoDescription: translation.seoDescription,
-    reviewFirstParagraph: reviewParagraphs[0] ?? "",
-  };
-}
+    return {
+      name: translation.name,
+      seoTitle: translation.seoTitle,
+      seoDescription: translation.seoDescription,
+      reviewFirstParagraph: reviewParagraphs[0] ?? "",
+    };
+  },
+);
