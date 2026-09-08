@@ -57,7 +57,7 @@ export async function signup(
     return { error: "passwordMismatch" };
   }
 
-  const origin = await getRequestOrigin();
+  const origin = getRequestOrigin();
   const emailRedirectTo = emailCallbackUrl(
     origin,
     safeRedirectPath(locale, next),
@@ -138,7 +138,7 @@ export async function resendConfirmation(
     return { error: "invalidEmail" };
   }
 
-  const origin = await getRequestOrigin();
+  const origin = getRequestOrigin();
   const supabase = await createClient();
   const { error } = await supabase.auth.resend({
     type: "signup",
@@ -166,7 +166,7 @@ export async function requestPasswordReset(
     return { error: "invalidEmail" };
   }
 
-  const origin = await getRequestOrigin();
+  const origin = getRequestOrigin();
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: emailCallbackUrl(origin, `/${locale}/reset-password`),
