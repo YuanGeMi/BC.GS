@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -16,6 +17,7 @@ import { Button } from "@/components/button";
 import { RatingStars } from "@/components/rating-stars";
 import {
   COMPARE_MAX,
+  COMPARE_PARAM,
   parseCompareSlugs,
   serializeCompareSlots,
   setCompareSlot,
@@ -44,16 +46,19 @@ const SCORE_KEYS = [
 type Props = {
   locale: string;
   casinos: CasinoPickerItem[];
-  /** From the server's first `?casinos=` read — used only for initial state. */
-  initialQuery?: string;
 };
 
-export function CompareTool({ locale, casinos, initialQuery }: Props) {
+export function CompareTool({ locale, casinos }: Props) {
   const tFilters = useTranslations("CasinosPage");
+  // Shared links: read ?casinos= on the client so the page stays statically cacheable.
+  // Slot changes still use history.replaceState (not the Next router) to avoid remounts.
+  const searchParams = useSearchParams();
 
   const [slots, setSlots] = useState<CompareSlots>(() => {
     const validSlugs = new Set(casinos.map((casino) => casino.slug));
-    return toCompareSlots(parseCompareSlugs(initialQuery, validSlugs));
+    return toCompareSlots(
+      parseCompareSlugs(searchParams.get(COMPARE_PARAM), validSlugs),
+    );
   });
 
   const [detailsBySlug, setDetailsBySlug] = useState<

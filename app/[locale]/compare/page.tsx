@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CompareTool } from "@/components/compare-tool";
@@ -8,7 +9,6 @@ import { pageAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ casinos?: string | string[] }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -24,16 +24,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ComparePage({ params, searchParams }: Props) {
+export default async function ComparePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const query = await searchParams;
-  const t = await getTranslations("ComparePage");
-  const casinos = await getCasinoPickerList(locale);
-  const initialQuery = Array.isArray(query.casinos)
-    ? query.casinos[0]
-    : query.casinos;
+  const [t, casinos] = await Promise.all([
+    getTranslations("ComparePage"),
+    getCasinoPickerList(locale),
+  ]);
 
   return (
     <>
@@ -50,12 +48,24 @@ export default async function ComparePage({ params, searchParams }: Props) {
       </Section>
 
       <Section containerClassName="max-w-7xl">
-        <CompareTool
-          locale={locale}
-          casinos={casinos}
-          initialQuery={initialQuery}
-        />
+        {/* Suspense: useSearchParams in CompareTool (shared ?casinos= links). */}
+        <Suspense fallback={<CompareFallback />}>
+          <CompareTool locale={locale} casinos={casinos} />
+        </Suspense>
       </Section>
     </>
+  );
+}
+
+function CompareFallback() {
+  return (
+    <div className="grid gap-3 md:grid-cols-3">
+      {[0, 1, 2].map((slot) => (
+        <div
+          key={slot}
+          className="bg-card/40 ring-text/8 h-28 animate-pulse rounded-xl ring-1"
+        />
+      ))}
+    </div>
   );
 }
