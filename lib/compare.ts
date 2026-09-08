@@ -1,4 +1,4 @@
-import type { MockCasino } from "@/data/mock-casinos";
+import type { CasinoPickerItem } from "@/lib/casinos";
 
 export const COMPARE_PARAM = "casinos";
 export const COMPARE_MAX = 3;
@@ -35,6 +35,27 @@ export function serializeCompareSlots(slots: CompareSlots): string {
   return slots.filter((slug): slug is string => Boolean(slug)).join(",");
 }
 
+/**
+ * Mirror the selection in the address bar without involving the Next.js
+ * router — so the RSC tree / Prisma fetch for /compare do not re-run.
+ */
+export function syncCompareQueryToUrl(query: string): void {
+  if (typeof window === "undefined") return;
+
+  const url = new URL(window.location.href);
+  if (query) {
+    url.searchParams.set(COMPARE_PARAM, query);
+  } else {
+    url.searchParams.delete(COMPARE_PARAM);
+  }
+
+  const next = `${url.pathname}${url.search}${url.hash}`;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (next === current) return;
+
+  window.history.replaceState(window.history.state, "", next);
+}
+
 export function emptyCompareSlots(): CompareSlots {
   return [...EMPTY_SLOTS];
 }
@@ -57,10 +78,10 @@ export function setCompareSlot(
 }
 
 export function suggestedCompareCasinos(
-  casinos: MockCasino[],
+  casinos: CasinoPickerItem[],
   selected: ReadonlySet<string>,
   count = COMPARE_MAX,
-): MockCasino[] {
+): CasinoPickerItem[] {
   return [...casinos]
     .filter((casino) => !selected.has(casino.slug))
     .sort((a, b) => b.rating - a.rating)
