@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { mapSupabaseAuthError } from "@/lib/auth/errors";
@@ -10,6 +11,10 @@ import {
 } from "@/lib/auth/origin";
 import { safeRedirectPath } from "@/lib/auth/paths";
 import { ensureUserProfile } from "@/lib/auth/profile";
+import {
+  RESET_LOCALE_COOKIE,
+  resetLocaleCookieOptions,
+} from "@/lib/auth/reset-locale-cookie";
 import {
   getPassword,
   isValidEmail,
@@ -171,7 +176,13 @@ export async function requestPasswordReset(
   }
 
   const origin = getRequestOrigin();
-  const redirectTo = passwordResetCallbackUrl(origin, locale);
+  const redirectTo = passwordResetCallbackUrl(origin);
+  const cookieStore = await cookies();
+  cookieStore.set(
+    RESET_LOCALE_COOKIE,
+    locale,
+    resetLocaleCookieOptions(),
+  );
   console.error("[password-reset debug] redirectTo", {
     origin,
     locale,

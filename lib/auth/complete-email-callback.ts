@@ -31,11 +31,11 @@ export function isRecoveryCallback(url: URL) {
 
 export async function completeEmailCallback(
   request: Request,
-  options?: { forceRecovery?: boolean },
+  options?: { forceRecovery?: boolean; locale?: string },
 ) {
   const url = new URL(request.url);
   const origin = url.origin;
-  const locale = callbackLocale(url);
+  const locale = options?.locale || callbackLocale(url);
   const recovery = options?.forceRecovery || isRecoveryCallback(url);
   const destination = recovery
     ? `${origin}/${locale}/reset-password`
