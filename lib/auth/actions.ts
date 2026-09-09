@@ -7,7 +7,6 @@ import { mapSupabaseAuthError } from "@/lib/auth/errors";
 import {
   emailCallbackUrl,
   getRequestOrigin,
-  passwordResetCallbackUrl,
 } from "@/lib/auth/origin";
 import { safeRedirectPath } from "@/lib/auth/paths";
 import { ensureUserProfile } from "@/lib/auth/profile";
@@ -175,25 +174,19 @@ export async function requestPasswordReset(
     return { error: "invalidEmail" };
   }
 
-  const origin = getRequestOrigin();
-  const redirectTo = passwordResetCallbackUrl(origin);
   const cookieStore = await cookies();
   cookieStore.set(
     RESET_LOCALE_COOKIE,
     locale,
     resetLocaleCookieOptions(),
   );
-  console.error("[password-reset debug] redirectTo", {
-    origin,
+  console.error("[password-reset debug] resetPasswordForEmail", {
     locale,
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? null,
-    redirectTo,
   });
 
   const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo,
-  });
+  await supabase.auth.resetPasswordForEmail(email);
 
   return { resetSent: true };
 }
