@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 import {
   parseResetLocale,
@@ -8,11 +9,13 @@ import {
 } from "@/lib/auth/reset-locale-cookie";
 import { getSupabasePublicEnv } from "@/lib/supabase/env";
 
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
-  const incoming = new NextRequest(request);
   const url = new URL(request.url);
+  const cookieStore = await cookies();
   const locale = parseResetLocale(
-    incoming.cookies.get(RESET_LOCALE_COOKIE)?.value,
+    cookieStore.get(RESET_LOCALE_COOKIE)?.value,
   );
   const tokenHash = url.searchParams.get("token_hash");
   const type = url.searchParams.get("type");
@@ -27,7 +30,7 @@ export async function GET(request: Request) {
     queryType: type,
     queryHasTokenHash: Boolean(tokenHash),
     locale,
-    localeFromCookie: incoming.cookies.get(RESET_LOCALE_COOKIE)?.value ?? null,
+    localeFromCookie: cookieStore.get(RESET_LOCALE_COOKIE)?.value ?? null,
   });
 
   function withExpiredLocaleCookie(response: NextResponse) {
@@ -48,11 +51,11 @@ export async function GET(request: Request) {
   const supabase = createServerClient(supabaseUrl, anonKey, {
     cookies: {
       getAll() {
-        return incoming.cookies.getAll();
+        return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
-          incoming.cookies.set(name, value);
+          cookieStore.set(name, value, options);
           response.cookies.set(name, value, options);
         });
       },
