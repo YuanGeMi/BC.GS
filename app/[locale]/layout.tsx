@@ -8,6 +8,7 @@ import {
 import { Inter, Newsreader } from "next/font/google";
 import { notFound } from "next/navigation";
 
+import { PasswordRecoveryListener } from "@/components/auth/password-recovery-listener";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { routing } from "@/i18n/routing";
@@ -101,6 +102,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="bg-background text-text flex min-h-full min-w-0 flex-col font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
+          <PasswordRecoveryListener />
           <Header locale={locale} />
           <main className="min-w-0 flex-1">{children}</main>
           <Footer />

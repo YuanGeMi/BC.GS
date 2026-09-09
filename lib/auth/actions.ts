@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation";
 
 import { mapSupabaseAuthError } from "@/lib/auth/errors";
-import { emailCallbackUrl, getRequestOrigin } from "@/lib/auth/origin";
+import {
+  emailCallbackUrl,
+  getRequestOrigin,
+  passwordResetCallbackUrl,
+} from "@/lib/auth/origin";
 import { safeRedirectPath } from "@/lib/auth/paths";
 import { ensureUserProfile } from "@/lib/auth/profile";
 import {
@@ -169,7 +173,7 @@ export async function requestPasswordReset(
   const origin = getRequestOrigin();
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: emailCallbackUrl(origin, `/${locale}/reset-password`),
+    redirectTo: passwordResetCallbackUrl(origin, locale),
   });
 
   return { resetSent: true };
@@ -206,7 +210,8 @@ export async function updatePassword(
     return { error: mapSupabaseAuthError(error) };
   }
 
-  return { passwordUpdated: true };
+  await supabase.auth.signOut();
+  redirect(`/${locale}/login?reset=ok`);
 }
 
 export async function logout(locale: string) {

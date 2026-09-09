@@ -31,7 +31,8 @@
       "submit": "Log in",
       "pending": "Logging in...",
       "noAccount": "No account yet?",
-      "toSignup": "Sign up"
+      "toSignup": "Sign up",
+      "passwordUpdated": "Your password was updated. Log in with your new password."
     },
     "signup": {
       "seoTitle": "Sign up",
@@ -61,9 +62,10 @@
       "seoTitle": "Set a new password",
       "seoDescription": "Choose a new password for your BC.GS account.",
       "eyebrow": "Account",
-      "title": "New password",
+      "title": "Set new password",
       "description": "Choose a new password for your account.",
       "expired": "This reset link is invalid or has expired. Request a new one.",
+      "checking": "Opening your reset link…",
       "newPassword": "New password",
       "submit": "Update password",
       "pending": "Updating...",

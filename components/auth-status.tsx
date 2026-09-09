@@ -5,7 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { useTranslations } from "next-intl";
 
 import { AccountControls, SignOutIcon } from "@/components/account-menu";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { logout } from "@/lib/auth/actions";
 import {
   displayNameFromAuthMetadata,
@@ -42,7 +42,10 @@ type AuthStatusProps = {
 
 export function AuthStatus({ locale, mobile = false }: AuthStatusProps) {
   const t = useTranslations("Nav");
+  const pathname = usePathname();
   const [user, setUser] = useState<HeaderUser | null | undefined>(undefined);
+  const resettingPassword =
+    pathname === "/reset-password" || pathname.endsWith("/reset-password");
 
   useEffect(() => {
     const supabase = createClient();
@@ -64,6 +67,10 @@ export function AuthStatus({ locale, mobile = false }: AuthStatusProps) {
       subscription.unsubscribe();
     };
   }, []);
+
+  if (resettingPassword) {
+    return null;
+  }
 
   if (mobile) {
     if (user === undefined) {

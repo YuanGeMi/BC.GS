@@ -6,7 +6,7 @@ import { LoginForm } from "@/components/auth/login-form";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; reset?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -29,7 +29,9 @@ export default async function LoginPage({ params, searchParams }: Props) {
     <AuthFormShell
       eyebrow={t("eyebrow")}
       title={t("title")}
-      description={t("description")}
+      description={
+        query.reset === "ok" ? t("passwordUpdated") : t("description")
+      }
     >
       <LoginForm
         locale={locale}
