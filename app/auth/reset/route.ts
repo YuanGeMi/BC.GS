@@ -1,39 +1,72 @@
-import { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextRequest, NextResponse } from "next/server";
 
-import { completeEmailCallback } from "@/lib/auth/complete-email-callback";
 import {
   parseResetLocale,
   RESET_LOCALE_COOKIE,
   resetLocaleCookieOptions,
 } from "@/lib/auth/reset-locale-cookie";
+import { getSupabasePublicEnv } from "@/lib/supabase/env";
 
 export async function GET(request: Request) {
   const incoming = new NextRequest(request);
+  const url = new URL(request.url);
   const locale = parseResetLocale(
     incoming.cookies.get(RESET_LOCALE_COOKIE)?.value,
   );
-  const url = new URL(request.url);
+  const tokenHash = url.searchParams.get("token_hash");
+  const type = url.searchParams.get("type");
+  const origin = url.origin;
+  const loginError = `${origin}/${locale}/login?error=auth`;
+  const resetPassword = `${origin}/${locale}/reset-password`;
+
   console.error("[password-reset debug] /auth/reset", {
     href: request.url,
     pathname: url.pathname,
     search: url.search,
-    queryType: url.searchParams.get("type"),
-    queryHasCode: url.searchParams.has("code"),
-    queryHasTokenHash: url.searchParams.has("token_hash"),
+    queryType: type,
+    queryHasTokenHash: Boolean(tokenHash),
     locale,
     localeFromCookie: incoming.cookies.get(RESET_LOCALE_COOKIE)?.value ?? null,
   });
 
-  const { response } = await completeEmailCallback(request, {
-    forceRecovery: true,
-    locale,
+  function withExpiredLocaleCookie(response: NextResponse) {
+    response.cookies.set(
+      RESET_LOCALE_COOKIE,
+      "",
+      resetLocaleCookieOptions(true),
+    );
+    return response;
+  }
+
+  if (!tokenHash || type !== "recovery") {
+    return withExpiredLocaleCookie(NextResponse.redirect(loginError));
+  }
+
+  const response = NextResponse.redirect(resetPassword);
+  const { url: supabaseUrl, anonKey } = getSupabasePublicEnv();
+  const supabase = createServerClient(supabaseUrl, anonKey, {
+    cookies: {
+      getAll() {
+        return incoming.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          incoming.cookies.set(name, value);
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
   });
 
-  response.cookies.set(
-    RESET_LOCALE_COOKIE,
-    "",
-    resetLocaleCookieOptions(true),
-  );
+  const { error } = await supabase.auth.verifyOtp({
+    type: "recovery",
+    token_hash: tokenHash,
+  });
 
-  return response;
+  if (error) {
+    return withExpiredLocaleCookie(NextResponse.redirect(loginError));
+  }
+
+  return withExpiredLocaleCookie(response);
 }
