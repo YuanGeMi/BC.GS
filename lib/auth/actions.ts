@@ -171,9 +171,17 @@ export async function requestPasswordReset(
   }
 
   const origin = getRequestOrigin();
+  const redirectTo = passwordResetCallbackUrl(origin, locale);
+  console.error("[password-reset debug] redirectTo", {
+    origin,
+    locale,
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? null,
+    redirectTo,
+  });
+
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: passwordResetCallbackUrl(origin, locale),
+    redirectTo,
   });
 
   return { resetSent: true };
