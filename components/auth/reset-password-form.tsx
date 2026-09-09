@@ -188,15 +188,6 @@ export function ResetPasswordForm({
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? t("reset.pending") : t("reset.submit")}
       </Button>
-
-      <p className="text-text/55 text-center text-sm">
-        <Link
-          href="/forgot-password"
-          className="text-accent hover:text-accent-highlight font-medium transition-colors"
-        >
-          {t("reset.requestAgain")}
-        </Link>
-      </p>
     </form>
   );
 }
