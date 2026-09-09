@@ -7,6 +7,10 @@ import { Button } from "@/components/button";
 import { Link } from "@/i18n/navigation";
 import { updatePassword, type AuthFormState } from "@/lib/auth/actions";
 import { authInputClassName } from "@/lib/auth/input-class";
+import {
+  logPasswordResetClientDebug,
+  logPasswordResetSessionDebug,
+} from "@/lib/auth/password-reset-debug";
 import { PASSWORD_RECOVERY_FLAG } from "@/lib/auth/recovery-flag";
 import { createClient } from "@/lib/supabase/client";
 
@@ -36,6 +40,11 @@ export function ResetPasswordForm({
   }, [initialReady]);
 
   useEffect(() => {
+    logPasswordResetClientDebug("ResetPasswordForm");
+    void logPasswordResetSessionDebug("ResetPasswordForm");
+  }, []);
+
+  useEffect(() => {
     if (initialReady) return;
 
     const supabase = createClient();
@@ -52,6 +61,12 @@ export function ResetPasswordForm({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("[password-reset debug] onAuthStateChange", {
+        source: "ResetPasswordForm",
+        event,
+        hasSession: Boolean(session),
+        userId: session?.user.id ?? null,
+      });
       if (session && event !== "SIGNED_OUT") markReady();
     });
 
