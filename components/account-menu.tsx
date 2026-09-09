@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { InitialsAvatar } from "@/components/initials-avatar";
-import { logout } from "@/lib/auth/actions";
+import { logoutEverywhere } from "@/lib/auth/logout-everywhere";
 
 type AccountControlsProps = {
   locale: string;
@@ -52,7 +52,7 @@ export function AccountControls({
           variant="monogram"
         />
       </span>
-      <form action={logout.bind(null, locale)} className="hidden md:block">
+      <form action={logoutEverywhere.bind(null, locale)} className="hidden md:block">
         <button
           type="submit"
           aria-label={t("logout")}
