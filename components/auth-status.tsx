@@ -1,26 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 import { useTranslations } from "next-intl";
+import type { User } from "@supabase/supabase-js";
 
 import { AccountControls, SignOutIcon } from "@/components/account-menu";
+import { useAuthUser } from "@/components/auth/auth-session-provider";
 import { Link, usePathname } from "@/i18n/navigation";
-import { logout } from "@/lib/auth/actions";
+import { logoutEverywhere } from "@/lib/auth/logout-everywhere";
 import {
   displayNameFromAuthMetadata,
   formatReviewDisplayName,
   publicReviewName,
   reviewInitials,
 } from "@/lib/reviews/display-name";
-import { createClient } from "@/lib/supabase/client";
 
 type HeaderUser = {
   name: string;
   initials: string;
 };
 
-function headerUserFromAuth(user: User | null): HeaderUser | null {
+function headerUserFromAuth(user: User | null | undefined): HeaderUser | null | undefined {
+  if (user === undefined) return undefined;
   if (!user?.email) return null;
 
   const fullName = publicReviewName(
@@ -43,30 +43,9 @@ type AuthStatusProps = {
 export function AuthStatus({ locale, mobile = false }: AuthStatusProps) {
   const t = useTranslations("Nav");
   const pathname = usePathname();
-  const [user, setUser] = useState<HeaderUser | null | undefined>(undefined);
+  const user = headerUserFromAuth(useAuthUser());
   const resettingPassword =
     pathname === "/reset-password" || pathname.endsWith("/reset-password");
-
-  useEffect(() => {
-    const supabase = createClient();
-    let cancelled = false;
-
-    void supabase.auth.getUser().then(({ data }) => {
-      if (cancelled) return;
-      setUser(headerUserFromAuth(data.user));
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(headerUserFromAuth(session?.user ?? null));
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
 
   if (resettingPassword) {
     return null;
@@ -86,7 +65,7 @@ export function AuthStatus({ locale, mobile = false }: AuthStatusProps) {
         <span aria-hidden className="text-text/25 text-xs">
           |
         </span>
-        <form action={logout.bind(null, locale)}>
+        <form action={logoutEverywhere.bind(null, locale)}>
           <button
             type="submit"
             className="text-text/50 hover:text-accent inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wide transition-colors"
