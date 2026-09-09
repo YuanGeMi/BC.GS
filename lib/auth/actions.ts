@@ -223,7 +223,7 @@ export async function updatePassword(
   }
 
   await supabase.auth.signOut();
-  redirect(`/${locale}/login?reset=ok`);
+  return { passwordUpdated: true };
 }
 
 export async function logout(locale: string) {

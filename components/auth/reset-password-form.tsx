@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/button";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { updatePassword, type AuthFormState } from "@/lib/auth/actions";
 import { authInputClassName } from "@/lib/auth/input-class";
 import {
@@ -26,6 +26,7 @@ export function ResetPasswordForm({
   initialReady = false,
 }: ResetPasswordFormProps) {
   const t = useTranslations("Auth");
+  const router = useRouter();
   const [ready, setReady] = useState(initialReady);
   const [expired, setExpired] = useState(false);
   const [state, formAction, pending] = useActionState(
@@ -43,6 +44,24 @@ export function ResetPasswordForm({
     logPasswordResetClientDebug("ResetPasswordForm");
     void logPasswordResetSessionDebug("ResetPasswordForm");
   }, []);
+
+  useEffect(() => {
+    if (!state.passwordUpdated) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      if (!cancelled) {
+        router.replace("/login?reset=ok");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state.passwordUpdated, router]);
 
   useEffect(() => {
     if (initialReady) return;
