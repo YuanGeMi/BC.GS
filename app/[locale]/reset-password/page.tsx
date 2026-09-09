@@ -3,12 +3,13 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AuthFormShell } from "@/components/auth/auth-form-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
-import { Link } from "@/i18n/navigation";
 import { getAuthUser } from "@/lib/auth/session";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -31,20 +32,9 @@ export default async function ResetPasswordPage({ params }: Props) {
     <AuthFormShell
       eyebrow={t("eyebrow")}
       title={t("title")}
-      description={user ? t("description") : t("expired")}
+      description={t("description")}
     >
-      {user ? (
-        <ResetPasswordForm locale={locale} />
-      ) : (
-        <p className="text-text/55 text-sm">
-          <Link
-            href="/forgot-password"
-            className="text-accent hover:text-accent-highlight font-medium transition-colors"
-          >
-            {t("requestAgain")}
-          </Link>
-        </p>
-      )}
+      <ResetPasswordForm locale={locale} initialReady={Boolean(user)} />
     </AuthFormShell>
   );
 }

@@ -1,31 +1,12 @@
-import { after, NextResponse } from "next/server";
+import { after } from "next/server";
 
-import { localeFromPath, safeCallbackNext } from "@/lib/auth/paths";
+import { completeEmailCallback } from "@/lib/auth/complete-email-callback";
 import { ensureUserProfile } from "@/lib/auth/profile";
-import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const code = url.searchParams.get("code");
-  const next = safeCallbackNext(url.searchParams.get("next"));
-  const locale = localeFromPath(next);
-  const origin = url.origin;
+  const { response, recovery, user } = await completeEmailCallback(request);
 
-  if (!code) {
-    return NextResponse.redirect(`${origin}/${locale}/login?error=auth`);
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.exchangeCodeForSession(code);
-
-  if (error) {
-    return NextResponse.redirect(`${origin}/${locale}/login?error=auth`);
-  }
-
-  if (user) {
+  if (!recovery && user) {
     after(async () => {
       try {
         await ensureUserProfile(user);
@@ -35,5 +16,5 @@ export async function GET(request: Request) {
     });
   }
 
-  return NextResponse.redirect(`${origin}${next}`);
+  return response;
 }
