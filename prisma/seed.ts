@@ -264,8 +264,18 @@ async function main() {
   }
 
   const staticPageCount = await prisma.staticPage.count();
+
+  await prisma.siteSetting.upsert({
+    where: { key: "telegram_channel_url" },
+    update: {},
+    create: {
+      key: "telegram_channel_url",
+      value: "https://t.me/bcgs",
+    },
+  });
+
   console.log(
-    `Seeded ${casinoCount} casinos, ${bonusesCreated} bonuses, ${categoryCount} categories, ${linksCreated} casino-category links, ${licenseCount} licenses, ${casinoLicenseCount} casino-license links, ${marketCount} markets, ${marketTranslationCount} market translations, ${casinoMarketCount} casino-market links, and ${staticPageCount} static pages (en/zh/th translations).`,
+    `Seeded ${casinoCount} casinos, ${bonusesCreated} bonuses, ${categoryCount} categories, ${linksCreated} casino-category links, ${licenseCount} licenses, ${casinoLicenseCount} casino-license links, ${marketCount} markets, ${marketTranslationCount} market translations, ${casinoMarketCount} casino-market links, ${staticPageCount} static pages (en/zh/th translations), and site settings.`,
   );
   if (bonusesSkipped > 0) {
     console.log(`Skipped ${bonusesSkipped} bonuses with no matching casino.`);

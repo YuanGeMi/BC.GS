@@ -1,8 +1,10 @@
 import { getTranslations } from "next-intl/server";
+import { SiTelegram } from "react-icons/si";
 
 import { Logo } from "@/components/logo";
 import { Link } from "@/i18n/navigation";
 import { MAIN_NAV } from "@/lib/nav";
+import { getTelegramChannelUrl } from "@/lib/site";
 
 const LEGAL_LINKS = [
   { href: "/privacy", labelKey: "privacy" as const },
@@ -14,6 +16,7 @@ export async function Footer() {
   const tNav = await getTranslations("Nav");
   const tFooter = await getTranslations("Footer");
   const year = new Date().getFullYear();
+  const telegramUrl = await getTelegramChannelUrl();
 
   return (
     <footer className="border-text/8 bg-card/40 mt-auto w-full min-w-0 border-t">
@@ -26,7 +29,7 @@ export async function Footer() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-10 sm:gap-16">
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-14 lg:gap-16">
             <div>
               <p className="text-text/40 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
                 {tFooter("explore")}
@@ -60,6 +63,30 @@ export async function Footer() {
                     </Link>
                   </li>
                 ))}
+              </ul>
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
+              <p className="text-text/40 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
+                {tFooter("community")}
+              </p>
+              <ul className="space-y-2.5">
+                <li>
+                  <a
+                    href={telegramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={tFooter("telegramChannel")}
+                    aria-label={tFooter("telegramChannel")}
+                    className="text-text/55 hover:text-[#2AABEE] inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
+                  >
+                    <SiTelegram
+                      aria-hidden
+                      className="size-4 shrink-0 text-[#2AABEE]"
+                    />
+                    <span>{tFooter("telegramChannelShort")}</span>
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

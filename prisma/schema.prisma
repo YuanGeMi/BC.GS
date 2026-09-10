@@ -257,3 +257,10 @@ model StaticPageTranslation {
 
   @@unique([pageId, locale])
 }
+
+/// Key/value site settings for admin-managed public config (e.g. Telegram URL).
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -51,3 +51,15 @@ export function revalidateCompareList() {
     revalidatePath(`/${locale}/compare`);
   }
 }
+
+/**
+ * Bust locale layouts after SiteSetting changes (e.g. Telegram channel URL
+ * in the footer). Call from admin when saving site settings.
+ *
+ * Not wired to any action yet.
+ */
+export function revalidateSiteSettings() {
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}`, "layout");
+  }
+}
