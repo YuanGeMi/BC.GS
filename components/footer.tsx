@@ -78,11 +78,11 @@ export async function Footer() {
                     rel="noopener noreferrer"
                     title={tFooter("telegramChannel")}
                     aria-label={tFooter("telegramChannel")}
-                    className="text-text/55 hover:text-[#2AABEE] inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
+                    className="text-text/55 hover:text-accent inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
                   >
                     <SiTelegram
                       aria-hidden
-                      className="size-4 shrink-0 text-[#2AABEE]"
+                      className="size-4 shrink-0"
                     />
                     <span>{tFooter("telegramChannelShort")}</span>
                   </a>
