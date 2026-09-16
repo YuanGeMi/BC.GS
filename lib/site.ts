@@ -1,8 +1,8 @@
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import { SITE_SETTINGS_TAG } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
-import { SITE_SETTINGS_TAG } from "@/lib/revalidate";
 
 /** Keys stored in SiteSetting — admin can edit values without code changes. */
 export const SITE_SETTING_KEYS = {

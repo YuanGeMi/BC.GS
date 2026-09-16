@@ -1,9 +1,9 @@
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import { LEGAL_PAGE_SLUGS_TAG } from "@/lib/cache-tags";
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
-import { LEGAL_PAGE_SLUGS_TAG } from "@/lib/revalidate";
 
 export const LEGAL_PAGE_SLUGS = [
   "privacy",

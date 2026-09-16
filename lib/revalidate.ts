@@ -1,19 +1,15 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 
 import { routing } from "@/i18n/routing";
+import {
+  casinoCompareDetailTag,
+  LEGAL_PAGE_SLUGS_TAG,
+  SITE_SETTINGS_TAG,
+} from "@/lib/cache-tags";
 import { getPublishedCategorySlugs } from "@/lib/categories";
 import { getPublishedCasinoSlugs } from "@/lib/casinos";
 
-/** Cross-request cache for footer Telegram URL (see lib/site.ts). */
-export const SITE_SETTINGS_TAG = "site-settings";
-
-/** Cross-request cache for published legal footer slugs (see lib/static-pages.ts). */
-export const LEGAL_PAGE_SLUGS_TAG = "legal-page-slugs";
-
-/** Tag for unstable_cache entries from getCasinoCompareDetail(slug, locale). */
-export function casinoCompareDetailTag(slug: string) {
-  return `casino-compare-detail:${slug}`;
-}
+export { casinoCompareDetailTag };
 
 /** Bust the tagged compare-slot detail for one casino (all locales share the tag). */
 export function revalidateCasinoCompareDetail(slug: string) {

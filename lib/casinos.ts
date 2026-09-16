@@ -31,7 +31,7 @@ import {
 } from "@/lib/catalogs";
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
-import { casinoCompareDetailTag } from "@/lib/revalidate";
+import { casinoCompareDetailTag } from "@/lib/cache-tags";
 
 function pickTranslation(
   translations: CasinoTranslation[],
