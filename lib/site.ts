@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { SITE_SETTINGS_TAG } from "@/lib/cache-tags";
+import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { prisma } from "@/lib/prisma";
 
 /** Keys stored in SiteSetting — admin can edit values without code changes. */
@@ -9,13 +10,19 @@ export const SITE_SETTING_KEYS = {
   telegramChannelUrl: "telegram_channel_url",
 } as const;
 
-async function loadTelegramChannelUrl(): Promise<string | null> {
-  const row = await prisma.siteSetting.findUnique({
-    where: { key: SITE_SETTING_KEYS.telegramChannelUrl },
-  });
+const telegramInflight: { current: Promise<string | null> | null } = {
+  current: null,
+};
 
-  const value = row?.value.trim();
-  return value ? value : null;
+async function loadTelegramChannelUrl(): Promise<string | null> {
+  return dedupeInflight(telegramInflight, async () => {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SITE_SETTING_KEYS.telegramChannelUrl },
+    });
+
+    const value = row?.value.trim();
+    return value ? value : null;
+  });
 }
 
 /**

@@ -3,6 +3,7 @@ import { cache } from "react";
 
 import { LEGAL_PAGE_SLUGS_TAG } from "@/lib/cache-tags";
 import { publishedContentWhere } from "@/lib/db-enums";
+import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { prisma } from "@/lib/prisma";
 
 export const LEGAL_PAGE_SLUGS = [
@@ -38,17 +39,23 @@ export const FOOTER_LEGAL_LINKS: ReadonlyArray<{
   },
 ];
 
-async function loadPublishedLegalPageSlugs(): Promise<StaticPageSlug[]> {
-  const rows = await prisma.staticPage.findMany({
-    where: {
-      slug: { in: [...LEGAL_PAGE_SLUGS] },
-      ...publishedContentWhere,
-    },
-    select: { slug: true },
-  });
+const legalSlugsInflight: { current: Promise<StaticPageSlug[]> | null } = {
+  current: null,
+};
 
-  const published = new Set(rows.map((row) => row.slug));
-  return LEGAL_PAGE_SLUGS.filter((slug) => published.has(slug));
+async function loadPublishedLegalPageSlugs(): Promise<StaticPageSlug[]> {
+  return dedupeInflight(legalSlugsInflight, async () => {
+    const rows = await prisma.staticPage.findMany({
+      where: {
+        slug: { in: [...LEGAL_PAGE_SLUGS] },
+        ...publishedContentWhere,
+      },
+      select: { slug: true },
+    });
+
+    const published = new Set(rows.map((row) => row.slug));
+    return LEGAL_PAGE_SLUGS.filter((slug) => published.has(slug));
+  });
 }
 
 /**
