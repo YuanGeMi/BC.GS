@@ -4,6 +4,12 @@ import { routing } from "@/i18n/routing";
 import { getPublishedCategorySlugs } from "@/lib/categories";
 import { getPublishedCasinoSlugs } from "@/lib/casinos";
 
+/** Cross-request cache for footer Telegram URL (see lib/site.ts). */
+export const SITE_SETTINGS_TAG = "site-settings";
+
+/** Cross-request cache for published legal footer slugs (see lib/static-pages.ts). */
+export const LEGAL_PAGE_SLUGS_TAG = "legal-page-slugs";
+
 /** Tag for unstable_cache entries from getCasinoCompareDetail(slug, locale). */
 export function casinoCompareDetailTag(slug: string) {
   return `casino-compare-detail:${slug}`;
@@ -60,6 +66,7 @@ export function revalidateCasinoPublicSurfaces(
 
 /** Locale layouts after SiteSetting changes (e.g. Telegram channel URL). */
 export function revalidateSiteSettings() {
+  revalidateTag(SITE_SETTINGS_TAG, "max");
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}`, "layout");
   }
@@ -94,6 +101,7 @@ export function revalidateBestOfSurfaces(slugs: Array<string | null | undefined>
 }
 
 export function revalidateStaticPage(slug: string) {
+  revalidateTag(LEGAL_PAGE_SLUGS_TAG, "max");
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}/${slug}`);
     // Footer legal links depend on publish status.

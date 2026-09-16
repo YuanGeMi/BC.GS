@@ -617,33 +617,51 @@ export const getCasinoBySlug = cache(
  * Related = other published casinos that share at least one license,
  * ordered by closest editorial rating. Falls back to any other published
  * casino if fewer than `count` share a license.
+ *
+ * One DB round-trip for candidates; current casino reuses the detail-row
+ * React cache from getCasinoBySlug / generateMetadata.
  */
 export async function getRelatedCasinos(
   slug: string,
   locale: string,
   count = 4,
 ): Promise<RelatedCasinoCard[]> {
-  const current = await prisma.casino.findFirst({
-    where: { slug, ...publishedContentWhere },
-    select: {
-      overallRating: true,
-      licenses: {
-        select: { license: { select: { slug: true } } },
-      },
-    },
-  });
-
+  const current = await getPublishedCasinoDetailRow(slug);
   if (!current) {
     return [];
   }
 
   const targetRating = current.overallRating ?? 0;
-  const licenseSlugs = current.licenses.map((row) => row.license.slug);
+  const licenseSlugs = new Set(
+    current.licenses.map((row) => row.license.slug),
+  );
+
+  const rows = await prisma.casino.findMany({
+    where: {
+      ...publishedContentWhere,
+      slug: { not: slug },
+    },
+    select: {
+      ...relatedCasinoSelect,
+      licenses: { select: { license: { select: { slug: true } } } },
+    },
+  });
+
+  const withSharedLicense: typeof rows = [];
+  const fillers: typeof rows = [];
+  for (const row of rows) {
+    const shares = row.licenses.some((link) =>
+      licenseSlugs.has(link.license.slug),
+    );
+    if (shares) withSharedLicense.push(row);
+    else fillers.push(row);
+  }
+
   const selected: RelatedCasinoCard[] = [];
   const selectedIds = new Set<string>();
 
-  const pushRows = (rows: RelatedCasinoRow[]) => {
-    for (const row of sortByRatingProximity(rows, targetRating)) {
+  const pushRows = (candidates: typeof rows) => {
+    for (const row of sortByRatingProximity(candidates, targetRating)) {
       if (selected.length >= count || selectedIds.has(row.id)) continue;
       const card = mapRelatedCasinoRow(row, locale);
       if (!card) continue;
@@ -652,32 +670,8 @@ export async function getRelatedCasinos(
     }
   };
 
-  if (licenseSlugs.length > 0) {
-    // Lean same-license candidates only (no bonuses / nested license trees).
-    const sameLicense = await prisma.casino.findMany({
-      where: {
-        ...publishedContentWhere,
-        slug: { not: slug },
-        licenses: {
-          some: { license: { slug: { in: licenseSlugs } } },
-        },
-      },
-      select: relatedCasinoSelect,
-    });
-    pushRows(sameLicense);
-  }
-
-  if (selected.length < count) {
-    const fillers = await prisma.casino.findMany({
-      where: {
-        ...publishedContentWhere,
-        slug: { not: slug },
-        ...(selectedIds.size > 0 ? { id: { notIn: [...selectedIds] } } : {}),
-      },
-      select: relatedCasinoSelect,
-    });
-    pushRows(fillers);
-  }
+  pushRows(withSharedLicense);
+  if (selected.length < count) pushRows(fillers);
 
   return selected;
 }

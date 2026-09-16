@@ -1,7 +1,9 @@
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
+import { LEGAL_PAGE_SLUGS_TAG } from "@/lib/revalidate";
 
 export const LEGAL_PAGE_SLUGS = [
   "privacy",
@@ -36,10 +38,7 @@ export const FOOTER_LEGAL_LINKS: ReadonlyArray<{
   },
 ];
 
-/** Published legal slugs only, in canonical footer order. */
-export const getPublishedLegalPageSlugs = cache(async (): Promise<
-  StaticPageSlug[]
-> => {
+async function loadPublishedLegalPageSlugs(): Promise<StaticPageSlug[]> {
   const rows = await prisma.staticPage.findMany({
     where: {
       slug: { in: [...LEGAL_PAGE_SLUGS] },
@@ -50,6 +49,23 @@ export const getPublishedLegalPageSlugs = cache(async (): Promise<
 
   const published = new Set(rows.map((row) => row.slug));
   return LEGAL_PAGE_SLUGS.filter((slug) => published.has(slug));
+}
+
+/**
+ * Published legal slugs only, in canonical footer order.
+ * Cross-page cache so SSG does not re-query this on every casino/locale page.
+ */
+export const getPublishedLegalPageSlugs = cache(async (): Promise<
+  StaticPageSlug[]
+> => {
+  return unstable_cache(
+    loadPublishedLegalPageSlugs,
+    ["published-legal-page-slugs"],
+    {
+      revalidate: false,
+      tags: [LEGAL_PAGE_SLUGS_TAG],
+    },
+  )();
 });
 
 export type StaticPageView = {
