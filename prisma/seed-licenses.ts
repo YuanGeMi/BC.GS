@@ -7,25 +7,27 @@ export async function seedLicenseCatalog(client: PrismaClient) {
   for (const option of licenseOptions) {
     const row = await client.license.upsert({
       where: { slug: option.slug },
-      update: {},
-      create: { slug: option.slug },
+      update: { sortOrder: option.sortOrder },
+      create: { slug: option.slug, sortOrder: option.sortOrder },
       select: { id: true },
     });
 
-    await client.licenseTranslation.upsert({
-      where: {
-        licenseId_locale: {
-          licenseId: row.id,
-          locale: "en",
+    for (const [locale, name] of Object.entries(option.labels)) {
+      await client.licenseTranslation.upsert({
+        where: {
+          licenseId_locale: {
+            licenseId: row.id,
+            locale,
+          },
         },
-      },
-      update: { name: option.name },
-      create: {
-        licenseId: row.id,
-        locale: "en",
-        name: option.name,
-      },
-    });
+        update: { name },
+        create: {
+          licenseId: row.id,
+          locale,
+          name,
+        },
+      });
+    }
   }
 }
 

@@ -29,21 +29,32 @@ export async function POST(request: NextRequest) {
     request.headers.get("referer") ?? request.headers.get("referrer");
 
   try {
-    const casino = await prisma.casino.findFirst({
-      where: {
-        OR: [{ id: casinoId }, { slug: casinoId }],
-      },
-      select: { id: true },
-    });
+    const [casino, bonus] = await Promise.all([
+      prisma.casino.findFirst({
+        where: {
+          OR: [{ id: casinoId }, { slug: casinoId }],
+        },
+        select: { id: true },
+      }),
+      bonusId
+        ? prisma.bonus.findFirst({
+            where: { id: bonusId },
+            select: { id: true, casinoId: true },
+          })
+        : Promise.resolve(null),
+    ]);
 
     if (!casino) {
       return NextResponse.json({ ok: false }, { status: 404 });
     }
 
+    const resolvedBonusId =
+      bonus && bonus.casinoId === casino.id ? bonus.id : null;
+
     await prisma.affiliateClick.create({
       data: {
         casinoId: casino.id,
-        bonusId,
+        bonusId: resolvedBonusId,
         locale,
         referrer,
       },

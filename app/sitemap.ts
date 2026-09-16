@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
 
 import { routing } from "@/i18n/routing";
+import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 import { getSiteUrl } from "@/lib/seo";
+import { getPublishedLegalPageSlugs } from "@/lib/static-pages";
 
 const STATIC_PATHS = [
   "",
@@ -10,25 +12,23 @@ const STATIC_PATHS = [
   "/bonuses",
   "/compare",
   "/best-of",
-  "/privacy",
-  "/terms",
-  "/responsible-gambling",
 ] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
 
-  const [casinos, categories] = await Promise.all([
+  const [casinos, categories, legalSlugs] = await Promise.all([
     prisma.casino.findMany({
-      where: { status: "published" },
+      where: publishedContentWhere,
       select: { slug: true, updatedAt: true },
       orderBy: { slug: "asc" },
     }),
     prisma.category.findMany({
-      where: { status: "published" },
+      where: publishedContentWhere,
       select: { slug: true, updatedAt: true },
       orderBy: { slug: "asc" },
     }),
+    getPublishedLegalPageSlugs(),
   ]);
 
   const entries: MetadataRoute.Sitemap = [];
@@ -37,6 +37,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const path of STATIC_PATHS) {
       entries.push({
         url: `${base}/${locale}${path}`,
+        lastModified: new Date(),
+      });
+    }
+
+    for (const slug of legalSlugs) {
+      entries.push({
+        url: `${base}/${locale}/${slug}`,
         lastModified: new Date(),
       });
     }

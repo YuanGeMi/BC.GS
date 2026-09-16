@@ -7,25 +7,28 @@ import { Button } from "@/components/button";
 import { CasinoCard, CasinoCardList } from "@/components/casino-card";
 import { localize, type MockCasino } from "@/data/mock-casinos";
 import {
-  BONUS_TYPE_OPTIONS,
   countActiveFilters,
   EMPTY_FILTERS,
   filterCasinos,
-  LICENSE_OPTIONS,
   PAGE_SIZE,
-  PAYMENT_OPTIONS,
-  PROVIDER_OPTIONS,
   sortCasinos,
   toggleFilterValue,
   type CasinoFilters,
   type CasinoSort,
   type FilterFacet,
 } from "@/lib/casino-directory";
+import type { CatalogOption } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
 
 type Props = {
   locale: string;
   casinos: MockCasino[];
+  catalogs: {
+    licenses: CatalogOption[];
+    payments: CatalogOption[];
+    providers: CatalogOption[];
+    bonusTypes: CatalogOption[];
+  };
 };
 
 const SEARCH_DEBOUNCE_MS = 250;
@@ -94,10 +97,12 @@ function FilterGroup({
 
 function FilterPanel({
   filters,
+  catalogs,
   onToggle,
   onClear,
 }: {
   filters: CasinoFilters;
+  catalogs: Props["catalogs"];
   onToggle: <K extends FilterFacet>(
     facet: K,
     value: CasinoFilters[K][number],
@@ -110,45 +115,45 @@ function FilterPanel({
   return (
     <div className="space-y-5">
       <FilterGroup title={t("filters.license")}>
-        {LICENSE_OPTIONS.map((id) => (
+        {catalogs.licenses.map((option) => (
           <CheckboxRow
-            key={id}
-            checked={filters.licenses.includes(id)}
-            label={t(`licenses.${id}`)}
-            onChange={() => onToggle("licenses", id)}
+            key={option.slug}
+            checked={filters.licenses.includes(option.slug)}
+            label={option.name}
+            onChange={() => onToggle("licenses", option.slug)}
           />
         ))}
       </FilterGroup>
 
       <FilterGroup title={t("filters.payments")}>
-        {PAYMENT_OPTIONS.map((id) => (
+        {catalogs.payments.map((option) => (
           <CheckboxRow
-            key={id}
-            checked={filters.payments.includes(id)}
-            label={t(`payments.${id}`)}
-            onChange={() => onToggle("payments", id)}
+            key={option.slug}
+            checked={filters.payments.includes(option.slug)}
+            label={option.name}
+            onChange={() => onToggle("payments", option.slug)}
           />
         ))}
       </FilterGroup>
 
       <FilterGroup title={t("filters.providers")}>
-        {PROVIDER_OPTIONS.map((id) => (
+        {catalogs.providers.map((option) => (
           <CheckboxRow
-            key={id}
-            checked={filters.providers.includes(id)}
-            label={t(`providers.${id}`)}
-            onChange={() => onToggle("providers", id)}
+            key={option.slug}
+            checked={filters.providers.includes(option.slug)}
+            label={option.name}
+            onChange={() => onToggle("providers", option.slug)}
           />
         ))}
       </FilterGroup>
 
       <FilterGroup title={t("filters.bonusType")}>
-        {BONUS_TYPE_OPTIONS.map((id) => (
+        {catalogs.bonusTypes.map((option) => (
           <CheckboxRow
-            key={id}
-            checked={filters.bonusTypes.includes(id)}
-            label={t(`bonusTypes.${id}`)}
-            onChange={() => onToggle("bonusTypes", id)}
+            key={option.slug}
+            checked={filters.bonusTypes.includes(option.slug)}
+            label={option.name}
+            onChange={() => onToggle("bonusTypes", option.slug)}
           />
         ))}
       </FilterGroup>
@@ -166,7 +171,7 @@ function FilterPanel({
   );
 }
 
-export function CasinoDirectory({ locale, casinos }: Props) {
+export function CasinoDirectory({ locale, casinos, catalogs }: Props) {
   const t = useTranslations("CasinosPage");
   const [filters, setFilters] = useState<CasinoFilters>(EMPTY_FILTERS);
   const [sort, setSort] = useState<CasinoSort>("rating");
@@ -238,6 +243,7 @@ export function CasinoDirectory({ locale, casinos }: Props) {
         </p>
         <FilterPanel
           filters={filters}
+          catalogs={catalogs}
           onToggle={handleToggle}
           onClear={handleClearFilters}
         />
@@ -383,6 +389,7 @@ export function CasinoDirectory({ locale, casinos }: Props) {
           </div>
           <FilterPanel
             filters={filters}
+            catalogs={catalogs}
             onToggle={handleToggle}
             onClear={handleClearFilters}
           />

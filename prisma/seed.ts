@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 
 import { bestCategories } from "../data/best-categories";
+import { toCasinoProfile } from "../data/casino-details";
 import { legalDocuments, legalSlugs } from "../data/legal-content";
 import { mockBonuses } from "../data/mock-bonuses";
-import { toCasinoProfile } from "../data/casino-details";
 import { localize, mockCasinos } from "../data/mock-casinos";
+import { ContentStatus } from "../lib/db-enums";
 import {
   legalDocumentToMarkdown,
   STATIC_PAGE_LOCALES,
@@ -14,6 +15,7 @@ import {
   payoutSpeedSlugByWithdrawalTime,
 } from "./payout-speed-options";
 import { seedCasinoLicenses, seedLicenseCatalog } from "./seed-licenses";
+import { seedCatalogs, syncCasinoCatalogLinks } from "./seed-catalogs";
 import { seedMarkets } from "./seed-markets";
 
 const prisma = new PrismaClient();
@@ -26,6 +28,7 @@ function parseMinDeposit(value: string): number | null {
 async function main() {
   await seedMarkets(prisma);
   await seedLicenseCatalog(prisma);
+  await seedCatalogs(prisma);
 
   const payoutSpeedIdsBySlug = new Map<string, string>();
 
@@ -74,8 +77,6 @@ async function main() {
       establishedYear: profile.establishedYear,
       minDeposit: parseMinDeposit(profile.minDeposit.en),
       payoutSpeedId: payoutSpeedId ?? null,
-      paymentMethods: profile.payments,
-      gameProviders: profile.providers,
       overallRating: profile.rating,
       ratingBonuses: profile.scores.bonuses,
       ratingGames: profile.scores.gameVariety,
@@ -83,7 +84,7 @@ async function main() {
       ratingPayout: profile.scores.payoutSpeed,
       ratingTrust: profile.scores.trust,
       affiliateLink: profile.affiliateUrl,
-      status: "published",
+      status: ContentStatus.published,
     };
 
     const translation = {
@@ -94,7 +95,7 @@ async function main() {
       cons: profile.cons.map((item) => item.en),
     };
 
-    await prisma.casino.upsert({
+    const casino = await prisma.casino.upsert({
       where: { slug: profile.slug },
       update: {
         ...data,
@@ -109,12 +110,27 @@ async function main() {
           create: [translation],
         },
       },
+      select: { id: true },
     });
+
+    await syncCasinoCatalogLinks(
+      prisma,
+      casino.id,
+      profile.payments,
+      profile.providers,
+    );
   }
 
   await seedCasinoLicenses(prisma);
 
   await prisma.bonus.deleteMany();
+
+  const bonusTypeRows = await prisma.bonusType.findMany({
+    select: { id: true, slug: true },
+  });
+  const bonusTypeIdBySlug = new Map(
+    bonusTypeRows.map((row) => [row.slug, row.id]),
+  );
 
   let bonusesCreated = 0;
   let bonusesSkipped = 0;
@@ -130,6 +146,12 @@ async function main() {
       continue;
     }
 
+    const typeId = bonusTypeIdBySlug.get(mock.type);
+    if (!typeId) {
+      bonusesSkipped += 1;
+      continue;
+    }
+
     const terms = [mock.bonusValue.en, mock.wagering.en]
       .filter(Boolean)
       .join("\n\n");
@@ -137,11 +159,13 @@ async function main() {
     await prisma.bonus.create({
       data: {
         casinoId: casino.id,
-        type: mock.type,
+        typeId,
+        slug: mock.slug,
+        sortOrder: bonusesCreated * 10,
         amount: mock.bonusValue.en,
         wageringRequirement: mock.wagering.en,
         expiryDate: new Date(`${mock.expiresAt}T00:00:00.000Z`),
-        status: "published",
+        status: ContentStatus.published,
         translations: {
           create: [
             {
@@ -166,13 +190,15 @@ async function main() {
       description: category.description.en,
       seoTitle: category.seoTitle.en,
       seoDescription: category.seoDescription.en,
-      methodology: category.methodology.map((paragraph) => paragraph.en).join("\n\n") || null,
+      methodology:
+        category.methodology.map((paragraph) => paragraph.en).join("\n\n") ||
+        null,
     };
 
     const row = await prisma.category.upsert({
       where: { slug: category.slug },
       update: {
-        status: "published",
+        status: ContentStatus.published,
         translations: {
           deleteMany: { locale: "en" },
           create: [translation],
@@ -180,7 +206,7 @@ async function main() {
       },
       create: {
         slug: category.slug,
-        status: "published",
+        status: ContentStatus.published,
         translations: {
           create: [translation],
         },
@@ -235,7 +261,7 @@ async function main() {
     await prisma.staticPage.upsert({
       where: { slug },
       update: {
-        status: "published",
+        status: ContentStatus.published,
         translations: {
           deleteMany: {},
           create: STATIC_PAGE_LOCALES.map((locale) => ({
@@ -249,7 +275,7 @@ async function main() {
       },
       create: {
         slug,
-        status: "published",
+        status: ContentStatus.published,
         translations: {
           create: STATIC_PAGE_LOCALES.map((locale) => ({
             locale,
@@ -281,7 +307,9 @@ async function main() {
     console.log(`Skipped ${bonusesSkipped} bonuses with no matching casino.`);
   }
   if (linksSkipped > 0) {
-    console.log(`Skipped ${linksSkipped} category links with no matching casino.`);
+    console.log(
+      `Skipped ${linksSkipped} category links with no matching casino.`,
+    );
   }
 }
 

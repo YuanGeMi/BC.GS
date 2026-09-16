@@ -1,3 +1,4 @@
+import { publishedReviewWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 import {
   formatReviewDisplayName,
@@ -54,7 +55,7 @@ export async function getUserRatingSummary(
   casinoId: string,
 ): Promise<UserRatingSummary> {
   const { _avg, _count } = await prisma.userReview.aggregate({
-    where: { casinoId, status: "published" },
+    where: { casinoId, ...publishedReviewWhere },
     _avg: { rating: true },
     _count: true,
   });
@@ -90,7 +91,7 @@ export async function getPublishedUserReviewsPage(
   const rows = await prisma.userReview.findMany({
     where: {
       casinoId,
-      status: "published",
+      ...publishedReviewWhere,
       ...cursorFilter,
     },
     take: REVIEW_PAGE_SIZE + 1,

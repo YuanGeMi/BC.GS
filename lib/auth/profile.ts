@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 
+import { UserRole } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 import { displayNameFromAuthMetadata } from "@/lib/reviews/display-name";
 
@@ -19,12 +20,13 @@ export async function ensureUserProfile(
     create: {
       id: user.id,
       email,
-      role: "user",
+      role: UserRole.user,
       ...(displayName ? { displayName } : {}),
     },
     update: {
       email,
       ...(displayName ? { displayName } : {}),
+      // Never write `role` here. Login/signup must not demote an existing admin.
     },
   });
 }

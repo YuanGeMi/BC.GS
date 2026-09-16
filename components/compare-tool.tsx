@@ -32,7 +32,6 @@ import type {
   CasinoDetailScores,
   CasinoPickerItem,
 } from "@/lib/casinos";
-import type { LicenseId, PaymentId, ProviderId } from "@/data/mock-casinos";
 import { cn } from "@/lib/utils";
 
 const SCORE_KEYS = [
@@ -49,7 +48,6 @@ type Props = {
 };
 
 export function CompareTool({ locale, casinos }: Props) {
-  const tFilters = useTranslations("CasinosPage");
   // Shared links: read ?casinos= on the client so the page stays statically cacheable.
   // Slot changes still use history.replaceState (not the Next router) to avoid remounts.
   const searchParams = useSearchParams();
@@ -188,9 +186,6 @@ export function CompareTool({ locale, casinos }: Props) {
         <ComparisonTable
           locale={locale}
           casinos={loadedDetails}
-          licenseLabel={(id) => tFilters(`licenses.${id}`)}
-          paymentLabel={(id) => tFilters(`payments.${id}`)}
-          providerLabel={(id) => tFilters(`providers.${id}`)}
         />
       ) : tablePending ? (
         <ComparisonTableSkeleton columnCount={selectedSlugs.length} />
@@ -543,15 +538,9 @@ function ComparisonTableSkeleton({ columnCount }: { columnCount: number }) {
 function ComparisonTable({
   locale,
   casinos,
-  licenseLabel,
-  paymentLabel,
-  providerLabel,
 }: {
   locale: string;
   casinos: CasinoCompareDetail[];
-  licenseLabel: (id: LicenseId) => string;
-  paymentLabel: (id: PaymentId) => string;
-  providerLabel: (id: ProviderId) => string;
 }) {
   const t = useTranslations("ComparePage");
   const bestRating = Math.max(...casinos.map((casino) => casino.rating));
@@ -580,7 +569,7 @@ function ComparisonTable({
       label: t("table.license"),
       muted: true,
       values: casinos.map((casino) =>
-        casino.licenses.map(licenseLabel).join(" · "),
+        casino.licenses.join(" · "),
       ),
     },
     {
@@ -605,8 +594,8 @@ function ComparisonTable({
       muted: true,
       values: casinos.map((casino) => (
         <div key={casino.slug} className="flex flex-wrap justify-start gap-1.5">
-          {casino.payments.map((id) => (
-            <Badge key={id}>{paymentLabel(id)}</Badge>
+          {casino.payments.map((name) => (
+            <Badge key={name}>{name}</Badge>
           ))}
         </div>
       )),
@@ -615,7 +604,7 @@ function ComparisonTable({
       id: "providers",
       label: t("table.providers"),
       values: casinos.map((casino) =>
-        casino.providers.map(providerLabel).join(" · "),
+        casino.providers.join(" · "),
       ),
     },
     {
@@ -740,9 +729,6 @@ function ComparisonTable({
                 muted={line.muted}
                 casinos={casinos}
                 names={names}
-                licenseLabel={licenseLabel}
-                paymentLabel={paymentLabel}
-                providerLabel={providerLabel}
               />
             ) : (
               <div
@@ -962,18 +948,12 @@ function MobileWrapCompare({
   muted,
   casinos,
   names,
-  licenseLabel,
-  paymentLabel,
-  providerLabel,
 }: {
   id: "license" | "payments" | "providers";
   label: string;
   muted?: boolean;
   casinos: CasinoCompareDetail[];
   names: string[];
-  licenseLabel: (id: LicenseId) => string;
-  paymentLabel: (id: PaymentId) => string;
-  providerLabel: (id: ProviderId) => string;
 }) {
   return (
     <div className={muted ? "bg-text/[0.02] -mx-4 px-4 py-3" : undefined}>
@@ -987,16 +967,16 @@ function MobileWrapCompare({
             <div className="text-text/80 mt-1.5 min-w-0 text-sm break-words">
               {id === "payments" ? (
                 <div className="flex flex-wrap gap-1.5">
-                  {casino.payments.map((paymentId) => (
-                    <Badge key={paymentId} wrap>
-                      {paymentLabel(paymentId)}
+                  {casino.payments.map((name) => (
+                    <Badge key={name} wrap>
+                      {name}
                     </Badge>
                   ))}
                 </div>
               ) : id === "license" ? (
-                casino.licenses.map(licenseLabel).join(" · ")
+                casino.licenses.join(" · ")
               ) : (
-                casino.providers.map(providerLabel).join(" · ")
+                casino.providers.join(" · ")
               )}
             </div>
           </li>

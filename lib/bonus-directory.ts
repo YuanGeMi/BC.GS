@@ -15,14 +15,6 @@ export const EMPTY_BONUS_FILTERS: BonusFilters = {
 
 export const BONUS_PAGE_SIZE = 9;
 
-export const LISTING_BONUS_TYPES: BonusTypeId[] = [
-  "welcome",
-  "no-deposit",
-  "free-spins",
-  "reload",
-  "cashback",
-];
-
 export function filterBonuses(
   bonuses: MockBonus[],
   filters: BonusFilters,

@@ -1,6 +1,5 @@
 import type {
   BonusTypeId,
-  LicenseId,
   MockCasino,
   PaymentId,
   ProviderId,
@@ -10,7 +9,7 @@ import { localize } from "@/data/mock-casinos";
 export type FilterFacet = "licenses" | "payments" | "providers" | "bonusTypes";
 
 export type CasinoFilters = {
-  licenses: LicenseId[];
+  licenses: string[];
   payments: PaymentId[];
   providers: ProviderId[];
   bonusTypes: BonusTypeId[];
@@ -26,37 +25,6 @@ export const EMPTY_FILTERS: CasinoFilters = {
 };
 
 export const PAGE_SIZE = 9;
-
-export const LICENSE_OPTIONS: LicenseId[] = [
-  "mga",
-  "curacao",
-  "gibraltar",
-  "ukgc",
-  "kahnawake",
-];
-
-export const PAYMENT_OPTIONS: PaymentId[] = [
-  "crypto",
-  "visa",
-  "paypal",
-  "bank",
-];
-
-export const PROVIDER_OPTIONS: ProviderId[] = [
-  "evolution",
-  "pragmatic",
-  "netent",
-  "playngo",
-  "hacksaw",
-];
-
-export const BONUS_TYPE_OPTIONS: BonusTypeId[] = [
-  "welcome",
-  "no-deposit",
-  "free-spins",
-  "reload",
-  "cashback",
-];
 
 function matchesFacet<T extends string>(selected: T[], values: T[]): boolean {
   if (selected.length === 0) return true;

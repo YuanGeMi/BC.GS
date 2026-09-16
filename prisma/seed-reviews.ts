@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 
 import { PrismaClient } from "@prisma/client";
 
+import { ContentStatus, ReviewStatus, UserRole } from "../lib/db-enums";
+
 const prisma = new PrismaClient();
 
 const PEOPLE = [
@@ -72,7 +74,7 @@ function slugEmail(name: string, index: number) {
 
 async function main() {
   const casinos = await prisma.casino.findMany({
-    where: { status: "published" },
+    where: { status: ContentStatus.published },
     select: { id: true, slug: true },
     orderBy: { slug: "asc" },
   });
@@ -100,7 +102,7 @@ async function main() {
         id: randomUUID(),
         email,
         displayName,
-        role: "user",
+        role: UserRole.user,
       },
       select: { id: true, displayName: true, email: true },
     });
@@ -122,7 +124,7 @@ async function main() {
         casinoId: casino.id,
         rating: 3 + ((n + casinoIndex) % 3),
         body: BODIES[(n + casinoIndex) % BODIES.length],
-        status: "published",
+        status: ReviewStatus.published,
         createdAt: new Date(Date.now() - (count - n) * 36e5 * 6),
       });
     }
@@ -135,14 +137,16 @@ async function main() {
 
   const perCasino = await prisma.userReview.groupBy({
     by: ["casinoId"],
-    where: { status: "published" },
+    where: { status: ReviewStatus.published },
     _count: { _all: true },
   });
   const countById = new Map(
     perCasino.map((row) => [row.casinoId, row._count._all]),
   );
 
-  console.log(`Users: ${users.length}. New reviews this run: ${created.count}.`);
+  console.log(
+    `Users: ${users.length}. New reviews this run: ${created.count}.`,
+  );
   for (const casino of casinos) {
     const count = countById.get(casino.id) ?? 0;
     if (count > 0) console.log(`  ${casino.slug}: ${count}`);

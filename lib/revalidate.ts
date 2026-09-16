@@ -1,20 +1,15 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 
 import { routing } from "@/i18n/routing";
+import { getPublishedCategorySlugs } from "@/lib/categories";
+import { getPublishedCasinoSlugs } from "@/lib/casinos";
 
 /** Tag for unstable_cache entries from getCasinoCompareDetail(slug, locale). */
 export function casinoCompareDetailTag(slug: string) {
   return `casino-compare-detail:${slug}`;
 }
 
-/**
- * Bust the cached compare-slot detail for one casino (all locales share the tag).
- *
- * Prefer calling revalidateCasinoPage(slug), which also invalidates the detail
- * page HTML. Use this alone only when you intentionally skip path revalidation.
- *
- * Not wired to any action yet — import from admin flows when those exist.
- */
+/** Bust the tagged compare-slot detail for one casino (all locales share the tag). */
 export function revalidateCasinoCompareDetail(slug: string) {
   revalidateTag(casinoCompareDetailTag(slug), "max");
 }
@@ -22,12 +17,6 @@ export function revalidateCasinoCompareDetail(slug: string) {
 /**
  * Bust the cached casino detail HTML for every locale, and the compare-slot
  * detail cache for that casino.
- *
- * Call this after:
- * - editorial casino content changes (review body, scores, facts, bonuses, etc.), or
- * - a user review's status changes to "published" (or is unpublished) for that casino.
- *
- * Not wired to any action yet — import from admin / review-approval flows when those exist.
  */
 export function revalidateCasinoPage(slug: string) {
   for (const locale of routing.locales) {
@@ -36,30 +25,112 @@ export function revalidateCasinoPage(slug: string) {
   revalidateCasinoCompareDetail(slug);
 }
 
-/**
- * Bust the cached compare page (picker list) for every locale.
- *
- * Call this whenever a casino's core listing info changes — same triggers as
- * revalidateCasinoPage: new casino published, rating/name/logo updated, or a
- * casino unpublished/removed. That keeps the compare picker in sync without a
- * time-based revalidate export.
- *
- * Not wired to any action yet — import from admin flows when those exist.
- */
+/** Bust the cached compare page (picker list) for every locale. */
 export function revalidateCompareList() {
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}/compare`);
   }
 }
 
+/** Home, directories, best-of, and sitemap — after publish / unpublish / slug change. */
+export function revalidatePublicIndexes() {
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}`);
+    revalidatePath(`/${locale}/casinos`);
+    revalidatePath(`/${locale}/bonuses`);
+    revalidatePath(`/${locale}/best-of`);
+  }
+  revalidatePath("/sitemap.xml");
+}
+
 /**
- * Bust locale layouts after SiteSetting changes (e.g. Telegram channel URL
- * in the footer). Call from admin when saving site settings.
- *
- * Not wired to any action yet.
+ * Published (or previously published) casino writes: detail, compare picker,
+ * indexes, and the old slug if it changed.
  */
+export function revalidateCasinoPublicSurfaces(
+  slugs: Array<string | null | undefined>,
+) {
+  const unique = [...new Set(slugs.filter((slug): slug is string => Boolean(slug)))];
+  for (const slug of unique) {
+    revalidateCasinoPage(slug);
+  }
+  revalidateCompareList();
+  revalidatePublicIndexes();
+}
+
+/** Locale layouts after SiteSetting changes (e.g. Telegram channel URL). */
 export function revalidateSiteSettings() {
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}`, "layout");
   }
+}
+
+/** Casino review, bonus directory, and home featured strip. */
+export function revalidateBonusSurfaces(casinoSlugs: Array<string | null | undefined>) {
+  const unique = [
+    ...new Set(casinoSlugs.filter((slug): slug is string => Boolean(slug))),
+  ];
+  for (const slug of unique) {
+    revalidateCasinoPage(slug);
+  }
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}`);
+    revalidatePath(`/${locale}/bonuses`);
+  }
+}
+
+/** Best-of index, ranked list pages, related blocks, sitemap. */
+export function revalidateBestOfSurfaces(slugs: Array<string | null | undefined>) {
+  const unique = [
+    ...new Set(slugs.filter((slug): slug is string => Boolean(slug))),
+  ];
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}/best-of`);
+    for (const slug of unique) {
+      revalidatePath(`/${locale}/best/${slug}`);
+    }
+  }
+  revalidatePath("/sitemap.xml");
+}
+
+export function revalidateStaticPage(slug: string) {
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}/${slug}`);
+    // Footer legal links depend on publish status.
+    revalidatePath(`/${locale}`, "layout");
+  }
+  revalidatePath("/sitemap.xml");
+}
+
+/**
+ * After catalog label/order changes (payout, licenses, payments, providers,
+ * bonus types, markets): directories, home, compare shell, every published casino
+ * detail (+ compare-detail tags), and best-of lists — labels are baked into
+ * those pages at render time.
+ */
+export async function revalidateCatalogSurfaces() {
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}`);
+    revalidatePath(`/${locale}/casinos`);
+    revalidatePath(`/${locale}/bonuses`);
+    revalidatePath(`/${locale}/compare`);
+    revalidatePath(`/${locale}/best-of`);
+  }
+
+  const [casinoSlugs, categorySlugs] = await Promise.all([
+    getPublishedCasinoSlugs(),
+    getPublishedCategorySlugs(),
+  ]);
+
+  for (const slug of casinoSlugs) {
+    revalidateCasinoPage(slug);
+  }
+
+  for (const locale of routing.locales) {
+    for (const slug of categorySlugs) {
+      revalidatePath(`/${locale}/best/${slug}`);
+    }
+  }
+
+  revalidatePath("/sitemap.xml");
 }

@@ -137,6 +137,11 @@ export default async function BestCategoryPage({ params }: Props) {
                       >
                         {casino.name}
                       </Link>
+                      {casino.editorialNote ? (
+                        <p className="text-text/55 mt-1.5 text-sm leading-relaxed">
+                          {casino.editorialNote}
+                        </p>
+                      ) : null}
                       <RatingStars
                         rating={casino.rating}
                         showValue
@@ -218,6 +223,11 @@ export default async function BestCategoryPage({ params }: Props) {
                         >
                           {casino.name}
                         </Link>
+                        {casino.editorialNote ? (
+                          <p className="text-text/55 mt-1.5 text-sm font-normal leading-relaxed">
+                            {casino.editorialNote}
+                          </p>
+                        ) : null}
                       </td>
                       <td className="px-3 py-4">
                         <RatingStars rating={casino.rating} showValue size="sm" />

@@ -1,10 +1,17 @@
 import type {
   Bonus,
+  BonusType,
   Casino,
+  CasinoGameProvider,
   CasinoLicense,
+  CasinoPaymentMethod,
   CasinoTranslation,
+  GameProvider,
+  GameProviderTranslation,
   License,
   LicenseTranslation,
+  PaymentMethod,
+  PaymentMethodTranslation,
   PayoutSpeedOption,
   PayoutSpeedOptionTranslation,
 } from "@prisma/client";
@@ -13,19 +20,16 @@ import { getTranslations } from "next-intl/server";
 import { cache } from "react";
 
 import {
-  type BonusTypeId,
-  type LicenseId,
   type MockCasino,
   type MockCasinoHighlight,
-  type PaymentId,
-  type ProviderId,
 } from "@/data/mock-casinos";
-import { parseBonusTypeId, parseValueAmount } from "@/lib/bonuses";
+import { bonusListOrder, parseValueAmount } from "@/lib/bonuses";
 import {
-  LICENSE_OPTIONS,
-  PAYMENT_OPTIONS,
-  PROVIDER_OPTIONS,
-} from "@/lib/casino-directory";
+  casinoCatalogInclude,
+  catalogLabels,
+  catalogSlugs,
+} from "@/lib/catalogs";
+import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 import { casinoCompareDetailTag } from "@/lib/revalidate";
 
@@ -69,18 +73,28 @@ export function getPayoutSpeedLabel(
   return pickLocaleTranslation(option.translations, locale)?.label ?? "—";
 }
 
-function asIds<T extends string>(values: string[], allowed: readonly T[]): T[] {
-  const allowedSet = new Set<string>(allowed);
-  return values.filter((value): value is T => allowedSet.has(value));
-}
+type PaymentMethodWithTranslations = PaymentMethod & {
+  translations: PaymentMethodTranslation[];
+};
 
-function licenseIdsFromRelations(
+type GameProviderWithTranslations = GameProvider & {
+  translations: GameProviderTranslation[];
+};
+
+type CasinoPaymentMethodWithMethod = CasinoPaymentMethod & {
+  paymentMethod: PaymentMethodWithTranslations;
+};
+
+type CasinoGameProviderWithProvider = CasinoGameProvider & {
+  gameProvider: GameProviderWithTranslations;
+};
+
+type BonusWithType = Bonus & { bonusType: Pick<BonusType, "slug"> };
+
+function licenseSlugsFromRelations(
   licenses: CasinoLicenseWithLicense[],
-): LicenseId[] {
-  return asIds(
-    licenses.map((row) => row.license.slug),
-    LICENSE_OPTIONS,
-  );
+): string[] {
+  return catalogSlugs(licenses.map((row) => row.license));
 }
 
 function formatLicenseNames(
@@ -113,8 +127,7 @@ function toHighlights(
   locale: string,
   labels: CasinoHighlightLabels,
 ): MockCasinoHighlight[] {
-  const deposit =
-    casino.minDeposit == null ? "—" : `$${casino.minDeposit}`;
+  const deposit = casino.minDeposit == null ? "—" : `$${casino.minDeposit}`;
 
   return [
     { label: { en: labels.minDeposit }, value: { en: deposit } },
@@ -129,16 +142,15 @@ function toHighlights(
   ];
 }
 
-function deriveBonusFields(bonuses: Bonus[]): {
-  bonusTypes: BonusTypeId[];
+function deriveBonusFields(bonuses: BonusWithType[]): {
+  bonusTypes: string[];
   bonusValue: number;
 } {
-  const types = new Set<BonusTypeId>();
+  const types = new Set<string>();
   let bonusValue = 0;
 
   for (const bonus of bonuses) {
-    const type = parseBonusTypeId(bonus.type);
-    if (type) types.add(type);
+    types.add(bonus.bonusType.slug);
     bonusValue = Math.max(bonusValue, parseValueAmount(bonus.amount));
   }
 
@@ -151,12 +163,14 @@ function deriveBonusFields(bonuses: Bonus[]): {
 type CasinoWithRelations = Casino & {
   payoutSpeed: PayoutSpeedOptionWithTranslations | null;
   licenses: CasinoLicenseWithLicense[];
+  paymentMethods: CasinoPaymentMethodWithMethod[];
+  gameProviders: CasinoGameProviderWithProvider[];
 };
 
 function toDirectoryCasino(
   casino: CasinoWithRelations,
   translation: CasinoTranslation,
-  bonuses: Bonus[],
+  bonuses: BonusWithType[],
   locale: string,
   labels: CasinoHighlightLabels,
 ): MockCasino {
@@ -170,9 +184,13 @@ function toDirectoryCasino(
     name: { en: translation.name },
     badges: [],
     highlights: toHighlights(casino, locale, labels),
-    licenses: licenseIdsFromRelations(casino.licenses),
-    payments: asIds(casino.paymentMethods, PAYMENT_OPTIONS),
-    providers: asIds(casino.gameProviders, PROVIDER_OPTIONS),
+    licenses: licenseSlugsFromRelations(casino.licenses),
+    payments: catalogSlugs(
+      casino.paymentMethods.map((row) => row.paymentMethod),
+    ),
+    providers: catalogSlugs(
+      casino.gameProviders.map((row) => row.gameProvider),
+    ),
     bonusTypes,
     listedAt: casino.createdAt.toISOString(),
     bonusValue,
@@ -186,12 +204,17 @@ const casinoLicenseInclude = {
 export async function getCasinos(locale: string): Promise<MockCasino[]> {
   const [rows, t] = await Promise.all([
     prisma.casino.findMany({
-      where: { status: "published" },
+      where: publishedContentWhere,
       include: {
         translations: true,
         payoutSpeed: { include: { translations: true } },
-        bonuses: { where: { status: "published" } },
+        bonuses: {
+          where: publishedContentWhere,
+          include: { bonusType: { select: { slug: true } } },
+          orderBy: bonusListOrder,
+        },
         licenses: { include: casinoLicenseInclude },
+        ...casinoCatalogInclude,
       },
       orderBy: { overallRating: "desc" },
     }),
@@ -207,7 +230,9 @@ export async function getCasinos(locale: string): Promise<MockCasino[]> {
   return rows.flatMap((casino) => {
     const translation = pickTranslation(casino.translations, locale);
     if (!translation) return [];
-    return [toDirectoryCasino(casino, translation, casino.bonuses, locale, labels)];
+    return [
+      toDirectoryCasino(casino, translation, casino.bonuses, locale, labels),
+    ];
   });
 }
 
@@ -235,9 +260,9 @@ export type CasinoCompareDetail = {
   logoUrl?: string;
   rating: number;
   badges: string[];
-  licenses: LicenseId[];
-  payments: PaymentId[];
-  providers: ProviderId[];
+  licenses: string[];
+  payments: string[];
+  providers: string[];
   establishedYear: number | null;
   minDeposit: string;
   withdrawalTime: string;
@@ -252,7 +277,7 @@ export async function getCasinoPickerList(
   locale: string,
 ): Promise<CasinoPickerItem[]> {
   const rows = await prisma.casino.findMany({
-    where: { status: "published" },
+    where: publishedContentWhere,
     orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
     select: {
       id: true,
@@ -285,8 +310,8 @@ async function loadCasinoCompareDetail(
   locale: string,
 ): Promise<CasinoCompareDetail | null> {
   const [row, bonusRows] = await Promise.all([
-    prisma.casino.findUnique({
-      where: { slug },
+    prisma.casino.findFirst({
+      where: { slug, ...publishedContentWhere },
       include: {
         translations: {
           select: {
@@ -298,20 +323,21 @@ async function loadCasinoCompareDetail(
         },
         payoutSpeed: { include: { translations: true } },
         licenses: { include: casinoLicenseInclude },
+        ...casinoCatalogInclude,
       },
     }),
     prisma.bonus.findMany({
       where: {
-        status: "published",
-        casino: { slug, status: "published" },
+        ...publishedContentWhere,
+        casino: { slug, ...publishedContentWhere },
       },
       include: { translations: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: bonusListOrder,
       take: 1,
     }),
   ]);
 
-  if (!row || row.status !== "published") return null;
+  if (!row) return null;
 
   const translation = pickLocaleTranslation(row.translations, locale);
   if (!translation) return null;
@@ -328,9 +354,18 @@ async function loadCasinoCompareDetail(
     logoUrl: row.logoUrl ?? undefined,
     rating: row.overallRating ?? 0,
     badges: [],
-    licenses: licenseIdsFromRelations(row.licenses),
-    payments: asIds(row.paymentMethods, PAYMENT_OPTIONS),
-    providers: asIds(row.gameProviders, PROVIDER_OPTIONS),
+    licenses: catalogLabels(
+      row.licenses.map((item) => item.license),
+      locale,
+    ),
+    payments: catalogLabels(
+      row.paymentMethods.map((item) => item.paymentMethod),
+      locale,
+    ),
+    providers: catalogLabels(
+      row.gameProviders.map((item) => item.gameProvider),
+      locale,
+    ),
     establishedYear: row.establishedYear,
     minDeposit: row.minDeposit == null ? "—" : `$${row.minDeposit}`,
     withdrawalTime: getPayoutSpeedLabel(row.payoutSpeed, locale),
@@ -365,10 +400,7 @@ async function loadCasinoCompareDetail(
  * - unstable_cache + tag: reuse across requests until revalidateCasinoPage(slug)
  */
 export const getCasinoCompareDetail = cache(
-  async (
-    slug: string,
-    locale: string,
-  ): Promise<CasinoCompareDetail | null> => {
+  async (slug: string, locale: string): Promise<CasinoCompareDetail | null> => {
     return unstable_cache(
       () => loadCasinoCompareDetail(slug, locale),
       ["casino-compare-detail", slug, locale],
@@ -392,13 +424,14 @@ export async function getTopCasinos(
 ): Promise<MockCasino[]> {
   const [rows, t] = await Promise.all([
     prisma.casino.findMany({
-      where: { status: "published" },
+      where: publishedContentWhere,
       orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
       take: limit,
       include: {
         translations: true,
         payoutSpeed: { include: { translations: true } },
         licenses: { include: casinoLicenseInclude },
+        ...casinoCatalogInclude,
       },
     }),
     getTranslations({ locale, namespace: "CasinoDetail" }),
@@ -433,9 +466,9 @@ export type CasinoDetailView = {
   logoUrl?: string;
   rating: number;
   badges: string[];
-  licenses: LicenseId[];
-  payments: PaymentId[];
-  providers: ProviderId[];
+  licenses: string[];
+  payments: string[];
+  providers: string[];
   establishedYear: number | null;
   minDeposit: string;
   withdrawalTime: string;
@@ -475,12 +508,20 @@ function toDetailView(
     logoUrl: casino.logoUrl ?? undefined,
     rating: casino.overallRating ?? 0,
     badges: [],
-    licenses: licenseIdsFromRelations(casino.licenses),
-    payments: asIds(casino.paymentMethods, PAYMENT_OPTIONS),
-    providers: asIds(casino.gameProviders, PROVIDER_OPTIONS),
+    licenses: catalogLabels(
+      casino.licenses.map((item) => item.license),
+      locale,
+    ),
+    payments: catalogLabels(
+      casino.paymentMethods.map((item) => item.paymentMethod),
+      locale,
+    ),
+    providers: catalogLabels(
+      casino.gameProviders.map((item) => item.gameProvider),
+      locale,
+    ),
     establishedYear: casino.establishedYear,
-    minDeposit:
-      casino.minDeposit == null ? "—" : `$${casino.minDeposit}`,
+    minDeposit: casino.minDeposit == null ? "—" : `$${casino.minDeposit}`,
     withdrawalTime: getPayoutSpeedLabel(casino.payoutSpeed, locale),
     affiliateUrl: casino.affiliateLink ?? "#",
     scores: {
@@ -548,24 +589,22 @@ function sortByRatingProximity<T extends { overallRating: number | null }>(
  * single request so generateMetadata and the page share one Prisma round-trip.
  */
 const getPublishedCasinoDetailRow = cache(async (slug: string) => {
-  return prisma.casino.findUnique({
-    where: { slug },
+  return prisma.casino.findFirst({
+    where: { slug, ...publishedContentWhere },
     include: {
       translations: true,
       payoutSpeed: { include: { translations: true } },
       licenses: { include: casinoLicenseInclude },
+      ...casinoCatalogInclude,
     },
   });
 });
 
 export const getCasinoBySlug = cache(
-  async (
-    slug: string,
-    locale: string,
-  ): Promise<CasinoDetailView | null> => {
+  async (slug: string, locale: string): Promise<CasinoDetailView | null> => {
     const row = await getPublishedCasinoDetailRow(slug);
 
-    if (!row || row.status !== "published") return null;
+    if (!row) return null;
 
     const translation = pickTranslation(row.translations, locale);
     if (!translation) return null;
@@ -584,18 +623,17 @@ export async function getRelatedCasinos(
   locale: string,
   count = 4,
 ): Promise<RelatedCasinoCard[]> {
-  const current = await prisma.casino.findUnique({
-    where: { slug },
+  const current = await prisma.casino.findFirst({
+    where: { slug, ...publishedContentWhere },
     select: {
       overallRating: true,
-      status: true,
       licenses: {
         select: { license: { select: { slug: true } } },
       },
     },
   });
 
-  if (!current || current.status !== "published") {
+  if (!current) {
     return [];
   }
 
@@ -618,7 +656,7 @@ export async function getRelatedCasinos(
     // Lean same-license candidates only (no bonuses / nested license trees).
     const sameLicense = await prisma.casino.findMany({
       where: {
-        status: "published",
+        ...publishedContentWhere,
         slug: { not: slug },
         licenses: {
           some: { license: { slug: { in: licenseSlugs } } },
@@ -632,11 +670,9 @@ export async function getRelatedCasinos(
   if (selected.length < count) {
     const fillers = await prisma.casino.findMany({
       where: {
-        status: "published",
+        ...publishedContentWhere,
         slug: { not: slug },
-        ...(selectedIds.size > 0
-          ? { id: { notIn: [...selectedIds] } }
-          : {}),
+        ...(selectedIds.size > 0 ? { id: { notIn: [...selectedIds] } } : {}),
       },
       select: relatedCasinoSelect,
     });
@@ -648,7 +684,7 @@ export async function getRelatedCasinos(
 
 export async function getPublishedCasinoSlugs(): Promise<string[]> {
   const rows = await prisma.casino.findMany({
-    where: { status: "published" },
+    where: publishedContentWhere,
     select: { slug: true },
   });
 
@@ -663,13 +699,10 @@ export type CasinoSeoMetadata = {
 };
 
 export const getCasinoSeoMetadata = cache(
-  async (
-    slug: string,
-    locale: string,
-  ): Promise<CasinoSeoMetadata | null> => {
+  async (slug: string, locale: string): Promise<CasinoSeoMetadata | null> => {
     const row = await getPublishedCasinoDetailRow(slug);
 
-    if (!row || row.status !== "published") return null;
+    if (!row) return null;
 
     const translation = pickTranslation(row.translations, locale);
     if (!translation) return null;

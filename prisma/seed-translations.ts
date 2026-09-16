@@ -131,7 +131,7 @@ async function main() {
   for (const mock of mockBonuses) {
     const bonus = await prisma.bonus.findFirst({
       where: {
-        type: mock.type,
+        bonusType: { slug: mock.type },
         amount: mock.bonusValue.en,
         casino: { slug: mock.casinoSlug },
       },

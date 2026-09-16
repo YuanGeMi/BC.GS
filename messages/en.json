@@ -97,6 +97,11 @@
     "template": "%s · BC.GS",
     "description": "Independent editorial reviews and comparisons — not a casino. Clear ratings on fairness, payouts, and product quality."
   },
+  "NotFound": {
+    "title": "Page not found",
+    "body": "This page does not exist, or you do not have access to it.",
+    "home": "Back to home"
+  },
   "Footer": {
     "tagline": "Independent reviews and editorial comparisons for discerning players.",
     "explore": "Explore",

@@ -50,20 +50,10 @@ export const PHRASE = {
   match,
 };
 
-export type LicenseId = "mga" | "curacao" | "gibraltar" | "ukgc" | "kahnawake";
-export type PaymentId = "crypto" | "visa" | "paypal" | "bank";
-export type ProviderId =
-  | "evolution"
-  | "pragmatic"
-  | "netent"
-  | "playngo"
-  | "hacksaw";
-export type BonusTypeId =
-  | "welcome"
-  | "no-deposit"
-  | "free-spins"
-  | "reload"
-  | "cashback";
+export type LicenseId = string;
+export type PaymentId = string;
+export type ProviderId = string;
+export type BonusTypeId = string;
 
 export type MockCasinoHighlight = {
   label: LocalizedText;

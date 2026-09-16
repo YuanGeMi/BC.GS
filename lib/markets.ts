@@ -1,4 +1,9 @@
-import type { CasinoMarket, Market, MarketTranslation } from "@prisma/client";
+import type {
+  CasinoMarket,
+  Market,
+  MarketAvailability,
+  MarketTranslation,
+} from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -15,7 +20,7 @@ function pickTranslation<T extends { locale: string }>(
 export type CasinoMarketAvailability = {
   code: string;
   name: string;
-  status: string;
+  status: MarketAvailability;
   affiliateLink: string | null;
 };
 

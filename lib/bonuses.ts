@@ -1,18 +1,24 @@
 import type {
   Bonus,
   BonusTranslation,
-  Casino,
-  CasinoTranslation,
+  BonusType,
+  BonusTypeTranslation,
 } from "@prisma/client";
 
 import type { MockBonus } from "@/data/mock-bonuses";
-import type { BonusTypeId } from "@/data/mock-casinos";
-import { LISTING_BONUS_TYPES } from "@/lib/bonus-directory";
+import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
+
+type BonusListCasino = {
+  slug: string;
+  logoUrl: string | null;
+  translations: { locale: string; name: string }[];
+};
 
 type BonusWithRelations = Bonus & {
   translations: BonusTranslation[];
-  casino: Casino & { translations: CasinoTranslation[] };
+  bonusType: BonusType & { translations: BonusTypeTranslation[] };
+  casino: BonusListCasino;
 };
 
 function pickTranslation<T extends { locale: string }>(
@@ -25,14 +31,36 @@ function pickTranslation<T extends { locale: string }>(
   );
 }
 
-function asBonusType(value: string): BonusTypeId | null {
-  return LISTING_BONUS_TYPES.includes(value as BonusTypeId)
-    ? (value as BonusTypeId)
-    : null;
+function bonusTypeName(
+  bonusType: BonusType & { translations: BonusTypeTranslation[] },
+  locale: string,
+): string {
+  return (
+    pickTranslation(bonusType.translations, locale)?.name ?? bonusType.slug
+  );
 }
 
-export function parseBonusTypeId(value: string): BonusTypeId | null {
-  return asBonusType(value);
+function toDirectoryBonus(
+  bonus: BonusWithRelations,
+  translation: BonusTranslation,
+  casinoTranslation: { name: string },
+  locale: string,
+): MockBonus {
+  return {
+    id: bonus.id,
+    slug: bonus.slug,
+    casinoSlug: bonus.casino.slug,
+    casinoName: { en: casinoTranslation.name },
+    logoUrl: bonus.casino.logoUrl ?? undefined,
+    title: { en: translation.title },
+    bonusValue: { en: bonus.amount ?? "—" },
+    type: bonus.bonusType.slug,
+    typeName: bonusTypeName(bonus.bonusType, locale),
+    valueAmount: parseValueAmount(bonus.amount),
+    listedAt: bonus.createdAt.toISOString(),
+    expiresAt: bonus.expiryDate ? bonus.expiryDate.toISOString() : "9999-12-31",
+    wagering: { en: bonus.wageringRequirement ?? "—" },
+  };
 }
 
 export function parseValueAmount(amount: string | null): number {
@@ -52,52 +80,39 @@ export function parseValueAmount(amount: string | null): number {
   return valid.length > 0 ? Math.max(...valid) : 0;
 }
 
-function toDirectoryBonus(
-  bonus: BonusWithRelations,
-  translation: BonusTranslation,
-  casinoTranslation: CasinoTranslation,
-): MockBonus {
-  const type = asBonusType(bonus.type) ?? "welcome";
+const bonusTypeInclude = {
+  bonusType: { include: { translations: true } },
+} as const;
 
-  return {
-    id: bonus.id,
-    slug: bonus.id,
-    casinoSlug: bonus.casino.slug,
-    casinoName: { en: casinoTranslation.name },
-    logoUrl: bonus.casino.logoUrl ?? undefined,
-    title: { en: translation.title },
-    bonusValue: { en: bonus.amount ?? "—" },
-    type,
-    valueAmount: parseValueAmount(bonus.amount),
-    listedAt: bonus.createdAt.toISOString(),
-    expiresAt: bonus.expiryDate
-      ? bonus.expiryDate.toISOString()
-      : "9999-12-31",
-    wagering: { en: bonus.wageringRequirement ?? "—" },
-  };
-}
+export const bonusListOrder = [
+  { sortOrder: "asc" as const },
+  { createdAt: "desc" as const },
+];
 
 export async function getBonuses(locale: string): Promise<MockBonus[]> {
   const rows = await prisma.bonus.findMany({
     where: {
-      status: "published",
-      casino: { status: "published" },
+      ...publishedContentWhere,
+      casino: publishedContentWhere,
     },
     include: {
       translations: true,
       casino: { include: { translations: true } },
+      ...bonusTypeInclude,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: bonusListOrder,
   });
 
   return rows.flatMap((bonus) => {
-    const type = asBonusType(bonus.type);
     const translation = pickTranslation(bonus.translations, locale);
-    const casinoTranslation = pickTranslation(bonus.casino.translations, locale);
+    const casinoTranslation = pickTranslation(
+      bonus.casino.translations,
+      locale,
+    );
 
-    if (!type || !translation || !casinoTranslation) return [];
+    if (!translation || !casinoTranslation) return [];
 
-    return [toDirectoryBonus(bonus, translation, casinoTranslation)];
+    return [toDirectoryBonus(bonus, translation, casinoTranslation, locale)];
   });
 }
 
@@ -111,9 +126,8 @@ export async function getFeaturedBonuses(
 ): Promise<MockBonus[]> {
   const rows = await prisma.bonus.findMany({
     where: {
-      status: "published",
-      type: { in: [...LISTING_BONUS_TYPES] },
-      casino: { status: "published" },
+      ...publishedContentWhere,
+      casino: publishedContentWhere,
     },
     include: {
       translations: true,
@@ -130,38 +144,26 @@ export async function getFeaturedBonuses(
           },
         },
       },
+      ...bonusTypeInclude,
     },
   });
 
   const mapped: MockBonus[] = [];
 
   for (const bonus of rows) {
-    const type = asBonusType(bonus.type);
     const translation = pickTranslation(bonus.translations, locale);
-    const casinoTranslation = pickTranslation(bonus.casino.translations, locale);
-    if (!type || !translation || !casinoTranslation) continue;
+    const casinoTranslation = pickTranslation(
+      bonus.casino.translations,
+      locale,
+    );
+    if (!translation || !casinoTranslation) continue;
 
-    mapped.push({
-      id: bonus.id,
-      slug: bonus.id,
-      casinoSlug: bonus.casino.slug,
-      casinoName: { en: casinoTranslation.name },
-      logoUrl: bonus.casino.logoUrl ?? undefined,
-      title: { en: translation.title },
-      bonusValue: { en: bonus.amount ?? "—" },
-      type,
-      valueAmount: parseValueAmount(bonus.amount),
-      listedAt: bonus.createdAt.toISOString(),
-      expiresAt: bonus.expiryDate
-        ? bonus.expiryDate.toISOString()
-        : "9999-12-31",
-      wagering: { en: bonus.wageringRequirement ?? "—" },
-    });
+    mapped.push(
+      toDirectoryBonus(bonus, translation, casinoTranslation, locale),
+    );
   }
 
-  return mapped
-    .sort((a, b) => b.valueAmount - a.valueAmount)
-    .slice(0, limit);
+  return mapped.sort((a, b) => b.valueAmount - a.valueAmount).slice(0, limit);
 }
 
 export type CasinoBonusTermsView = {
@@ -195,11 +197,11 @@ export async function getBonusesForCasino(
 ): Promise<CasinoBonusTermsView[]> {
   const rows = await prisma.bonus.findMany({
     where: {
-      status: "published",
-      casino: { slug: casinoSlug, status: "published" },
+      ...publishedContentWhere,
+      casino: { slug: casinoSlug, ...publishedContentWhere },
     },
     include: { translations: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: bonusListOrder,
   });
 
   return rows.flatMap((bonus) => {

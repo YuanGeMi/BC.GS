@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { BonusDirectory } from "@/components/bonus-directory";
+import { CasinoDirectory } from "@/components/casino-directory";
 import { Section } from "@/components/section";
-import { getBonuses } from "@/lib/bonuses";
+import { getCasinos } from "@/lib/casinos";
+import { getDirectoryCatalogs } from "@/lib/catalogs";
 import { pageAlternates } from "@/lib/seo";
 
 type Props = {
@@ -14,21 +15,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const t = await getTranslations("BonusesPage");
+  const t = await getTranslations("CasinosPage");
 
   return {
     title: t("seoTitle"),
     description: t("seoDescription"),
-    ...pageAlternates("/bonuses"),
+    ...pageAlternates("/casinos"),
   };
 }
 
-export default async function BonusesPage({ params }: Props) {
+export default async function CasinosPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const t = await getTranslations("BonusesPage");
-  const bonuses = await getBonuses(locale);
+  const t = await getTranslations("CasinosPage");
+  const [casinos, catalogs] = await Promise.all([
+    getCasinos(locale),
+    getDirectoryCatalogs(locale),
+  ]);
 
   return (
     <>
@@ -45,7 +49,7 @@ export default async function BonusesPage({ params }: Props) {
       </Section>
 
       <Section>
-        {bonuses.length === 0 ? (
+        {casinos.length === 0 ? (
           <div className="bg-card ring-text/8 rounded-xl px-6 py-12 text-center ring-1">
             <p className="text-text text-base font-semibold tracking-tight">
               {t("empty.title")}
@@ -55,7 +59,11 @@ export default async function BonusesPage({ params }: Props) {
             </p>
           </div>
         ) : (
-          <BonusDirectory locale={locale} bonuses={bonuses} />
+          <CasinoDirectory
+            locale={locale}
+            casinos={casinos}
+            catalogs={catalogs}
+          />
         )}
       </Section>
     </>

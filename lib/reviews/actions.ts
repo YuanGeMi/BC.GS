@@ -4,8 +4,12 @@ import { Prisma } from "@prisma/client";
 
 import { ensureUserProfile } from "@/lib/auth/profile";
 import { getAuthUser } from "@/lib/auth/session";
+import { ReviewStatus, publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
-import { isValidDisplayName, normalizeDisplayName } from "@/lib/reviews/display-name";
+import {
+  isValidDisplayName,
+  normalizeDisplayName,
+} from "@/lib/reviews/display-name";
 import {
   getPublishedUserReviewsPage,
   hasUserReviewedCasino,
@@ -73,12 +77,12 @@ export async function submitReview(
     return { error: "bodyTooLong" };
   }
 
-  const casino = await prisma.casino.findUnique({
-    where: { id: casinoId },
-    select: { id: true, status: true },
+  const casino = await prisma.casino.findFirst({
+    where: { id: casinoId, ...publishedContentWhere },
+    select: { id: true },
   });
 
-  if (!casino || casino.status !== "published") {
+  if (!casino) {
     return { error: "casinoNotFound" };
   }
 
@@ -89,7 +93,7 @@ export async function submitReview(
         casinoId,
         rating,
         body,
-        status: "pending",
+        status: ReviewStatus.pending,
       },
     });
   } catch (error) {

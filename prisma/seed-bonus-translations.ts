@@ -158,16 +158,19 @@ const translations = {
 type Locale = keyof (typeof translations)[keyof typeof translations];
 
 function keyFor(bonus: {
-  type: string;
+  bonusType: { slug: string };
   amount: string | null;
   casino: { slug: string };
 }) {
-  return `${bonus.casino.slug}|${bonus.type}|${bonus.amount ?? ""}`;
+  return `${bonus.casino.slug}|${bonus.bonusType.slug}|${bonus.amount ?? ""}`;
 }
 
 async function main() {
   const bonuses = await prisma.bonus.findMany({
-    include: { casino: { select: { slug: true } } },
+    include: {
+      casino: { select: { slug: true } },
+      bonusType: { select: { slug: true } },
+    },
     orderBy: { createdAt: "asc" },
   });
 

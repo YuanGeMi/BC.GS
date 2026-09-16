@@ -7,6 +7,7 @@ import { applySupabaseSession } from "./lib/supabase/proxy";
 const intlMiddleware = createMiddleware(routing);
 
 export default async function proxy(request: NextRequest) {
+  request.headers.set("x-pathname", request.nextUrl.pathname);
   const response = intlMiddleware(request);
   return applySupabaseSession(request, response);
 }

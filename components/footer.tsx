@@ -5,18 +5,23 @@ import { Logo } from "@/components/logo";
 import { Link } from "@/i18n/navigation";
 import { MAIN_NAV } from "@/lib/nav";
 import { getTelegramChannelUrl } from "@/lib/site";
-
-const LEGAL_LINKS = [
-  { href: "/privacy", labelKey: "privacy" as const },
-  { href: "/terms", labelKey: "terms" as const },
-  { href: "/responsible-gambling", labelKey: "responsibleGambling" as const },
-];
+import {
+  FOOTER_LEGAL_LINKS,
+  getPublishedLegalPageSlugs,
+} from "@/lib/static-pages";
 
 export async function Footer() {
   const tNav = await getTranslations("Nav");
   const tFooter = await getTranslations("Footer");
   const year = new Date().getFullYear();
-  const telegramUrl = await getTelegramChannelUrl();
+  const [telegramUrl, publishedLegalSlugs] = await Promise.all([
+    getTelegramChannelUrl(),
+    getPublishedLegalPageSlugs(),
+  ]);
+  const publishedLegal = new Set(publishedLegalSlugs);
+  const legalLinks = FOOTER_LEGAL_LINKS.filter((item) =>
+    publishedLegal.has(item.slug),
+  );
 
   return (
     <footer className="border-text/8 bg-card/40 mt-auto w-full min-w-0 border-t">
@@ -48,46 +53,52 @@ export async function Footer() {
               </ul>
             </div>
 
-            <div>
-              <p className="text-text/40 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
-                {tFooter("legal")}
-              </p>
-              <ul className="space-y-2.5">
-                {LEGAL_LINKS.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className="text-text/70 hover:text-accent text-sm transition-colors duration-200"
-                    >
-                      {tFooter(item.labelKey)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {legalLinks.length > 0 ? (
+              <div>
+                <p className="text-text/40 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
+                  {tFooter("legal")}
+                </p>
+                <ul className="space-y-2.5">
+                  {legalLinks.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className="text-text/70 hover:text-accent text-sm transition-colors duration-200"
+                      >
+                        {tFooter(item.labelKey)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
 
             <div className="col-span-2 sm:col-span-1">
-              <p className="text-text/40 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
-                {tFooter("community")}
-              </p>
-              <ul className="space-y-2.5">
-                <li>
-                  <a
-                    href={telegramUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={tFooter("telegramChannel")}
-                    aria-label={tFooter("telegramChannel")}
-                    className="text-text/55 hover:text-accent inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
-                  >
-                    <SiTelegram
-                      aria-hidden
-                      className="size-4 shrink-0"
-                    />
-                    <span>{tFooter("telegramChannelShort")}</span>
-                  </a>
-                </li>
-              </ul>
+              {telegramUrl ? (
+                <>
+                  <p className="text-text/40 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
+                    {tFooter("community")}
+                  </p>
+                  <ul className="space-y-2.5">
+                    <li>
+                      <a
+                        href={telegramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={tFooter("telegramChannel")}
+                        aria-label={tFooter("telegramChannel")}
+                        className="text-text/55 hover:text-accent inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
+                      >
+                        <SiTelegram
+                          aria-hidden
+                          className="size-4 shrink-0"
+                        />
+                        <span>{tFooter("telegramChannelShort")}</span>
+                      </a>
+                    </li>
+                  </ul>
+                </>
+              ) : null}
             </div>
           </div>
         </div>

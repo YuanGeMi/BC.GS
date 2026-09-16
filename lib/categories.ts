@@ -9,7 +9,9 @@ import type {
 } from "@prisma/client";
 import { cache } from "react";
 
+import { bonusListOrder } from "@/lib/bonuses";
 import { getPayoutSpeedLabel } from "@/lib/casinos";
+import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 
 function pickTranslation<T extends { locale: string }>(
@@ -32,11 +34,16 @@ function firstParagraph(body: string): string | undefined {
 }
 
 function pickBonus(
-  bonuses: Array<Bonus & { translations: BonusTranslation[] }>,
+  bonuses: Array<
+    Bonus & {
+      translations: BonusTranslation[];
+      bonusType: { slug: string };
+    }
+  >,
   locale: string,
 ): { title: string; amount: string } | null {
   const preferred =
-    bonuses.find((bonus) => bonus.type === "welcome") ?? bonuses[0];
+    bonuses.find((bonus) => bonus.bonusType.slug === "welcome") ?? bonuses[0];
 
   if (!preferred) return null;
 
@@ -75,6 +82,7 @@ export type CategoryCasinoView = {
   badges: string[];
   highlight: { label: string; value: string };
   welcomeBonus: string;
+  editorialNote?: string;
   lede?: string;
 };
 
@@ -103,8 +111,14 @@ function toCategoryCasino(
       | null;
   },
   translation: CasinoTranslation,
-  bonuses: Array<Bonus & { translations: BonusTranslation[] }>,
+  bonuses: Array<
+    Bonus & {
+      translations: BonusTranslation[];
+      bonusType: { slug: string };
+    }
+  >,
   locale: string,
+  editorialNote?: string,
 ): CategoryCasinoView {
   const bonus = pickBonus(bonuses, locale);
   const payout = getPayoutSpeedLabel(casino.payoutSpeed, locale);
@@ -123,18 +137,19 @@ function toCategoryCasino(
           value: payout,
         },
     welcomeBonus: bonus?.amount ?? "—",
-    lede: firstParagraph(translation.reviewBody),
+    editorialNote,
+    lede: editorialNote || firstParagraph(translation.reviewBody),
   };
 }
 
 export const getCategoryBySlug = cache(
   async (slug: string, locale: string): Promise<CategoryView | null> => {
-    const row = await prisma.category.findUnique({
-      where: { slug },
+    const row = await prisma.category.findFirst({
+      where: { slug, ...publishedContentWhere },
       include: { translations: true },
     });
 
-    if (!row || row.status !== "published") return null;
+    if (!row) return null;
 
     const translation = pickTranslation(row.translations, locale);
     if (!translation) return null;
@@ -150,16 +165,20 @@ export async function getCasinosForCategory(
   const rows = await prisma.casinoCategory.findMany({
     where: {
       categoryId,
-      casino: { status: "published" },
+      casino: publishedContentWhere,
     },
     include: {
+      notes: true,
       casino: {
         include: {
           translations: true,
           bonuses: {
-            where: { status: "published" },
-            include: { translations: true },
-            orderBy: { createdAt: "desc" },
+            where: publishedContentWhere,
+            include: {
+              translations: true,
+              bonusType: { select: { slug: true } },
+            },
+            orderBy: bonusListOrder,
           },
           payoutSpeed: { include: { translations: true } },
         },
@@ -171,10 +190,19 @@ export async function getCasinosForCategory(
     ],
   });
 
-  return rows.flatMap(({ casino }) => {
+  return rows.flatMap(({ casino, notes }) => {
     const translation = pickTranslation(casino.translations, locale);
     if (!translation) return [];
-    return [toCategoryCasino(casino, translation, casino.bonuses, locale)];
+    const note = pickTranslation(notes, locale)?.editorialNote.trim();
+    return [
+      toCategoryCasino(
+        casino,
+        translation,
+        casino.bonuses,
+        locale,
+        note || undefined,
+      ),
+    ];
   });
 }
 
@@ -184,7 +212,7 @@ export async function getRelatedCategories(
   count = 3,
 ): Promise<RelatedCategoryView[]> {
   const rows = await prisma.category.findMany({
-    where: { status: "published", slug: { not: slug } },
+    where: { ...publishedContentWhere, slug: { not: slug } },
     include: { translations: true },
     orderBy: { createdAt: "asc" },
     take: count,
@@ -208,7 +236,7 @@ export async function getPublishedCategories(
   locale: string,
 ): Promise<RelatedCategoryView[]> {
   const rows = await prisma.category.findMany({
-    where: { status: "published" },
+    where: publishedContentWhere,
     include: { translations: true },
     orderBy: { createdAt: "asc" },
   });
@@ -229,7 +257,7 @@ export async function getPublishedCategories(
 
 export async function getPublishedCategorySlugs(): Promise<string[]> {
   const rows = await prisma.category.findMany({
-    where: { status: "published" },
+    where: publishedContentWhere,
     select: { slug: true },
     orderBy: { createdAt: "asc" },
   });

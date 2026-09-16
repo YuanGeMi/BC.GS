@@ -1,4 +1,4 @@
-import { copy, PHRASE, type BonusTypeId, type LocalizedText } from "@/data/mock-casinos";
+import { copy, PHRASE, type LocalizedText } from "@/data/mock-casinos";
 
 export type MockBonus = {
   id: string;
@@ -8,7 +8,8 @@ export type MockBonus = {
   logoUrl?: string;
   title: LocalizedText;
   bonusValue: LocalizedText;
-  type: BonusTypeId;
+  type: string;
+  typeName?: string;
   /** Approximate value in USD for sorting. */
   valueAmount: number;
   listedAt: string;

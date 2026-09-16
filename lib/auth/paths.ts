@@ -40,7 +40,12 @@ export function safeCallbackNext(next: string | null) {
     (locale) => value === `/${locale}` || value.startsWith(`/${locale}/`),
   );
 
-  return isLocalized ? value : fallback;
+  if (isLocalized) return value;
+  if (value === "/admin" || value.startsWith("/admin/")) {
+    return `/${routing.defaultLocale}${value}`;
+  }
+
+  return fallback;
 }
 
 export function localeFromPath(path: string) {

@@ -12,22 +12,22 @@ import {
   countBonusFilters,
   EMPTY_BONUS_FILTERS,
   filterBonuses,
-  LISTING_BONUS_TYPES,
   sortBonuses,
   toggleBonusType,
   uniqueBonusCasinos,
   type BonusSort,
 } from "@/lib/bonus-directory";
+import type { CatalogOption } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
 
 type Props = {
   locale: string;
   bonuses: MockBonus[];
+  bonusTypes: CatalogOption[];
 };
 
-export function BonusDirectory({ locale, bonuses }: Props) {
+export function BonusDirectory({ locale, bonuses, bonusTypes }: Props) {
   const t = useTranslations("BonusesPage");
-  const tTypes = useTranslations("CasinosPage.bonusTypes");
   const [types, setTypes] = useState(EMPTY_BONUS_FILTERS.types);
   const [casinoSlug, setCasinoSlug] = useState("");
   const [sort, setSort] = useState<BonusSort>("value");
@@ -68,15 +68,20 @@ export function BonusDirectory({ locale, bonuses }: Props) {
               {t("filters.type")}
             </p>
             <div className="flex flex-wrap gap-2">
-              {LISTING_BONUS_TYPES.map((type) => {
-                const active = types.includes(type);
+              {bonusTypes.map((option) => {
+                const active = types.includes(option.slug);
 
                 return (
                   <button
-                    key={type}
+                    key={option.slug}
                     type="button"
                     onClick={() => {
-                      setTypes((current) => toggleBonusType({ types: current, casinoSlug }, type).types);
+                      setTypes((current) =>
+                        toggleBonusType(
+                          { types: current, casinoSlug },
+                          option.slug,
+                        ).types,
+                      );
                       resetPage();
                     }}
                     className={cn(
@@ -86,7 +91,7 @@ export function BonusDirectory({ locale, bonuses }: Props) {
                         : "bg-text/5 text-text/60 hover:text-text",
                     )}
                   >
-                    {tTypes(type)}
+                    {option.name}
                   </button>
                 );
               })}
@@ -174,7 +179,7 @@ export function BonusDirectory({ locale, bonuses }: Props) {
                 logoUrl={bonus.logoUrl}
                 title={localize(bonus.title, locale)}
                 bonusValue={localize(bonus.bonusValue, locale)}
-                badge={tTypes(bonus.type)}
+                badge={bonus.typeName ?? bonus.type}
                 ctaHref={`/casinos/${bonus.casinoSlug}`}
                 ctaLabel={t("cta")}
               />

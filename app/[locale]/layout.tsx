@@ -10,8 +10,6 @@ import { notFound } from "next/navigation";
 
 import { AuthSessionProvider } from "@/components/auth/auth-session-provider";
 import { PasswordRecoveryListener } from "@/components/auth/password-recovery-listener";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
 import { routing } from "@/i18n/routing";
 import { siteMetadataBase } from "@/lib/seo";
 
@@ -105,9 +103,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider messages={messages}>
           <AuthSessionProvider>
             <PasswordRecoveryListener />
-            <Header locale={locale} />
-            <main className="min-w-0 flex-1">{children}</main>
-            <Footer />
+            <div className="flex min-h-full min-w-0 flex-1 flex-col">{children}</div>
           </AuthSessionProvider>
         </NextIntlClientProvider>
       </body>

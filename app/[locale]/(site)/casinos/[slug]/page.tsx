@@ -112,7 +112,6 @@ export default async function CasinoDetailPage({ params }: Props) {
   }
 
   const t = await getTranslations("CasinoDetail");
-  const tFilters = await getTranslations("CasinosPage");
   const [related, reviewPage, userRating] = await Promise.all([
     getRelatedCasinos(slug, locale, 4),
     getPublishedUserReviewsPage(casino.id),
@@ -123,9 +122,7 @@ export default async function CasinoDetailPage({ params }: Props) {
   const facts = [
     {
       label: t("facts.license"),
-      value: casino.licenses
-        .map((id) => tFilters(`licenses.${id}`))
-        .join(" · "),
+      value: casino.licenses.join(" · "),
     },
     {
       label: t("facts.established"),
@@ -141,15 +138,11 @@ export default async function CasinoDetailPage({ params }: Props) {
     },
     {
       label: t("facts.payments"),
-      value: casino.payments
-        .map((id) => tFilters(`payments.${id}`))
-        .join(" · "),
+      value: casino.payments.join(" · "),
     },
     {
       label: t("facts.providers"),
-      value: casino.providers
-        .map((id) => tFilters(`providers.${id}`))
-        .join(" · "),
+      value: casino.providers.join(" · "),
     },
   ];
 
