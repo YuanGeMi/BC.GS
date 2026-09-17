@@ -335,7 +335,7 @@ export default async function CasinoDetailPage({ params }: Props) {
         </Section>
       ) : null}
 
-      <Section className="pt-0 md:pt-0 lg:pt-0">
+      <Section>
         <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
           {t("review.title", { name: casino.name })}
         </h2>
