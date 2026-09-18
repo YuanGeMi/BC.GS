@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { SiteSettingsForm } from "@/components/admin/site-settings-form";
 import { Link } from "@/i18n/navigation";
-import {
-  getSiteSettings,
-  listAdminStaticPages,
-} from "@/lib/admin/static-pages";
+import { listAdminStaticPages } from "@/lib/admin/static-pages";
 import { LEGAL_PAGE_LABELS } from "@/lib/static-pages";
 
 type Props = {
@@ -25,10 +21,7 @@ export default async function AdminPagesPage({ params }: Props) {
   const t = await getTranslations("Admin");
   const tp = await getTranslations("Admin.pages");
 
-  const [pages, settings] = await Promise.all([
-    listAdminStaticPages(),
-    getSiteSettings(),
-  ]);
+  const pages = await listAdminStaticPages();
 
   const dateFmt = new Intl.DateTimeFormat(locale, {
     day: "numeric",
@@ -84,17 +77,6 @@ export default async function AdminPagesPage({ params }: Props) {
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div className="border-text/10 mt-16 border-t pt-10">
-        <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-          {tp("siteEyebrow")}
-        </p>
-        <h2 className="font-display mt-3 text-3xl tracking-tight">
-          {tp("siteTitle")}
-        </h2>
-        <p className="text-text/55 mt-3 max-w-xl text-sm">{tp("siteLede")}</p>
-        <SiteSettingsForm telegramChannelUrl={settings.telegramChannelUrl} />
       </div>
     </section>
   );

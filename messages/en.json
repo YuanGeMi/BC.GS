@@ -109,10 +109,12 @@
     "community": "Community",
     "telegramChannel": "Official BC.GS Telegram Channel",
     "telegramChannelShort": "Official Telegram",
+    "discordChannel": "Official BC.GS Discord",
+    "discordChannelShort": "Official Discord",
     "privacy": "Privacy",
     "terms": "Terms",
     "responsibleGambling": "Responsible Gambling",
-    "copyright": "© {year} BC.GS. All rights reserved."
+    "copyright": "© {year} {siteName}. All rights reserved."
   },
   "HomePage": {
     "seoTitle": "BC.GS — Independent betting & casino reviews",
@@ -408,6 +410,7 @@
       "bonuses": "Bonuses",
       "categories": "Categories",
       "pages": "Pages",
+      "settings": "Settings",
       "reviews": "Reviews",
       "catalogs": "Catalogs",
       "clicks": "Clicks",
@@ -494,7 +497,11 @@
         },
         "pages": {
           "kicker": "Legal",
-          "blurb": "Privacy, terms, responsible gambling, Telegram."
+          "blurb": "Privacy, terms, and responsible gambling."
+        },
+        "settings": {
+          "kicker": "Brand",
+          "blurb": "Site name, logo, favicon, SEO defaults, and community links."
         },
         "reviews": {
           "kicker": "Moderation",
@@ -538,6 +545,19 @@
         "deleteBody": "Bonuses and category placements for this operator will be removed too.",
         "slug": "Slug",
         "logoUrl": "Logo URL",
+        "logoUpload": "Upload logo",
+        "logoUploading": "Uploading…",
+        "logoUploaded": "Logo uploaded. Save the casino to keep it.",
+        "logoClear": "Clear",
+        "logoEmpty": "None",
+        "logoHelp": "PNG, JPEG, WebP, or SVG up to 2 MB. Stored in Supabase Storage.",
+        "logoErrors": {
+          "missingFile": "Choose an image file.",
+          "invalidFolder": "Could not start the upload. Reload and try again.",
+          "invalidType": "Use PNG, JPEG, WebP, or SVG.",
+          "tooLarge": "Logo must be 2 MB or smaller.",
+          "uploadFailed": "Upload failed. Check the Storage bucket exists."
+        },
         "established": "Established",
         "minDeposit": "Min deposit",
         "payoutSpeed": "Payout speed",
@@ -687,6 +707,9 @@
       "telegram": "Telegram channel URL",
       "telegramHelp": "Shown in the footer when set. Leave empty to hide.",
       "telegramSaved": "Telegram link saved.",
+      "discord": "Discord invite URL",
+      "discordHelp": "Shown in the footer when set. Leave empty to hide.",
+      "discordSaved": "Discord link saved.",
       "columns": {
         "page": "Page",
         "status": "Status",
@@ -710,10 +733,39 @@
         "markdown": "Markdown"
       },
       "telegramSavedLong": "Saved. The footer will pick this up on the next load.",
-      "siteEyebrow": "Site",
-      "siteTitle": "Settings",
-      "siteLede": "Footer Telegram link. Empty hides it on the public site.",
-      "telegramHelpLong": "Must start with https://. Leave empty to hide the footer link."
+      "settingsSaved": "Saved. The footer will pick this up on the next load.",
+      "siteName": "Site name",
+      "siteNameHelp": "Shown in the header brand contexts, copyright, and SEO site name. Empty falls back to BC.GS.",
+      "logoUrl": "Logo URL",
+      "logoUrlHelp": "Upload below, or paste a root-relative path / https URL. Empty falls back to the default mark.",
+      "logoUpload": "Upload logo",
+      "faviconUrl": "Favicon",
+      "faviconUrlHelp": "Square PNG/JPEG/WebP for the browser tab. Empty falls back to /icon.png. Browsers may cache it for days.",
+      "faviconUpload": "Upload favicon",
+      "ogUpload": "Upload image",
+      "assetUploading": "Uploading…",
+      "assetUploaded": "Uploaded and saved. Header and footer will update on the next load.",
+      "assetEmpty": "None",
+      "assetErrors": {
+        "missingFile": "Choose an image file.",
+        "invalidKind": "Unknown asset type.",
+        "invalidType": "Use PNG, JPEG, WebP, or SVG.",
+        "tooLarge": "File must be 2 MB or smaller.",
+        "uploadFailed": "Upload failed. Check the site-branding Storage bucket exists."
+      },
+      "ogImageUrl": "Open Graph / social image",
+      "ogImageUrlHelp": "1200×630 recommended. Upload or paste a path / https URL. Empty falls back to /brand/og.png.",
+      "seoTitleDefault": "Default SEO title",
+      "seoTitleDefaultHelp": "Used as the default document title and home fallback when set. Leave empty to use locale copy.",
+      "seoDescriptionDefault": "Default meta description",
+      "seoDescriptionDefaultHelp": "Used as the default meta description when set. Leave empty to use locale copy.",
+      "telegramHelpLong": "Must start with https://. Leave empty to hide the Telegram footer link.",
+      "discordHelpLong": "Must start with https://. Leave empty to hide the Discord footer link."
+    },
+    "settings": {
+      "eyebrow": "Site",
+      "title": "Settings",
+      "lede": "Site name, logo, favicon, default SEO, and footer community links."
     },
     "reviews": {
       "eyebrow": "Queue",
@@ -865,6 +917,8 @@
       "lastAdmin": "You cannot demote the last admin.",
       "selfDemote": "You cannot demote yourself.",
       "invalidUrl": "Enter a valid https URL or leave it empty.",
+      "invalidLogoUrl": "Enter a root-relative path or https URL, or leave it empty.",
+      "invalidSiteName": "Site name must be 80 characters or fewer.",
       "casinoRequired": "Pick a casino.",
       "typeRequired": "Pick a bonus type from the catalog.",
       "invalidExpiry": "Expiry must be a valid date.",

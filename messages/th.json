@@ -109,10 +109,12 @@
     "community": "ชุมชน",
     "telegramChannel": "ช่อง Telegram ทางการของ BC.GS",
     "telegramChannelShort": "Telegram ทางการ",
+    "discordChannel": "Discord ทางการของ BC.GS",
+    "discordChannelShort": "Discord ทางการ",
     "privacy": "ความเป็นส่วนตัว",
     "terms": "ข้อกำหนด",
     "responsibleGambling": "การพนันอย่างรับผิดชอบ",
-    "copyright": "© {year} BC.GS สงวนลิขสิทธิ์"
+    "copyright": "© {year} {siteName} สงวนลิขสิทธิ์"
   },
   "HomePage": {
     "seoTitle": "BC.GS — รีวิวการเดิมพันและคาสิโนอิสระ",
@@ -408,6 +410,7 @@
       "bonuses": "โบนัส",
       "categories": "หมวดหมู่",
       "pages": "หน้า",
+      "settings": "การตั้งค่า",
       "reviews": "รีวิว",
       "catalogs": "แคตตาล็อก",
       "clicks": "คลิก",
@@ -494,7 +497,11 @@
         },
         "pages": {
           "kicker": "กฎหมาย",
-          "blurb": "ความเป็นส่วนตัว ข้อกำหนด การเล่นอย่างรับผิดชอบ Telegram"
+          "blurb": "ความเป็นส่วนตัว ข้อกำหนด และการเล่นอย่างรับผิดชอบ"
+        },
+        "settings": {
+          "kicker": "แบรนด์",
+          "blurb": "ชื่อไซต์ โลโก้ favicon SEO เริ่มต้น และลิงก์ชุมชน"
         },
         "reviews": {
           "kicker": "ตรวจสอบ",
@@ -538,6 +545,19 @@
         "deleteBody": "โบนัสและการจัดวางหมวดหมู่จะถูกลบด้วย",
         "slug": "Slug",
         "logoUrl": "URL โลโก้",
+        "logoUpload": "อัปโหลดโลโก้",
+        "logoUploading": "กำลังอัปโหลด…",
+        "logoUploaded": "อัปโหลดโลโก้แล้ว บันทึกคาสิโนเพื่อเก็บไว้",
+        "logoClear": "ล้าง",
+        "logoEmpty": "ไม่มี",
+        "logoHelp": "PNG JPEG WebP หรือ SVG ไม่เกิน 2 MB เก็บใน Supabase Storage",
+        "logoErrors": {
+          "missingFile": "เลือกไฟล์รูปภาพ",
+          "invalidFolder": "เริ่มอัปโหลดไม่ได้ โหลดหน้าใหม่แล้วลองอีกครั้ง",
+          "invalidType": "ใช้ PNG JPEG WebP หรือ SVG",
+          "tooLarge": "โลโก้ต้องไม่เกิน 2 MB",
+          "uploadFailed": "อัปโหลดล้มเหลว ตรวจว่ามี Storage bucket แล้ว"
+        },
         "established": "ก่อตั้ง",
         "minDeposit": "ฝากขั้นต่ำ",
         "payoutSpeed": "ความเร็วการจ่าย",
@@ -687,6 +707,9 @@
       "telegram": "URL ช่อง Telegram",
       "telegramHelp": "แสดงที่ส่วนท้ายเมื่อตั้งค่า เว้นว่างเพื่อซ่อน",
       "telegramSaved": "บันทึกลิงก์ Telegram แล้ว",
+      "discord": "URL เชิญ Discord",
+      "discordHelp": "แสดงที่ส่วนท้ายเมื่อตั้งค่า เว้นว่างเพื่อซ่อน",
+      "discordSaved": "บันทึกลิงก์ Discord แล้ว",
       "columns": {
         "page": "หน้า",
         "status": "สถานะ",
@@ -710,10 +733,39 @@
         "markdown": "Markdown"
       },
       "telegramSavedLong": "บันทึกแล้ว ส่วนท้ายจะอัปเดตเมื่อโหลดครั้งถัดไป",
-      "siteEyebrow": "ไซต์",
-      "siteTitle": "การตั้งค่า",
-      "siteLede": "ลิงก์ Telegram ที่ส่วนท้าย เว้นว่างเพื่อซ่อนบนเว็บสาธารณะ",
-      "telegramHelpLong": "ต้องขึ้นต้นด้วย https:// เว้นว่างเพื่อซ่อนลิงก์ส่วนท้าย"
+      "settingsSaved": "บันทึกแล้ว ส่วนท้ายจะอัปเดตเมื่อโหลดครั้งถัดไป",
+      "siteName": "ชื่อไซต์",
+      "siteNameHelp": "ใช้กับแบรนด์ ลิขสิทธิ์ และชื่อไซต์ใน SEO เว้นว่างแล้วจะใช้ BC.GS",
+      "logoUrl": "URL โลโก้",
+      "logoUrlHelp": "อัปโหลดด้านล่าง หรือวางพาธในไซต์ / https เว้นว่างแล้วใช้โลโก้เริ่มต้น",
+      "logoUpload": "อัปโหลดโลโก้",
+      "faviconUrl": "Favicon",
+      "faviconUrlHelp": "PNG/JPEG/WebP สี่เหลี่ยมสำหรับแท็บเบราว์เซอร์ เว้นว่างแล้วใช้ /icon.png เบราว์เซอร์อาจแคชหลายวัน",
+      "faviconUpload": "อัปโหลด favicon",
+      "ogUpload": "อัปโหลดรูป",
+      "assetUploading": "กำลังอัปโหลด…",
+      "assetUploaded": "อัปโหลดและบันทึกแล้ว ส่วนหัวและส่วนท้ายจะอัปเดตเมื่อโหลดครั้งถัดไป",
+      "assetEmpty": "ไม่มี",
+      "assetErrors": {
+        "missingFile": "เลือกไฟล์รูปภาพ",
+        "invalidKind": "ไม่รู้จักประเภทไฟล์",
+        "invalidType": "ใช้ PNG JPEG WebP หรือ SVG",
+        "tooLarge": "ไฟล์ต้องไม่เกิน 2 MB",
+        "uploadFailed": "อัปโหลดล้มเหลว ตรวจว่ามี bucket site-branding แล้ว"
+      },
+      "ogImageUrl": "รูป Open Graph / แชร์โซเชียล",
+      "ogImageUrlHelp": "แนะนำ 1200×630 อัปโหลดหรือวางพาธ / https เว้นว่างแล้วใช้ /brand/og.png",
+      "seoTitleDefault": "ชื่อ SEO เริ่มต้น",
+      "seoTitleDefaultHelp": "ใช้เป็นชื่อเอกสารเริ่มต้นและหน้าแรกเมื่อตั้งค่า เว้นว่างแล้วใช้ข้อความตามภาษา",
+      "seoDescriptionDefault": "คำอธิบายเมตาเริ่มต้น",
+      "seoDescriptionDefaultHelp": "ใช้เป็นคำอธิบายเมตาเริ่มต้นเมื่อตั้งค่า เว้นว่างแล้วใช้ข้อความตามภาษา",
+      "telegramHelpLong": "ต้องขึ้นต้นด้วย https:// เว้นว่างเพื่อซ่อนลิงก์ Telegram ส่วนท้าย",
+      "discordHelpLong": "ต้องขึ้นต้นด้วย https:// เว้นว่างเพื่อซ่อนลิงก์ Discord ส่วนท้าย"
+    },
+    "settings": {
+      "eyebrow": "ไซต์",
+      "title": "การตั้งค่า",
+      "lede": "ชื่อไซต์ โลโก้ favicon SEO เริ่มต้น และลิงก์ชุมชนที่ส่วนท้าย"
     },
     "reviews": {
       "eyebrow": "คิว",
@@ -865,6 +917,8 @@
       "lastAdmin": "ถอดแอดมินคนสุดท้ายไม่ได้",
       "selfDemote": "ถอดสิทธิ์แอดมินของตัวเองไม่ได้",
       "invalidUrl": "ใส่ URL https ที่ถูกต้อง หรือเว้นว่าง",
+      "invalidLogoUrl": "ใส่พาธในไซต์ หรือ URL https หรือเว้นว่าง",
+      "invalidSiteName": "ชื่อไซต์ต้องไม่เกิน 80 ตัวอักษร",
       "casinoRequired": "เลือกคาสิโน",
       "typeRequired": "เลือกประเภทโบนัสจากแคตตาล็อก",
       "invalidExpiry": "วันหมดอายุต้องเป็นวันที่ถูกต้อง",

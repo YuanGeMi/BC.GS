@@ -6,6 +6,8 @@ import { isContentStatus } from "@/lib/admin/casino-input";
 import {
   englishPageReady,
   parseHttpsUrl,
+  parseLogoUrl,
+  parseSiteName,
   parseStaticPageSaveInput,
   type StaticPageInputError,
   type StaticPageSaveInput,
@@ -15,7 +17,13 @@ import { ContentStatus } from "@/lib/db-enums";
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
 import { revalidateSiteSettings, revalidateStaticPage } from "@/lib/revalidate";
-import { SITE_SETTING_KEYS } from "@/lib/site";
+import {
+  DEFAULT_FAVICON_URL,
+  DEFAULT_LOGO_URL,
+  DEFAULT_OG_IMAGE_URL,
+  DEFAULT_SITE_NAME,
+  SITE_SETTING_KEYS,
+} from "@/lib/site";
 import {
   LEGAL_PAGE_LABELS,
   LEGAL_PAGE_SLUGS,
@@ -42,7 +50,14 @@ export type StaticPageActionResult =
   | { ok: false; error: StaticPageInputError };
 
 export type SiteSettings = {
+  siteName: string;
+  logoUrl: string;
+  ogImageUrl: string;
+  faviconUrl: string;
+  seoTitleDefault: string;
+  seoDescriptionDefault: string;
   telegramChannelUrl: string;
+  discordChannelUrl: string;
 };
 
 function revalidateAdminPagePaths(slug?: string) {
@@ -216,29 +231,79 @@ export async function saveAndPublishStaticPage(
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   await requireAdmin();
-  const row = await prisma.siteSetting.findUnique({
-    where: { key: SITE_SETTING_KEYS.telegramChannelUrl },
+  const rows = await prisma.siteSetting.findMany({
+    where: {
+      key: { in: Object.values(SITE_SETTING_KEYS) },
+    },
   });
-  return { telegramChannelUrl: row?.value ?? "" };
+  const byKey = new Map(rows.map((row) => [row.key, row.value]));
+  return {
+    siteName: byKey.get(SITE_SETTING_KEYS.siteName) ?? DEFAULT_SITE_NAME,
+    logoUrl: byKey.get(SITE_SETTING_KEYS.logoUrl) ?? DEFAULT_LOGO_URL,
+    ogImageUrl: byKey.get(SITE_SETTING_KEYS.ogImageUrl) ?? DEFAULT_OG_IMAGE_URL,
+    faviconUrl: byKey.get(SITE_SETTING_KEYS.faviconUrl) ?? DEFAULT_FAVICON_URL,
+    seoTitleDefault: byKey.get(SITE_SETTING_KEYS.seoTitleDefault) ?? "",
+    seoDescriptionDefault:
+      byKey.get(SITE_SETTING_KEYS.seoDescriptionDefault) ?? "",
+    telegramChannelUrl: byKey.get(SITE_SETTING_KEYS.telegramChannelUrl) ?? "",
+    discordChannelUrl: byKey.get(SITE_SETTING_KEYS.discordChannelUrl) ?? "",
+  };
 }
 
-export async function updateSiteSettings(
-  telegramChannelUrl: string,
-): Promise<{ ok: true } | { ok: false; error: StaticPageInputError }> {
-  await requireAdmin();
-  const parsed = parseHttpsUrl(telegramChannelUrl);
-  if (!parsed.ok) return parsed;
-
+async function upsertSetting(key: string, value: string) {
   await prisma.siteSetting.upsert({
-    where: { key: SITE_SETTING_KEYS.telegramChannelUrl },
-    create: {
-      key: SITE_SETTING_KEYS.telegramChannelUrl,
-      value: parsed.value,
-    },
-    update: { value: parsed.value },
+    where: { key },
+    create: { key, value },
+    update: { value },
   });
+}
 
-  revalidateAdminPagePaths();
+export async function updateSiteSettings(input: {
+  siteName: string;
+  logoUrl: string;
+  ogImageUrl: string;
+  faviconUrl: string;
+  seoTitleDefault: string;
+  seoDescriptionDefault: string;
+  telegramChannelUrl: string;
+  discordChannelUrl: string;
+}): Promise<{ ok: true } | { ok: false; error: StaticPageInputError }> {
+  await requireAdmin();
+
+  const siteName = parseSiteName(input.siteName);
+  if (!siteName.ok) return siteName;
+
+  const logo = parseLogoUrl(input.logoUrl);
+  if (!logo.ok) return logo;
+
+  const ogImage = parseLogoUrl(input.ogImageUrl);
+  if (!ogImage.ok) return ogImage;
+
+  const favicon = parseLogoUrl(input.faviconUrl);
+  if (!favicon.ok) return favicon;
+
+  const telegram = parseHttpsUrl(input.telegramChannelUrl);
+  if (!telegram.ok) return telegram;
+  const discord = parseHttpsUrl(input.discordChannelUrl);
+  if (!discord.ok) return discord;
+
+  const seoTitle = input.seoTitleDefault.trim().slice(0, 120);
+  const seoDescription = input.seoDescriptionDefault.trim().slice(0, 320);
+
+  await Promise.all([
+    upsertSetting(SITE_SETTING_KEYS.siteName, siteName.value),
+    upsertSetting(SITE_SETTING_KEYS.logoUrl, logo.value),
+    upsertSetting(SITE_SETTING_KEYS.ogImageUrl, ogImage.value),
+    upsertSetting(SITE_SETTING_KEYS.faviconUrl, favicon.value),
+    upsertSetting(SITE_SETTING_KEYS.seoTitleDefault, seoTitle),
+    upsertSetting(SITE_SETTING_KEYS.seoDescriptionDefault, seoDescription),
+    upsertSetting(SITE_SETTING_KEYS.telegramChannelUrl, telegram.value),
+    upsertSetting(SITE_SETTING_KEYS.discordChannelUrl, discord.value),
+  ]);
+
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}/admin/settings`);
+  }
   revalidateSiteSettings();
   return { ok: true };
 }

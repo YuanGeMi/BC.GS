@@ -13,10 +13,18 @@ import { cn } from "@/lib/utils";
 type AdminShellProps = {
   email: string;
   locale: string;
+  siteName: string;
+  logoUrl: string;
   children: React.ReactNode;
 };
 
-export function AdminShell({ email, locale, children }: AdminShellProps) {
+export function AdminShell({
+  email,
+  locale,
+  siteName,
+  logoUrl,
+  children,
+}: AdminShellProps) {
   const pathname = usePathname();
   const t = useTranslations("Admin");
   const aligned = useRef(false);
@@ -46,12 +54,22 @@ export function AdminShell({ email, locale, children }: AdminShellProps) {
     <div className="bg-background flex min-h-dvh min-w-0">
       <aside className="border-text/10 hidden w-56 shrink-0 flex-col border-r md:flex">
         <Link href="/admin" className="border-text/10 border-b px-5 py-6">
-          <p className="text-accent/80 text-[10px] font-medium tracking-[0.28em] uppercase">
-            BC.GS
-          </p>
-          <p className="font-display mt-1 text-2xl tracking-tight italic">
-            {t("shell.brand")}
-          </p>
+          <div className="flex items-center gap-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoUrl}
+              alt=""
+              className="size-7 shrink-0 object-contain"
+            />
+            <div className="min-w-0">
+              <p className="text-accent/80 truncate text-[10px] font-medium tracking-[0.28em] uppercase">
+                {siteName}
+              </p>
+              <p className="font-display mt-1 text-2xl tracking-tight italic">
+                {t("shell.brand")}
+              </p>
+            </div>
+          </div>
         </Link>
         <AdminNav pathname={pathname} className="flex-1 px-3 py-4" />
         <AdminAccount email={email} locale={locale} />
@@ -59,8 +77,14 @@ export function AdminShell({ email, locale, children }: AdminShellProps) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="border-text/10 flex items-center justify-between gap-3 border-b px-4 py-3 md:hidden">
-          <Link href="/admin">
-            <p className="font-display text-lg italic">{t("shell.brand")}</p>
+          <Link href="/admin" className="flex min-w-0 items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoUrl}
+              alt=""
+              className="size-6 shrink-0 object-contain"
+            />
+            <p className="font-display truncate text-lg italic">{t("shell.brand")}</p>
           </Link>
           <div className="flex items-center gap-3">
             <LocaleSwitcher variant="compact" />

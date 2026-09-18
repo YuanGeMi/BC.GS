@@ -1,5 +1,6 @@
 import { getSiteUrl } from "@/lib/seo";
 import type { CasinoDetailView } from "@/lib/casinos";
+import { getSiteConfig } from "@/lib/site";
 
 type Props = {
   casino: CasinoDetailView;
@@ -7,8 +8,10 @@ type Props = {
   slug: string;
 };
 
-export function CasinoReviewJsonLd({ casino, locale, slug }: Props) {
+export async function CasinoReviewJsonLd({ casino, locale, slug }: Props) {
   const reviewUrl = `${getSiteUrl()}/${locale}/casinos/${slug}`;
+  const { siteName } = await getSiteConfig();
+  const siteUrl = getSiteUrl();
 
   const schema = {
     "@context": "https://schema.org",
@@ -35,13 +38,13 @@ export function CasinoReviewJsonLd({ casino, locale, slug }: Props) {
     },
     author: {
       "@type": "Organization",
-      name: "BC.GS",
-      url: getSiteUrl(),
+      name: siteName,
+      url: siteUrl,
     },
     publisher: {
       "@type": "Organization",
-      name: "BC.GS",
-      url: getSiteUrl(),
+      name: siteName,
+      url: siteUrl,
     },
     reviewBody: casino.review.join("\n\n"),
   };

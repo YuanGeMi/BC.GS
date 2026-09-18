@@ -60,7 +60,7 @@ export function revalidateCasinoPublicSurfaces(
   revalidatePublicIndexes();
 }
 
-/** Locale layouts after SiteSetting changes (e.g. Telegram channel URL). */
+/** Locale layouts after SiteSetting changes (e.g. Telegram / Discord URLs). */
 export function revalidateSiteSettings() {
   revalidateTag(SITE_SETTINGS_TAG, "max");
   for (const locale of routing.locales) {

@@ -4,6 +4,7 @@ import { RatingStars } from "@/components/rating-stars";
 import { Container } from "@/components/section";
 import { localize, type MockCasino } from "@/data/mock-casinos";
 import { Link } from "@/i18n/navigation";
+import { getSiteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 type HomeHeroProps = {
@@ -14,6 +15,7 @@ type HomeHeroProps = {
 
 export async function HomeHero({ locale, cover, desk }: HomeHeroProps) {
   const t = await getTranslations("HomePage.hero");
+  const { siteName } = await getSiteConfig();
   const coverName = localize(cover.name, locale);
   const coverLede = cover.coverLede
     ? localize(cover.coverLede, locale)
@@ -37,7 +39,7 @@ export async function HomeHero({ locale, cover, desk }: HomeHeroProps) {
         >
           <div>
             <p className="font-display text-accent text-3xl leading-none tracking-tight sm:text-4xl">
-              BC.GS
+              {siteName}
             </p>
             <p className="text-text/45 mt-2 max-w-sm text-sm leading-snug">
               {t("masthead")}

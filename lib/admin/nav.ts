@@ -7,6 +7,7 @@ export const ADMIN_NAV = [
   { href: "/admin/catalogs/payout", labelKey: "catalogs" },
   { href: "/admin/clicks", labelKey: "clicks" },
   { href: "/admin/users", labelKey: "users" },
+  { href: "/admin/settings", labelKey: "settings" },
 ] as const;
 
 export type AdminNavLabelKey = (typeof ADMIN_NAV)[number]["labelKey"];

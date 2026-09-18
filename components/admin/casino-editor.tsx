@@ -24,6 +24,7 @@ import {
   type AdminCasinoCatalogs,
   type AdminCasinoEditorData,
 } from "@/lib/admin/casinos";
+import { uploadCasinoLogo } from "@/lib/admin/casino-logo";
 import {
   adminInputClass,
   adminSelectClass,
@@ -78,6 +79,10 @@ export function CasinoEditor({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [logoFolder] = useState(
+    () => casino?.id ?? `draft-${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
+  );
+  const [logoUploading, setLogoUploading] = useState(false);
   const [confirmSlug, setConfirmSlug] = useState(false);
   const [isPending, startTransition] = useTransition();
   const originalSlug = casino?.slug ?? "";
@@ -271,12 +276,74 @@ export function CasinoEditor({
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
               {t("casinos.editor.logoUrl")}
             </span>
-            <input
-              value={form.logoUrl}
-              onChange={(event) => patch({ logoUrl: event.target.value })}
-              className={adminInputClass}
-              placeholder="https://"
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              {form.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- admin preview of arbitrary logo hosts
+                <img
+                  src={form.logoUrl}
+                  alt=""
+                  className="border-text/10 bg-text/5 size-14 shrink-0 border object-contain p-1"
+                />
+              ) : (
+                <div className="border-text/10 bg-text/5 text-text/35 flex size-14 shrink-0 items-center justify-center border text-[10px] tracking-wide uppercase">
+                  {t("casinos.editor.logoEmpty")}
+                </div>
+              )}
+              <div className="min-w-0 flex-1 space-y-2">
+                <input
+                  value={form.logoUrl}
+                  onChange={(event) => patch({ logoUrl: event.target.value })}
+                  className={adminInputClass}
+                  placeholder="https://"
+                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-text/55 hover:text-accent inline-flex cursor-pointer items-center gap-2 text-xs tracking-wide uppercase">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      className="sr-only"
+                      disabled={logoUploading || isPending}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        if (!file) return;
+                        setError(null);
+                        setNotice(null);
+                        setLogoUploading(true);
+                        startTransition(async () => {
+                          const body = new FormData();
+                          body.set("file", file);
+                          body.set("folder", logoFolder);
+                          const result = await uploadCasinoLogo(body);
+                          setLogoUploading(false);
+                          if (!result.ok) {
+                            setError(t(`casinos.editor.logoErrors.${result.error}`));
+                            return;
+                          }
+                          patch({ logoUrl: result.url });
+                          setNotice(t("casinos.editor.logoUploaded"));
+                        });
+                      }}
+                    />
+                    <span className="border-text/15 hover:border-accent/40 border px-3 py-1.5">
+                      {logoUploading
+                        ? t("casinos.editor.logoUploading")
+                        : t("casinos.editor.logoUpload")}
+                    </span>
+                  </label>
+                  {form.logoUrl ? (
+                    <button
+                      type="button"
+                      className="text-text/40 hover:text-accent text-xs tracking-wide uppercase"
+                      onClick={() => patch({ logoUrl: "" })}
+                    >
+                      {t("casinos.editor.logoClear")}
+                    </button>
+                  ) : null}
+                </div>
+                <p className="text-text/40 text-xs">{t("casinos.editor.logoHelp")}</p>
+              </div>
+            </div>
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">

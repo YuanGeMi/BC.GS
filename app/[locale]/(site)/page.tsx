@@ -10,6 +10,7 @@ import { getFeaturedBonuses } from "@/lib/bonuses";
 import { getTopCasinos } from "@/lib/casinos";
 import { getPublishedCategories } from "@/lib/categories";
 import { pageAlternates } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -20,11 +21,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const t = await getTranslations("HomePage");
+  const [t, site] = await Promise.all([
+    getTranslations("HomePage"),
+    getSiteConfig(),
+  ]);
 
   return {
-    title: t("seoTitle"),
-    description: t("seoDescription"),
+    title: site.seoTitleDefault || t("seoTitle"),
+    description: site.seoDescriptionDefault || t("seoDescription"),
     ...pageAlternates("/"),
   };
 }

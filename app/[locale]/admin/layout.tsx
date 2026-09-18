@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { adminPerfStart } from "@/lib/admin/perf-log";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { getSiteConfig } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -33,12 +34,17 @@ export default async function AdminLayout({ children, params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   perf.mark("setRequestLocale");
-  const admin = await requireAdmin();
+  const [admin, site] = await Promise.all([requireAdmin(), getSiteConfig()]);
   perf.mark("requireAdmin");
   perf.end(`email=${admin.email}`);
 
   return (
-    <AdminShell email={admin.email} locale={locale}>
+    <AdminShell
+      email={admin.email}
+      locale={locale}
+      siteName={site.siteName}
+      logoUrl={site.logoUrl}
+    >
       {children}
     </AdminShell>
   );

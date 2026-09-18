@@ -129,6 +129,9 @@ export default async function AdminHomePage({ params }: Props) {
               </Link>
             </li>
           ))}
+          {ADMIN_NAV.length % 2 === 1 ? (
+            <li aria-hidden className="bg-background hidden lg:block" />
+          ) : null}
         </ul>
       </div>
     </section>

@@ -300,6 +300,51 @@ async function main() {
     },
   });
 
+  await prisma.siteSetting.upsert({
+    where: { key: "discord_channel_url" },
+    update: {},
+    create: {
+      key: "discord_channel_url",
+      value: "https://discord.gg/bcgs",
+    },
+  });
+
+  await prisma.siteSetting.upsert({
+    where: { key: "site_name" },
+    update: {},
+    create: { key: "site_name", value: "BC.GS" },
+  });
+
+  await prisma.siteSetting.upsert({
+    where: { key: "logo_url" },
+    update: {},
+    create: { key: "logo_url", value: "/brand/logo-mark-bc.png" },
+  });
+
+  await prisma.siteSetting.upsert({
+    where: { key: "og_image_url" },
+    update: {},
+    create: { key: "og_image_url", value: "/brand/og.png" },
+  });
+
+  await prisma.siteSetting.upsert({
+    where: { key: "favicon_url" },
+    update: {},
+    create: { key: "favicon_url", value: "/icon.png" },
+  });
+
+  await prisma.siteSetting.upsert({
+    where: { key: "seo_title_default" },
+    update: {},
+    create: { key: "seo_title_default", value: "" },
+  });
+
+  await prisma.siteSetting.upsert({
+    where: { key: "seo_description_default" },
+    update: {},
+    create: { key: "seo_description_default", value: "" },
+  });
+
   console.log(
     `Seeded ${casinoCount} casinos, ${bonusesCreated} bonuses, ${categoryCount} categories, ${linksCreated} casino-category links, ${licenseCount} licenses, ${casinoLicenseCount} casino-license links, ${marketCount} markets, ${marketTranslationCount} market translations, ${casinoMarketCount} casino-market links, ${staticPageCount} static pages (en/zh/th translations), and site settings.`,
   );

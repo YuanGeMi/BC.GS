@@ -12,6 +12,7 @@ import { AuthSessionProvider } from "@/components/auth/auth-session-provider";
 import { PasswordRecoveryListener } from "@/components/auth/password-recovery-listener";
 import { routing } from "@/i18n/routing";
 import { siteMetadataBase } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site";
 
 import "../globals.css";
 
@@ -34,34 +35,44 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("Meta");
+  const [t, site] = await Promise.all([
+    getTranslations("Meta"),
+    getSiteConfig(),
+  ]);
+
+  const titleDefault = site.seoTitleDefault || t("title");
+  const description = site.seoDescriptionDefault || t("description");
 
   return {
     metadataBase: siteMetadataBase,
     title: {
-      default: t("title"),
-      template: t("template"),
+      default: titleDefault,
+      template: `%s · ${site.siteName}`,
     },
-    description: t("description"),
-    applicationName: "BC.GS",
+    description,
+    applicationName: site.siteName,
+    icons: {
+      icon: [{ url: site.faviconUrl }],
+      apple: [{ url: site.faviconUrl }],
+    },
     openGraph: {
-      siteName: "BC.GS",
+      siteName: site.siteName,
       type: "website",
       images: [
         {
-          url: "/brand/og.png",
+          url: site.ogImageUrl,
           width: 1200,
           height: 630,
-          alt: "BC.GS",
+          alt: site.siteName,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      images: ["/brand/og.png"],
+      images: [site.ogImageUrl],
     },
     appleWebApp: {
-      title: "BC.GS",
+      title: site.siteName,
     },
     other: {
       google: "notranslate",

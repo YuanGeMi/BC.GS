@@ -32,7 +32,9 @@ export type StaticPageInputError =
   | "englishRequired"
   | "missing"
   | "invalidStatus"
-  | "invalidUrl";
+  | "invalidUrl"
+  | "invalidLogoUrl"
+  | "invalidSiteName";
 
 export function emptyStaticPageTranslation(): StaticPageTranslationDraft {
   return {
@@ -99,6 +101,38 @@ export function parseHttpsUrl(
   } catch {
     return { ok: false, error: "invalidUrl" };
   }
+}
+
+/** Absolute https URL or root-relative path (e.g. /brand/logo.png). */
+export function parseLogoUrl(
+  value: string,
+): { ok: true; value: string } | { ok: false; error: "invalidLogoUrl" } {
+  const trimmed = value.trim();
+  if (!trimmed) return { ok: true, value: "" };
+  if (/^\s*javascript:/i.test(trimmed) || /^\s*data:/i.test(trimmed)) {
+    return { ok: false, error: "invalidLogoUrl" };
+  }
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
+    if (trimmed.includes("://") || /\s/.test(trimmed)) {
+      return { ok: false, error: "invalidLogoUrl" };
+    }
+    return { ok: true, value: trimmed };
+  }
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "https:") return { ok: false, error: "invalidLogoUrl" };
+    return { ok: true, value: url.toString() };
+  } catch {
+    return { ok: false, error: "invalidLogoUrl" };
+  }
+}
+
+export function parseSiteName(
+  value: string,
+): { ok: true; value: string } | { ok: false; error: "invalidSiteName" } {
+  const trimmed = value.trim();
+  if (trimmed.length > 80) return { ok: false, error: "invalidSiteName" };
+  return { ok: true, value: trimmed };
 }
 
 export function assertLegalSlug(slug: string): slug is StaticPageSlug {

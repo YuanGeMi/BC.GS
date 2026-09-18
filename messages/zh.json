@@ -109,10 +109,12 @@
     "community": "社区",
     "telegramChannel": "BC.GS 官方 Telegram 频道",
     "telegramChannelShort": "官方 Telegram",
+    "discordChannel": "BC.GS 官方 Discord",
+    "discordChannelShort": "官方 Discord",
     "privacy": "隐私政策",
     "terms": "服务条款",
     "responsibleGambling": "负责任博彩",
-    "copyright": "© {year} BC.GS。保留所有权利。"
+    "copyright": "© {year} {siteName}。保留所有权利。"
   },
   "HomePage": {
     "seoTitle": "BC.GS — 独立博彩与娱乐场评测",
@@ -408,6 +410,7 @@
       "bonuses": "优惠",
       "categories": "分类",
       "pages": "页面",
+      "settings": "设置",
       "reviews": "评价",
       "catalogs": "目录",
       "clicks": "点击",
@@ -494,7 +497,11 @@
         },
         "pages": {
           "kicker": "法律",
-          "blurb": "隐私、条款、负责任博彩、Telegram。"
+          "blurb": "隐私、条款与负责任博彩。"
+        },
+        "settings": {
+          "kicker": "品牌",
+          "blurb": "站点名称、标志、网站图标、默认 SEO 与社区链接。"
         },
         "reviews": {
           "kicker": "审核",
@@ -538,6 +545,19 @@
         "deleteBody": "相关优惠与分类位置也会被移除。",
         "slug": "Slug",
         "logoUrl": "Logo 链接",
+        "logoUpload": "上传 Logo",
+        "logoUploading": "上传中…",
+        "logoUploaded": "Logo 已上传。请保存赌场以保留。",
+        "logoClear": "清除",
+        "logoEmpty": "无",
+        "logoHelp": "PNG、JPEG、WebP 或 SVG，最大 2 MB。存储于 Supabase Storage。",
+        "logoErrors": {
+          "missingFile": "请选择图片文件。",
+          "invalidFolder": "无法开始上传。请刷新后重试。",
+          "invalidType": "请使用 PNG、JPEG、WebP 或 SVG。",
+          "tooLarge": "Logo 不得超过 2 MB。",
+          "uploadFailed": "上传失败。请确认 Storage bucket 已创建。"
+        },
         "established": "成立年份",
         "minDeposit": "最低存款",
         "payoutSpeed": "出款速度",
@@ -687,6 +707,9 @@
       "telegram": "Telegram 频道链接",
       "telegramHelp": "设置后显示在页脚。留空则隐藏。",
       "telegramSaved": "Telegram 链接已保存。",
+      "discord": "Discord 邀请链接",
+      "discordHelp": "设置后显示在页脚。留空则隐藏。",
+      "discordSaved": "Discord 链接已保存。",
       "columns": {
         "page": "页面",
         "status": "状态",
@@ -710,10 +733,39 @@
         "markdown": "Markdown"
       },
       "telegramSavedLong": "已保存。页脚将在下次加载时更新。",
-      "siteEyebrow": "站点",
-      "siteTitle": "设置",
-      "siteLede": "页脚 Telegram 链接。留空则在公开站隐藏。",
-      "telegramHelpLong": "须以 https:// 开头。留空则隐藏页脚链接。"
+      "settingsSaved": "已保存。页脚将在下次加载时更新。",
+      "siteName": "站点名称",
+      "siteNameHelp": "用于品牌展示、版权与 SEO 站点名。留空则回退为 BC.GS。",
+      "logoUrl": "标志链接",
+      "logoUrlHelp": "可在下方上传，或粘贴站内路径 / https 链接。留空则使用默认标志。",
+      "logoUpload": "上传标志",
+      "faviconUrl": "网站图标",
+      "faviconUrlHelp": "方形 PNG/JPEG/WebP，用于浏览器标签。留空则使用 /icon.png。浏览器可能缓存数天。",
+      "faviconUpload": "上传网站图标",
+      "ogUpload": "上传图片",
+      "assetUploading": "上传中…",
+      "assetUploaded": "已上传并保存。页眉与页脚将在下次加载时更新。",
+      "assetEmpty": "无",
+      "assetErrors": {
+        "missingFile": "请选择图片文件。",
+        "invalidKind": "未知资源类型。",
+        "invalidType": "请使用 PNG、JPEG、WebP 或 SVG。",
+        "tooLarge": "文件不得超过 2 MB。",
+        "uploadFailed": "上传失败。请确认 site-branding Storage bucket 已创建。"
+      },
+      "ogImageUrl": "Open Graph / 社交分享图",
+      "ogImageUrlHelp": "建议 1200×630。可上传或粘贴路径 / https。留空则使用 /brand/og.png。",
+      "seoTitleDefault": "默认 SEO 标题",
+      "seoTitleDefaultHelp": "设置后作为默认文档标题与首页回退。留空则使用各语言文案。",
+      "seoDescriptionDefault": "默认 Meta 描述",
+      "seoDescriptionDefaultHelp": "设置后作为默认 meta 描述。留空则使用各语言文案。",
+      "telegramHelpLong": "须以 https:// 开头。留空则隐藏页脚 Telegram 链接。",
+      "discordHelpLong": "须以 https:// 开头。留空则隐藏页脚 Discord 链接。"
+    },
+    "settings": {
+      "eyebrow": "站点",
+      "title": "设置",
+      "lede": "站点名称、标志、网站图标、默认 SEO，以及页脚社区链接。"
     },
     "reviews": {
       "eyebrow": "队列",
@@ -865,6 +917,8 @@
       "lastAdmin": "不能取消最后一个管理员。",
       "selfDemote": "不能取消自己的管理员权限。",
       "invalidUrl": "请输入有效的 https 链接，或留空。",
+      "invalidLogoUrl": "请输入站内路径或 https 链接，或留空。",
+      "invalidSiteName": "站点名称不得超过 80 个字符。",
       "casinoRequired": "请选择娱乐场。",
       "typeRequired": "请从目录中选择优惠类型。",
       "invalidExpiry": "到期日须为有效日期。",

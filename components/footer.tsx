@@ -1,10 +1,10 @@
 import { getTranslations } from "next-intl/server";
-import { SiTelegram } from "react-icons/si";
+import { SiDiscord, SiTelegram } from "react-icons/si";
 
 import { Logo } from "@/components/logo";
 import { Link } from "@/i18n/navigation";
 import { MAIN_NAV } from "@/lib/nav";
-import { getTelegramChannelUrl } from "@/lib/site";
+import { getSiteConfig } from "@/lib/site";
 import {
   FOOTER_LEGAL_LINKS,
   getPublishedLegalPageSlugs,
@@ -14,13 +14,16 @@ export async function Footer() {
   const tNav = await getTranslations("Nav");
   const tFooter = await getTranslations("Footer");
   const year = new Date().getFullYear();
-  const [telegramUrl, publishedLegalSlugs] = await Promise.all([
-    getTelegramChannelUrl(),
+  const [site, publishedLegalSlugs] = await Promise.all([
+    getSiteConfig(),
     getPublishedLegalPageSlugs(),
   ]);
   const publishedLegal = new Set(publishedLegalSlugs);
   const legalLinks = FOOTER_LEGAL_LINKS.filter((item) =>
     publishedLegal.has(item.slug),
+  );
+  const hasCommunity = Boolean(
+    site.telegramChannelUrl || site.discordChannelUrl,
   );
 
   return (
@@ -74,28 +77,48 @@ export async function Footer() {
             ) : null}
 
             <div className="col-span-2 sm:col-span-1">
-              {telegramUrl ? (
+              {hasCommunity ? (
                 <>
                   <p className="text-text/40 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
                     {tFooter("community")}
                   </p>
                   <ul className="space-y-2.5">
-                    <li>
-                      <a
-                        href={telegramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={tFooter("telegramChannel")}
-                        aria-label={tFooter("telegramChannel")}
-                        className="text-text/55 hover:text-accent inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
-                      >
-                        <SiTelegram
-                          aria-hidden
-                          className="size-4 shrink-0"
-                        />
-                        <span>{tFooter("telegramChannelShort")}</span>
-                      </a>
-                    </li>
+                    {site.telegramChannelUrl ? (
+                      <li>
+                        <a
+                          href={site.telegramChannelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={tFooter("telegramChannel")}
+                          aria-label={tFooter("telegramChannel")}
+                          className="text-text/55 hover:text-accent inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
+                        >
+                          <SiTelegram
+                            aria-hidden
+                            className="size-4 shrink-0"
+                          />
+                          <span>{tFooter("telegramChannelShort")}</span>
+                        </a>
+                      </li>
+                    ) : null}
+                    {site.discordChannelUrl ? (
+                      <li>
+                        <a
+                          href={site.discordChannelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={tFooter("discordChannel")}
+                          aria-label={tFooter("discordChannel")}
+                          className="text-text/55 hover:text-accent inline-flex items-center gap-1.5 text-xs transition-colors duration-200"
+                        >
+                          <SiDiscord
+                            aria-hidden
+                            className="size-4 shrink-0"
+                          />
+                          <span>{tFooter("discordChannelShort")}</span>
+                        </a>
+                      </li>
+                    ) : null}
                   </ul>
                 </>
               ) : null}
@@ -105,7 +128,7 @@ export async function Footer() {
 
         <div className="border-text/8 mt-10 border-t pt-6">
           <p className="text-text/40 text-xs tracking-wide">
-            {tFooter("copyright", { year })}
+            {tFooter("copyright", { year, siteName: site.siteName })}
           </p>
         </div>
       </div>
