@@ -100,7 +100,15 @@ export async function listClickCasinos(): Promise<ClickCasinoOption[]> {
   await requireAdmin();
   const rows = await prisma.casino.findMany({
     orderBy: { slug: "asc" },
-    include: { translations: { where: { locale: "en" } } },
+    select: {
+      id: true,
+      slug: true,
+      translations: {
+        where: { locale: "en" },
+        select: { name: true },
+        take: 1,
+      },
+    },
   });
   return rows.map((row) => ({
     id: row.id,
@@ -163,13 +171,28 @@ export async function getAffiliateClickReport(
     casinoIds.length
       ? prisma.casino.findMany({
           where: { id: { in: casinoIds } },
-          include: { translations: { where: { locale: "en" } } },
+          select: {
+            id: true,
+            slug: true,
+            translations: {
+              where: { locale: "en" },
+              select: { name: true },
+              take: 1,
+            },
+          },
         })
       : Promise.resolve([]),
     bonusIds.length
       ? prisma.bonus.findMany({
           where: { id: { in: bonusIds } },
-          include: { translations: { where: { locale: "en" } } },
+          select: {
+            id: true,
+            translations: {
+              where: { locale: "en" },
+              select: { title: true },
+              take: 1,
+            },
+          },
         })
       : Promise.resolve([]),
   ]);

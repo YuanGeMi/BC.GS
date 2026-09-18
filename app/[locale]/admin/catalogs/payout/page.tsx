@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { OptionCatalogScreen } from "@/components/admin/option-catalog-screen";
-
-export const metadata: Metadata = { title: "Payout speed" };
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
 
-export default async function AdminPayoutCatalogPage({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Admin.catalogs" });
+  return { title: t("kinds.payout.title") };
+}
+
+export default async function Page({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   return <OptionCatalogScreen kind="payout" />;

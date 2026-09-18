@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth/origin";
 import { safeRedirectPath } from "@/lib/auth/paths";
 import { ensureUserProfile } from "@/lib/auth/profile";
+import { syncAuthRoleClaim } from "@/lib/auth/role-claim";
 import {
   RESET_LOCALE_COOKIE,
   resetLocaleCookieOptions,
@@ -24,6 +25,8 @@ import {
   isValidDisplayName,
   normalizeDisplayName,
 } from "@/lib/reviews/display-name";
+import { UserRole } from "@/lib/db-enums";
+import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthFormState = {
@@ -130,6 +133,18 @@ export async function login(
 
   if (data.user) {
     await ensureUserProfile(data.user);
+    // Align Auth app_metadata.role with Prisma so Desk reads skip a DB round-trip.
+    const profile = await prisma.user.findUnique({
+      where: { id: data.user.id },
+      select: { role: true },
+    });
+    const role = profile?.role ?? UserRole.user;
+    try {
+      await syncAuthRoleClaim(data.user.id, role);
+      await supabase.auth.refreshSession();
+    } catch (error) {
+      console.error("[login] syncAuthRoleClaim", error);
+    }
   }
 
   redirect(safeRedirectPath(locale, next));

@@ -54,20 +54,14 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    const run = async () => {
+    void (async () => {
       const supabase = createClient();
       const { data } = await supabase.auth.getUser();
       if (!cancelled) setUser(data.user);
-    };
-
-    void run();
-    const retry = window.setTimeout(() => {
-      if (!cancelled) void run();
-    }, 50);
+    })();
 
     return () => {
       cancelled = true;
-      window.clearTimeout(retry);
     };
   }, [pathname]);
 

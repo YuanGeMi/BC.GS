@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, type NextResponse } from "next/server";
 
+import { adminPerfStart } from "@/lib/admin/perf-log";
+
 export async function applySupabaseSession(
   request: NextRequest,
   response: NextResponse,
@@ -11,6 +13,9 @@ export async function applySupabaseSession(
   if (!url || !anonKey) {
     return response;
   }
+
+  const isAdmin = request.nextUrl.pathname.includes("/admin");
+  const perf = isAdmin ? adminPerfStart("proxy.getClaims") : null;
 
   const supabase = createServerClient(url, anonKey, {
     cookies: {
@@ -26,7 +31,10 @@ export async function applySupabaseSession(
     },
   });
 
-  await supabase.auth.getUser();
+  // Refresh/validate the session JWT. Prefer getClaims (local JWKS when the
+  // project uses asymmetric keys) over getUser to avoid an Auth-server RTT.
+  await supabase.auth.getClaims();
+  perf?.end();
 
   return response;
 }

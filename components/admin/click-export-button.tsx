@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
 import { exportAffiliateClickReport } from "@/lib/admin/clicks";
@@ -15,6 +16,7 @@ export function ClickExportButton({
   casinoId: string;
   locale: string;
 }) {
+  const t = useTranslations("Admin.actions");
   const [isPending, startTransition] = useTransition();
 
   function download() {
@@ -42,7 +44,7 @@ export function ClickExportButton({
       onClick={download}
       className="ring-text/20 hover:ring-accent/50 h-11 px-4 text-sm ring-1 disabled:opacity-60"
     >
-      {isPending ? "Exporting…" : "Export CSV"}
+      {isPending ? t("exporting") : t("exportCsv")}
     </button>
   );
 }

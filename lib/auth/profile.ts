@@ -1,11 +1,12 @@
 import type { User } from "@supabase/supabase-js";
 
+import type { AuthIdentity } from "@/lib/auth/session";
 import { UserRole } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 import { displayNameFromAuthMetadata } from "@/lib/reviews/display-name";
 
 export async function ensureUserProfile(
-  user: User,
+  user: AuthIdentity | User,
   displayNameOverride?: string,
 ) {
   const email = user.email?.trim().toLowerCase();

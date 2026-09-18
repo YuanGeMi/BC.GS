@@ -1,11 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
 import { AdminConfirm } from "@/components/admin/admin-confirm";
 import {
-  CATALOG_KIND_META,
   type CatalogItem,
   type CatalogKind,
   type CatalogNames,
@@ -14,44 +14,10 @@ import {
   deleteCatalogItem,
   getCatalogItemUsage,
   upsertCatalogItem,
-  type CatalogActionError,
 } from "@/lib/admin/catalogs";
 import { adminInputClass } from "@/lib/admin/fields";
 
 const emptyNames: CatalogNames = { en: "", zh: "", th: "" };
-
-const errorCopy: Record<CatalogActionError, string> = {
-  invalidSlug: "Use a lowercase slug with letters, numbers, and hyphens.",
-  duplicateSlug: "That slug is already in this catalog.",
-  englishRequired: "English name is required.",
-  invalidSort: "Sort order must be a whole number.",
-  missing: "That option is no longer in the list.",
-  inUse: "Still attached to casinos or bonuses. Detach it first.",
-  payoutInUse: "Casinos still use this payout speed. Confirm to clear it on them.",
-};
-
-function usageLine(item: CatalogItem) {
-  if (item.usageCount === null) return "";
-  if (item.usageCount === 0) return "Unused";
-  if (item.usageNames.length === 0) {
-    return `${item.usageCount} in use`;
-  }
-  const names = item.usageNames.join(", ");
-  const extra = item.usageCount > item.usageNames.length ? "…" : "";
-  return `${item.usageCount} in use · ${names}${extra}`;
-}
-
-function deleteBody(kind: CatalogKind, item: CatalogItem) {
-  if (item.usageCount === null) return "Checking where this option is used…";
-  if (item.usageCount === 0) return "This option will leave the catalog.";
-  const sample = item.usageNames.length
-    ? ` (${item.usageNames.join(", ")}${item.usageCount > item.usageNames.length ? "…" : ""})`
-    : "";
-  if (kind === "payout") {
-    return `This will clear payout speed on ${item.usageCount} casino${item.usageCount === 1 ? "" : "s"}${sample}.`;
-  }
-  return `Still in use by ${item.usageCount}${sample}. Detach it first.`;
-}
 
 export function CatalogOptionsEditor({
   kind,
@@ -60,7 +26,7 @@ export function CatalogOptionsEditor({
   kind: CatalogKind;
   items: CatalogItem[];
 }) {
-  const meta = CATALOG_KIND_META[kind];
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [createSlug, setCreateSlug] = useState("");
   const [createSort, setCreateSort] = useState("0");
@@ -68,6 +34,47 @@ export function CatalogOptionsEditor({
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<CatalogItem | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const nameLabel = t(`catalogs.kinds.${kind}.nameLabel`);
+
+  function err(code: string, usageNames?: string[]) {
+    const base = t.has(`errors.${code}`) ? t(`errors.${code}`) : code;
+    const names = usageNames?.length ? ` ${usageNames.join(", ")}.` : "";
+    return `${base}${names}`;
+  }
+
+  function usageLine(item: CatalogItem) {
+    if (item.usageCount === null) return "";
+    if (item.usageCount === 0) return t("catalogs.unused");
+    if (item.usageNames.length === 0) {
+      return t("catalogs.inUse", { count: item.usageCount });
+    }
+    const names =
+      item.usageNames.join(", ") +
+      (item.usageCount > item.usageNames.length ? "…" : "");
+    return t("catalogs.inUseWithNames", {
+      count: item.usageCount,
+      names,
+    });
+  }
+
+  function deleteBody(item: CatalogItem) {
+    if (item.usageCount === null) return t("catalogs.deleteChecking");
+    if (item.usageCount === 0) return t("catalogs.deleteUnused");
+    const sample = item.usageNames.length
+      ? ` (${item.usageNames.join(", ")}${item.usageCount > item.usageNames.length ? "…" : ""})`
+      : "";
+    if (kind === "payout") {
+      return t("catalogs.deletePayout", {
+        count: item.usageCount,
+        sample,
+      });
+    }
+    return t("catalogs.deleteInUse", {
+      count: item.usageCount,
+      sample,
+    });
+  }
 
   function create() {
     startTransition(async () => {
@@ -77,7 +84,7 @@ export function CatalogOptionsEditor({
         names: createNames,
       });
       if (!result.ok) {
-        setError(errorCopy[result.error]);
+        setError(err(result.error));
         return;
       }
       setCreateSlug("");
@@ -97,7 +104,7 @@ export function CatalogOptionsEditor({
         names,
       });
       if (!result.ok) {
-        setError(errorCopy[result.error]);
+        setError(err(result.error));
         return;
       }
       setError(null);
@@ -111,7 +118,7 @@ export function CatalogOptionsEditor({
       const usage = await getCatalogItemUsage(kind, item.id);
       if (!usage) {
         setPendingDelete(null);
-        setError(errorCopy.missing);
+        setError(err("missing"));
         return;
       }
       setPendingDelete((current) =>
@@ -132,10 +139,7 @@ export function CatalogOptionsEditor({
           setError(null);
           return;
         }
-        const names = result.usageNames?.length
-          ? ` ${result.usageNames.join(", ")}.`
-          : "";
-        setError(`${errorCopy[result.error]}${names}`);
+        setError(err(result.error, result.usageNames));
         setPendingDelete(null);
         return;
       }
@@ -151,11 +155,11 @@ export function CatalogOptionsEditor({
 
       <div className="border-text/10 border-t pt-8">
         <p className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
-          New
+          {t("catalogs.new")}
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-6">
           <label className="block text-xs">
-            Slug
+            {t("catalogs.slug")}
             <input
               value={createSlug}
               onChange={(event) => setCreateSlug(event.target.value)}
@@ -163,7 +167,7 @@ export function CatalogOptionsEditor({
             />
           </label>
           <label className="block text-xs">
-            Sort
+            {t("catalogs.sort")}
             <input
               value={createSort}
               onChange={(event) => setCreateSort(event.target.value)}
@@ -172,31 +176,42 @@ export function CatalogOptionsEditor({
             />
           </label>
           <label className="block text-xs">
-            English {meta.nameLabel.toLowerCase()}
+            {t("catalogs.englishNameLabel", {
+              label: nameLabel.toLowerCase(),
+            })}
             <input
               value={createNames.en}
               onChange={(event) =>
-                setCreateNames((current) => ({ ...current, en: event.target.value }))
+                setCreateNames((current) => ({
+                  ...current,
+                  en: event.target.value,
+                }))
               }
               className={`${adminInputClass} mt-1`}
             />
           </label>
           <label className="block text-xs">
-            Chinese
+            {t("catalogs.chinese")}
             <input
               value={createNames.zh}
               onChange={(event) =>
-                setCreateNames((current) => ({ ...current, zh: event.target.value }))
+                setCreateNames((current) => ({
+                  ...current,
+                  zh: event.target.value,
+                }))
               }
               className={`${adminInputClass} mt-1`}
             />
           </label>
           <label className="block text-xs">
-            Thai
+            {t("catalogs.thai")}
             <input
               value={createNames.th}
               onChange={(event) =>
-                setCreateNames((current) => ({ ...current, th: event.target.value }))
+                setCreateNames((current) => ({
+                  ...current,
+                  th: event.target.value,
+                }))
               }
               className={`${adminInputClass} mt-1`}
             />
@@ -208,7 +223,7 @@ export function CatalogOptionsEditor({
               onClick={create}
               className="bg-accent text-background hover:bg-accent-highlight h-11 px-4 text-sm font-medium"
             >
-              Add
+              {t("actions.add")}
             </button>
           </div>
         </div>
@@ -218,9 +233,10 @@ export function CatalogOptionsEditor({
         {items.map((item) => (
           <CatalogOptionRow
             key={item.id}
-            kind={kind}
             item={item}
             pending={isPending}
+            nameLabel={nameLabel}
+            usage={usageLine(item)}
             onSave={save}
             onDelete={() => openDelete(item)}
           />
@@ -229,14 +245,16 @@ export function CatalogOptionsEditor({
 
       {pendingDelete ? (
         <AdminConfirm
-          title={`Delete ${pendingDelete.names.en || pendingDelete.slug}?`}
-          body={deleteBody(kind, pendingDelete)}
+          title={t("catalogs.deleteTitle", {
+            name: pendingDelete.names.en || pendingDelete.slug,
+          })}
+          body={deleteBody(pendingDelete)}
           confirmLabel={
             pendingDelete.usageCount === null
-              ? "Delete"
+              ? t("actions.delete")
               : pendingDelete.usageCount > 0 && kind !== "payout"
-                ? "Close"
-                : "Delete"
+                ? t("actions.close")
+                : t("actions.delete")
           }
           pending={isPending || pendingDelete.usageCount === null}
           onCancel={() => setPendingDelete(null)}
@@ -258,19 +276,21 @@ export function CatalogOptionsEditor({
 }
 
 function CatalogOptionRow({
-  kind,
   item,
   pending,
+  nameLabel,
+  usage,
   onSave,
   onDelete,
 }: {
-  kind: CatalogKind;
   item: CatalogItem;
   pending: boolean;
+  nameLabel: string;
+  usage: string;
   onSave: (item: CatalogItem, sortOrder: string, names: CatalogNames) => void;
   onDelete: () => void;
 }) {
-  const meta = CATALOG_KIND_META[kind];
+  const t = useTranslations("Admin");
   const [sortOrder, setSortOrder] = useState(String(item.sortOrder));
   const [names, setNames] = useState(item.names);
 
@@ -278,11 +298,11 @@ function CatalogOptionRow({
     <li className="border-text/10 border-t pt-6">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <p className="font-mono text-sm">{item.slug}</p>
-        <p className="text-text/45 text-xs">{usageLine(item)}</p>
+        <p className="text-text/45 text-xs">{usage}</p>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-5">
         <label className="block text-xs">
-          Sort
+          {t("catalogs.sort")}
           <input
             value={sortOrder}
             onChange={(event) => setSortOrder(event.target.value)}
@@ -291,7 +311,9 @@ function CatalogOptionRow({
           />
         </label>
         <label className="block text-xs">
-          English {meta.nameLabel.toLowerCase()}
+          {t("catalogs.englishNameLabel", {
+            label: nameLabel.toLowerCase(),
+          })}
           <input
             value={names.en}
             onChange={(event) =>
@@ -301,7 +323,7 @@ function CatalogOptionRow({
           />
         </label>
         <label className="block text-xs">
-          Chinese
+          {t("catalogs.chinese")}
           <input
             value={names.zh}
             onChange={(event) =>
@@ -311,7 +333,7 @@ function CatalogOptionRow({
           />
         </label>
         <label className="block text-xs">
-          Thai
+          {t("catalogs.thai")}
           <input
             value={names.th}
             onChange={(event) =>
@@ -327,7 +349,7 @@ function CatalogOptionRow({
             onClick={() => onSave(item, sortOrder, names)}
             className="text-accent hover:text-accent-highlight h-11 text-sm font-medium"
           >
-            Save
+            {t("actions.save")}
           </button>
           <button
             type="button"
@@ -335,7 +357,7 @@ function CatalogOptionRow({
             onClick={onDelete}
             className="text-text/45 hover:text-text h-11 text-sm"
           >
-            Delete
+            {t("actions.delete")}
           </button>
         </div>
       </div>

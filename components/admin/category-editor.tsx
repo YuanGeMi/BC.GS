@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
@@ -22,24 +23,12 @@ import {
   type AdminCategoryCasinoOption,
   type AdminCategoryEditorData,
 } from "@/lib/admin/categories";
-import { adminInputClass, adminSelectClass, adminTextareaClass } from "@/lib/admin/fields";
+import {
+  adminInputClass,
+  adminSelectClass,
+  adminTextareaClass,
+} from "@/lib/admin/fields";
 import { cn } from "@/lib/utils";
-
-const errorCopy: Record<string, string> = {
-  invalidSlug: "Slug must be lowercase letters, numbers, and hyphens.",
-  duplicateSlug: "That slug is already used by another category.",
-  englishRequired: "An English name is required to publish.",
-  invalidRank: "Rank must be a whole number starting at 1, or blank.",
-  invalidCasino: "Pick a casino from the list.",
-  missing: "That category is no longer in Desk.",
-  invalidStatus: "That status is not allowed.",
-};
-
-const localeLabel: Record<Locale, string> = {
-  en: "English",
-  zh: "中文",
-  th: "ไทย",
-};
 
 function toInput(category?: AdminCategoryEditorData | null): CategorySaveInput {
   if (!category) return emptyCategorySaveInput();
@@ -61,6 +50,7 @@ export function CategoryEditor({
   category?: AdminCategoryEditorData | null;
   casinos: AdminCategoryCasinoOption[];
 }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [form, setForm] = useState<CategorySaveInput>(() => toInput(category));
   const [locale, setLocale] = useState<Locale>("en");
@@ -83,6 +73,10 @@ export function CategoryEditor({
   const available = casinos.filter((row) => !attached.has(row.id));
   const duplicateRanks = hasDuplicateRanks(form.casinos);
   const canPublish = englishNameReady(form);
+
+  function err(code: string) {
+    return t.has(`errors.${code}`) ? t(`errors.${code}`) : code;
+  }
 
   function patch(next: Partial<CategorySaveInput>) {
     setForm((current) => ({ ...current, ...next }));
@@ -126,7 +120,7 @@ export function CategoryEditor({
       if (isNew) {
         const result = await createCategory(form);
         if (!result.ok) {
-          setError(errorCopy[result.error] ?? result.error);
+          setError(err(result.error));
           return;
         }
         router.push(`/admin/categories/${result.id}`);
@@ -137,20 +131,20 @@ export function CategoryEditor({
       if (kind === "publish") {
         const result = await saveAndPublishCategory(category.id, form);
         if (!result.ok) {
-          setError(errorCopy[result.error] ?? result.error);
+          setError(err(result.error));
           return;
         }
-        setNotice("Published.");
+        setNotice(t("categories.editor.published"));
         router.refresh();
         return;
       }
 
       const result = await updateCategory(category.id, form);
       if (!result.ok) {
-        setError(errorCopy[result.error] ?? result.error);
+        setError(err(result.error));
         return;
       }
-      setNotice("Saved.");
+      setNotice(t("categories.editor.saved"));
       router.refresh();
     });
   }
@@ -162,19 +156,23 @@ export function CategoryEditor({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-            Best of
+            {t("categories.eyebrow")}
           </p>
           <h1 className="font-display mt-3 text-4xl tracking-tight">
             {isNew
-              ? "New category"
-              : form.translations.en.name.trim() || form.slug || "Category"}
+              ? t("categories.editor.newTitle")
+              : form.translations.en.name.trim() ||
+                form.slug ||
+                t("categories.title")}
           </h1>
           {!isNew ? (
             <p className="text-text/45 mt-2 text-xs tracking-[0.16em] uppercase">
-              {category.status}
+              {t(`status.${category.status}`)}
             </p>
           ) : (
-            <p className="text-text/45 mt-2 text-sm">Starts as draft.</p>
+            <p className="text-text/45 mt-2 text-sm">
+              {t("categories.editor.startsDraft")}
+            </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -184,7 +182,7 @@ export function CategoryEditor({
             onClick={() => runSave("save")}
             className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
           >
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("actions.saving") : t("actions.save")}
           </button>
           {!isNew && category.status !== "published" ? (
             <button
@@ -193,7 +191,7 @@ export function CategoryEditor({
               onClick={() => runSave("publish")}
               className="bg-accent text-background hover:bg-accent-highlight h-10 px-4 text-sm font-medium disabled:opacity-40"
             >
-              Publish
+              {t("actions.publish")}
             </button>
           ) : null}
           {!isNew && category.status === "published" ? (
@@ -204,16 +202,16 @@ export function CategoryEditor({
                 startTransition(async () => {
                   const result = await setCategoryStatus(category.id, "draft");
                   if (!result.ok) {
-                    setError(errorCopy[result.error] ?? result.error);
+                    setError(err(result.error));
                     return;
                   }
-                  setNotice("Unpublished.");
+                  setNotice(t("categories.editor.unpublished"));
                   router.refresh();
                 })
               }
               className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
             >
-              Unpublish
+              {t("actions.unpublish")}
             </button>
           ) : null}
         </div>
@@ -223,15 +221,17 @@ export function CategoryEditor({
       {notice ? <p className="text-text/55 mt-6 text-sm">{notice}</p> : null}
       {!canPublish ? (
         <p className="text-text/45 mt-6 max-w-2xl text-sm">
-          Publishing needs an English name.
+          {t("categories.editor.publishNeeds")}
         </p>
       ) : null}
 
       <section className="mt-12 space-y-5">
-        <h2 className="font-display text-2xl italic tracking-tight">Facts</h2>
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("categories.editor.facts")}
+        </h2>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Slug
+            {t("categories.editor.slug")}
           </span>
           <input
             value={form.slug}
@@ -241,14 +241,16 @@ export function CategoryEditor({
             spellCheck={false}
           />
           <span className="text-text/40 mt-1.5 block text-xs">
-            Public URL: /best/{form.slug || "slug"}
+            {t("categories.editor.publicUrl", { slug: form.slug || "slug" })}
           </span>
         </label>
       </section>
 
       <section className="mt-14">
-        <h2 className="font-display text-2xl italic tracking-tight">Voice</h2>
-        <div className="mt-5 flex gap-1 border-b border-text/10">
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("categories.editor.voice")}
+        </h2>
+        <div className="border-text/10 mt-5 flex gap-1 border-b">
           {CONTENT_LOCALES.map((item) => (
             <button
               key={item}
@@ -258,13 +260,13 @@ export function CategoryEditor({
                 "-mb-px border-b px-3 py-2 text-sm",
                 locale === item
                   ? "border-accent text-accent"
-                  : "border-transparent text-text/45 hover:text-text",
+                  : "text-text/45 hover:text-text border-transparent",
               )}
             >
-              {localeLabel[item]}
+              {t(`contentLocale.${item}`)}
               {item === "en" ? (
                 <span className="text-text/35 ml-2 text-[10px] tracking-wide uppercase">
-                  required
+                  {t("common.required")}
                 </span>
               ) : null}
             </button>
@@ -273,17 +275,19 @@ export function CategoryEditor({
         <div className="mt-6 space-y-5">
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Name
+              {t("categories.editor.name")}
             </span>
             <input
               value={translation.name}
-              onChange={(event) => patchTranslation({ name: event.target.value })}
+              onChange={(event) =>
+                patchTranslation({ name: event.target.value })
+              }
               className={adminInputClass}
             />
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Description
+              {t("categories.editor.description")}
             </span>
             <textarea
               value={translation.description}
@@ -295,7 +299,7 @@ export function CategoryEditor({
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Methodology
+              {t("categories.editor.methodology")}
             </span>
             <textarea
               value={translation.methodology}
@@ -307,7 +311,7 @@ export function CategoryEditor({
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              SEO title
+              {t("categories.editor.seoTitle")}
             </span>
             <input
               value={translation.seoTitle}
@@ -319,7 +323,7 @@ export function CategoryEditor({
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              SEO description
+              {t("categories.editor.seoDescription")}
             </span>
             <textarea
               value={translation.seoDescription}
@@ -333,15 +337,15 @@ export function CategoryEditor({
       </section>
 
       <section className="mt-14">
-        <h2 className="font-display text-2xl italic tracking-tight">Ranking</h2>
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("categories.editor.casinos")}
+        </h2>
         <p className="text-text/45 mt-2 max-w-2xl text-sm">
-          Rank 1 is first. Draft casinos can sit on the list in Desk and stay
-          off the public page until they are published.
+          {t("categories.editor.rankingHelp")}
         </p>
         {duplicateRanks ? (
           <p className="text-accent/80 mt-3 text-sm">
-            Two casinos share a rank. That is allowed; the public list then
-            falls back to slug.
+            {t("categories.editor.rankDuplicate")}
           </p>
         ) : null}
 
@@ -351,11 +355,11 @@ export function CategoryEditor({
             onChange={(event) => setAddCasinoId(event.target.value)}
             className={`${adminSelectClass} max-w-xs`}
           >
-            <option value="">Add a casino</option>
+            <option value="">{t("categories.editor.addCasino")}</option>
             {available.map((row) => (
               <option key={row.id} value={row.id}>
                 {row.label}
-                {row.status === "draft" ? " (draft)" : ""}
+                {row.status === "draft" ? ` (${t("status.draft")})` : ""}
               </option>
             ))}
           </select>
@@ -365,7 +369,7 @@ export function CategoryEditor({
             disabled={!addCasinoId}
             className="ring-text/20 hover:ring-accent/50 h-11 px-4 text-sm ring-1 disabled:opacity-40"
           >
-            Add
+            {t("actions.add")}
           </button>
         </div>
 
@@ -380,7 +384,7 @@ export function CategoryEditor({
                       {meta?.label ?? row.casinoId}
                       {meta?.status === "draft" ? (
                         <span className="text-text/35 ml-2 text-[11px] tracking-wide uppercase">
-                          draft
+                          {t("status.draft")}
                         </span>
                       ) : null}
                     </p>
@@ -396,12 +400,12 @@ export function CategoryEditor({
                     }
                     className="text-text/45 hover:text-accent text-xs"
                   >
-                    Remove
+                    {t("categories.editor.remove")}
                   </button>
                 </div>
                 <label className="mt-3 block max-w-[8rem]">
                   <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-                    Rank
+                    {t("categories.editor.rank")}
                   </span>
                   <input
                     value={row.rank}
@@ -417,7 +421,8 @@ export function CategoryEditor({
                   {CONTENT_LOCALES.map((item) => (
                     <label key={item} className="block">
                       <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-                        Note · {localeLabel[item]}
+                        {t("categories.editor.note")} ·{" "}
+                        {t(`contentLocale.${item}`)}
                       </span>
                       <textarea
                         value={row.notes[item]}
@@ -439,32 +444,34 @@ export function CategoryEditor({
 
       {!isNew ? (
         <section className="border-text/10 mt-16 border-t pt-8">
-          <h2 className="font-display text-2xl italic tracking-tight">Remove</h2>
+          <h2 className="font-display text-2xl tracking-tight italic">
+            {t("categories.editor.remove")}
+          </h2>
           <p className="text-text/45 mt-3 max-w-xl text-sm leading-relaxed">
-            Deleting this category also deletes its ranks and editorial notes.
+            {t("categories.editor.removeHelp")}
           </p>
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
             className="text-accent hover:text-accent-highlight mt-4 text-sm"
           >
-            Delete category
+            {t("actions.deleteCategory")}
           </button>
         </section>
       ) : null}
 
       {confirmDelete && category ? (
         <AdminConfirm
-          title="Delete this category?"
-          body="Ranks and per-casino notes on this list will be deleted. Casinos themselves stay."
-          confirmLabel="Delete"
+          title={t("categories.editor.deleteTitle")}
+          body={t("categories.editor.deleteBody")}
+          confirmLabel={t("actions.delete")}
           pending={isPending}
           onCancel={() => setConfirmDelete(false)}
           onConfirm={() =>
             startTransition(async () => {
               const result = await deleteCategory(category.id);
               if (!result.ok) {
-                setError(errorCopy[result.error] ?? result.error);
+                setError(err(result.error));
                 setConfirmDelete(false);
                 return;
               }

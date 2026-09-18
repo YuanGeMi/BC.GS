@@ -61,6 +61,9 @@ model Casino {
   updatedBy       User?                 @relation("CasinoUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
+
+  @@index([status])
+  @@index([updatedAt])
 }
 
 model License {
@@ -319,6 +322,8 @@ model UserReview {
   updatedAt     DateTime     @updatedAt
 
   @@unique([userId, casinoId])
+  @@index([status, createdAt])
+  @@index([casinoId, createdAt])
 }
 
 model Market {
@@ -358,6 +363,10 @@ model AffiliateClick {
   locale    String
   referrer  String?
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([casinoId, createdAt])
+  @@index([locale, createdAt])
 }
 
 model StaticPage {

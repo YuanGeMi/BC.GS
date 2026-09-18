@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin, requireVerifiedAdmin } from "@/lib/auth/require-admin";
+import { syncAuthRoleClaim } from "@/lib/auth/role-claim";
 import { UserRole } from "@/lib/db-enums";
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
@@ -43,7 +44,7 @@ export async function setUserRole(
   userId: string,
   role: UserRole,
 ): Promise<SetUserRoleState> {
-  await requireAdmin();
+  await requireVerifiedAdmin();
 
   if (role !== UserRole.admin && role !== UserRole.user) {
     return { error: "invalidRole" };
@@ -75,6 +76,13 @@ export async function setUserRole(
     where: { id: userId },
     data: { role },
   });
+
+  try {
+    await syncAuthRoleClaim(userId, role);
+  } catch (error) {
+    console.error("[setUserRole] syncAuthRoleClaim", error);
+    // Prisma is source of truth for verified paths; claim sync failure is logged.
+  }
 
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}/admin/users`);

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AdminShell } from "@/components/admin/admin-shell";
+import { adminPerfStart } from "@/lib/admin/perf-log";
 import { requireAdmin } from "@/lib/auth/require-admin";
 
 export const dynamic = "force-dynamic";
@@ -12,22 +13,29 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const perf = adminPerfStart("admin.layout.generateMetadata");
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "Admin.meta" });
+  perf.end();
 
   return {
     title: {
-      default: "Desk",
-      template: "%s · Desk",
+      default: t("desk"),
+      template: t("deskTemplate"),
     },
     robots: { index: false, follow: false },
   };
 }
 
 export default async function AdminLayout({ children, params }: Props) {
+  const perf = adminPerfStart("admin.layout");
   const { locale } = await params;
   setRequestLocale(locale);
+  perf.mark("setRequestLocale");
   const admin = await requireAdmin();
+  perf.mark("requireAdmin");
+  perf.end(`email=${admin.email}`);
 
   return (
     <AdminShell email={admin.email} locale={locale}>

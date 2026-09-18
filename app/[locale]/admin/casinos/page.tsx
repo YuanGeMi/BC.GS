@@ -1,28 +1,26 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import { listAdminCasinos } from "@/lib/admin/casinos";
 import { adminInputClass, adminSelectClass } from "@/lib/admin/fields";
-
-export const metadata: Metadata = {
-  title: "Casinos",
-};
 
 type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ q?: string; status?: string }>;
 };
 
-const dateFmt = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Admin.casinos" });
+  return { title: t("title") };
+}
 
 export default async function AdminCasinosPage({ params, searchParams }: Props) {
   const [{ locale }, query] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
+  const t = await getTranslations("Admin");
+  const tc = await getTranslations("Admin.casinos");
 
   const q = query.q?.trim() ?? "";
   const status = query.status ?? "all";
@@ -31,24 +29,29 @@ export default async function AdminCasinosPage({ params, searchParams }: Props) 
     status: status === "all" ? undefined : status,
   });
 
+  const dateFmt = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
     <section>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-            Ledger
+            {tc("eyebrow")}
           </p>
-          <h1 className="font-display mt-3 text-4xl tracking-tight">Casinos</h1>
-          <p className="text-text/55 mt-3 max-w-xl text-sm">
-            Drafts stay off the public site. Publish from the editor when the
-            English review is ready.
-          </p>
+          <h1 className="font-display mt-3 text-4xl tracking-tight">
+            {tc("title")}
+          </h1>
+          <p className="text-text/55 mt-3 max-w-xl text-sm">{tc("lede")}</p>
         </div>
         <Link
           href="/admin/casinos/new"
           className="bg-accent text-background hover:bg-accent-highlight inline-flex h-10 items-center px-4 text-sm font-medium"
         >
-          New casino
+          {t("actions.newCasino")}
         </Link>
       </div>
 
@@ -56,7 +59,7 @@ export default async function AdminCasinosPage({ params, searchParams }: Props) 
         <input
           name="q"
           defaultValue={q}
-          placeholder="Search name or slug"
+          placeholder={tc("searchPlaceholder")}
           className={`${adminInputClass} max-w-xs`}
         />
         <select
@@ -64,15 +67,15 @@ export default async function AdminCasinosPage({ params, searchParams }: Props) 
           defaultValue={status}
           className={`${adminSelectClass} max-w-[10rem]`}
         >
-          <option value="all">All statuses</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
+          <option value="all">{t("status.all")}</option>
+          <option value="draft">{t("status.draft")}</option>
+          <option value="published">{t("status.published")}</option>
         </select>
         <button
           type="submit"
           className="ring-text/20 hover:ring-accent/50 h-11 px-4 text-sm ring-1"
         >
-          Filter
+          {t("actions.filter")}
         </button>
       </form>
 
@@ -80,18 +83,18 @@ export default async function AdminCasinosPage({ params, searchParams }: Props) 
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead>
             <tr className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
-              <th className="py-3 pr-4 font-medium">Name</th>
-              <th className="py-3 pr-4 font-medium">Slug</th>
-              <th className="py-3 pr-4 font-medium">Status</th>
-              <th className="py-3 pr-4 font-medium">Rating</th>
-              <th className="py-3 font-medium">Updated</th>
+              <th className="py-3 pr-4 font-medium">{tc("columns.name")}</th>
+              <th className="py-3 pr-4 font-medium">{tc("columns.slug")}</th>
+              <th className="py-3 pr-4 font-medium">{tc("columns.status")}</th>
+              <th className="py-3 pr-4 font-medium">{tc("columns.rating")}</th>
+              <th className="py-3 font-medium">{tc("columns.updated")}</th>
             </tr>
           </thead>
           <tbody>
             {casinos.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-text/45 py-8">
-                  No casinos match.
+                  {tc("empty")}
                 </td>
               </tr>
             ) : (
@@ -114,11 +117,13 @@ export default async function AdminCasinosPage({ params, searchParams }: Props) 
                           : "text-text/40 text-[11px] tracking-[0.14em] uppercase"
                       }
                     >
-                      {row.status}
+                      {t(`status.${row.status}`)}
                     </span>
                   </td>
                   <td className="text-text/70 py-3.5 pr-4 tabular-nums">
-                    {row.overallRating == null ? "—" : row.overallRating.toFixed(1)}
+                    {row.overallRating == null
+                      ? "—"
+                      : row.overallRating.toFixed(1)}
                   </td>
                   <td className="text-text/50 py-3.5 tabular-nums">
                     {dateFmt.format(new Date(row.updatedAt))}

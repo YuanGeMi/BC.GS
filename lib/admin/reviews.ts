@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin, requireVerifiedAdmin } from "@/lib/auth/require-admin";
 import { ReviewStatus } from "@/lib/db-enums";
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
@@ -109,7 +109,15 @@ export async function listAdminReviewCasinos(): Promise<AdminReviewCasinoOption[
   await requireAdmin();
   const rows = await prisma.casino.findMany({
     orderBy: { slug: "asc" },
-    include: { translations: { where: { locale: "en" } } },
+    select: {
+      id: true,
+      slug: true,
+      translations: {
+        where: { locale: "en" },
+        select: { name: true },
+        take: 1,
+      },
+    },
   });
   return rows.map((row) => ({
     id: row.id,
@@ -213,7 +221,7 @@ export async function setReviewStatus(
   id: string,
   nextStatus: string,
 ): Promise<ReviewActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requireVerifiedAdmin();
   if (!isReviewStatus(nextStatus)) return { ok: false, error: "invalidStatus" };
 
   const existing = await prisma.userReview.findUnique({

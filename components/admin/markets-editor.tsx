@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
 import {
@@ -11,6 +12,7 @@ import { adminInputClass } from "@/lib/admin/fields";
 import type { CatalogNames } from "@/lib/admin/catalog-kinds";
 
 export function MarketsEditor() {
+  const t = useTranslations("Admin");
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState<AdminMarketRow[]>([]);
   const [ready, setReady] = useState(false);
@@ -41,8 +43,8 @@ export function MarketsEditor() {
       if (!result.ok) {
         setError(
           result.error === "englishRequired"
-            ? "English name is required."
-            : "That market is no longer in the list.",
+            ? t("errors.englishRequired")
+            : t("errors.missing"),
         );
         return;
       }
@@ -55,20 +57,22 @@ export function MarketsEditor() {
   return (
     <>
       <label className="mt-10 block max-w-md text-xs">
-        Search by code or name
+        {t("catalogs.searchByCode")}
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           className={`${adminInputClass} mt-1`}
-          placeholder="TH, Thailand…"
+          placeholder={t("catalogs.searchMarkets")}
         />
       </label>
       {error ? <p className="text-accent mt-4 text-sm">{error}</p> : null}
       {query.trim().length > 0 && query.trim().length < 2 ? (
-        <p className="text-text/45 mt-6 text-sm">Type at least two characters.</p>
+        <p className="text-text/45 mt-6 text-sm">
+          {t("catalogs.typeMinChars")}
+        </p>
       ) : null}
       {query.trim().length >= 2 && ready && !isPending && rows.length === 0 ? (
-        <p className="text-text/45 mt-6 text-sm">No markets match.</p>
+        <p className="text-text/45 mt-6 text-sm">{t("catalogs.noMarkets")}</p>
       ) : null}
 
       <ul className="mt-8 space-y-8">
@@ -94,6 +98,7 @@ function MarketRow({
   pending: boolean;
   onSave: (id: string, names: CatalogNames) => void;
 }) {
+  const t = useTranslations("Admin");
   const [names, setNames] = useState(row.names);
 
   useEffect(() => {
@@ -105,7 +110,7 @@ function MarketRow({
       <p className="font-mono text-sm">{row.code}</p>
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <label className="block text-xs">
-          English
+          {t("contentLocale.en")}
           <input
             value={names.en}
             onChange={(event) =>
@@ -115,7 +120,7 @@ function MarketRow({
           />
         </label>
         <label className="block text-xs">
-          Chinese
+          {t("catalogs.chinese")}
           <input
             value={names.zh}
             onChange={(event) =>
@@ -125,7 +130,7 @@ function MarketRow({
           />
         </label>
         <label className="block text-xs">
-          Thai
+          {t("catalogs.thai")}
           <input
             value={names.th}
             onChange={(event) =>
@@ -141,7 +146,7 @@ function MarketRow({
             onClick={() => onSave(row.id, names)}
             className="text-accent hover:text-accent-highlight h-11 text-sm font-medium"
           >
-            Save
+            {t("actions.save")}
           </button>
         </div>
       </div>

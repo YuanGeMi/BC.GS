@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
@@ -23,35 +24,21 @@ import {
   type AdminCasinoCatalogs,
   type AdminCasinoEditorData,
 } from "@/lib/admin/casinos";
-import { adminInputClass, adminSelectClass, adminTextareaClass } from "@/lib/admin/fields";
+import {
+  adminInputClass,
+  adminSelectClass,
+  adminTextareaClass,
+} from "@/lib/admin/fields";
 import { type Locale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const errorCopy: Record<string, string> = {
-  invalidSlug: "Slug must be lowercase letters, numbers, and hyphens.",
-  duplicateSlug: "That slug is already used by another casino.",
-  englishRequired: "English name and review body are required to publish.",
-  invalidScore: "Scores must be between 0 and 5.",
-  invalidYear: "Established year looks wrong.",
-  invalidDeposit: "Minimum deposit must be a positive number.",
-  invalidCatalog: "Pick licenses, payments, and providers from the catalog.",
-  missing: "That casino is no longer in Desk.",
-  invalidStatus: "That status is not allowed.",
-};
-
-const localeLabel: Record<Locale, string> = {
-  en: "English",
-  zh: "中文",
-  th: "ไทย",
-};
-
 const scoreFields = [
-  ["overallRating", "Overall"],
-  ["ratingBonuses", "Bonuses"],
-  ["ratingGames", "Games"],
-  ["ratingSupport", "Support"],
-  ["ratingPayout", "Payout"],
-  ["ratingTrust", "Trust"],
+  ["overallRating", "overall"],
+  ["ratingBonuses", "bonuses"],
+  ["ratingGames", "games"],
+  ["ratingSupport", "support"],
+  ["ratingPayout", "payout"],
+  ["ratingTrust", "trust"],
 ] as const;
 
 function toInput(casino?: AdminCasinoEditorData | null): CasinoSaveInput {
@@ -84,6 +71,7 @@ export function CasinoEditor({
   casino?: AdminCasinoEditorData | null;
   catalogs: AdminCasinoCatalogs;
 }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [form, setForm] = useState<CasinoSaveInput>(() => toInput(casino));
   const [locale, setLocale] = useState<Locale>("en");
@@ -103,6 +91,10 @@ export function CasinoEditor({
     Boolean(originalSlug) && normalizeSlug(form.slug) !== originalSlug;
 
   const canPublish = englishReady(form);
+
+  function err(code: string) {
+    return t.has(`errors.${code}`) ? t(`errors.${code}`) : code;
+  }
 
   function patch(next: Partial<CasinoSaveInput>) {
     setForm((current) => ({ ...current, ...next }));
@@ -136,7 +128,7 @@ export function CasinoEditor({
       if (isNew) {
         const result = await createCasino(form);
         if (!result.ok) {
-          setError(errorCopy[result.error] ?? result.error);
+          setError(err(result.error));
           return;
         }
         router.push(`/admin/casinos/${result.id}`);
@@ -147,10 +139,10 @@ export function CasinoEditor({
       if (kind === "publish") {
         const result = await saveAndPublishCasino(casino.id, form);
         if (!result.ok) {
-          setError(errorCopy[result.error] ?? result.error);
+          setError(err(result.error));
           return;
         }
-        setNotice("Published.");
+        setNotice(t("casinos.editor.published"));
         setConfirmSlug(false);
         router.refresh();
         return;
@@ -158,10 +150,10 @@ export function CasinoEditor({
 
       const result = await updateCasino(casino.id, form);
       if (!result.ok) {
-        setError(errorCopy[result.error] ?? result.error);
+        setError(err(result.error));
         return;
       }
-      setNotice("Saved.");
+      setNotice(t("casinos.editor.saved"));
       setConfirmSlug(false);
       router.refresh();
     });
@@ -178,19 +170,23 @@ export function CasinoEditor({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-            Ledger
+            {t("casinos.eyebrow")}
           </p>
           <h1 className="font-display mt-3 text-4xl tracking-tight">
             {isNew
-              ? "New casino"
-              : form.translations.en.name.trim() || form.slug || "Casino"}
+              ? t("casinos.editor.newTitle")
+              : form.translations.en.name.trim() ||
+                form.slug ||
+                t("casinos.title")}
           </h1>
           {!isNew ? (
             <p className="text-text/45 mt-2 text-xs tracking-[0.16em] uppercase">
-              {casino.status}
+              {t(`status.${casino.status}`)}
             </p>
           ) : (
-            <p className="text-text/45 mt-2 text-sm">Starts as draft.</p>
+            <p className="text-text/45 mt-2 text-sm">
+              {t("casinos.editor.startsDraft")}
+            </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -206,7 +202,7 @@ export function CasinoEditor({
             }}
             className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
           >
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("actions.saving") : t("actions.save")}
           </button>
           {!isNew && casino.status !== "published" ? (
             <button
@@ -215,7 +211,7 @@ export function CasinoEditor({
               onClick={() => runSave("publish")}
               className="bg-accent text-background hover:bg-accent-highlight h-10 px-4 text-sm font-medium disabled:opacity-40"
             >
-              Publish
+              {t("actions.publish")}
             </button>
           ) : null}
           {!isNew && casino.status === "published" ? (
@@ -226,16 +222,16 @@ export function CasinoEditor({
                 startTransition(async () => {
                   const result = await setCasinoStatus(casino.id, "draft");
                   if (!result.ok) {
-                    setError(errorCopy[result.error] ?? result.error);
+                    setError(err(result.error));
                     return;
                   }
-                  setNotice("Unpublished.");
+                  setNotice(t("casinos.editor.unpublished"));
                   router.refresh();
                 })
               }
               className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
             >
-              Unpublish
+              {t("actions.unpublish")}
             </button>
           ) : null}
         </div>
@@ -245,23 +241,23 @@ export function CasinoEditor({
       {notice ? <p className="text-text/55 mt-6 text-sm">{notice}</p> : null}
       {!canPublish ? (
         <p className="text-text/45 mt-6 max-w-2xl text-sm">
-          Publishing needs an English name and review body. You can still save a
-          draft.
+          {t("casinos.editor.publishNeeds")}
         </p>
       ) : null}
       {slugChanged ? (
         <p className="text-accent/80 mt-4 max-w-2xl text-sm">
-          Changing the slug will break existing /casinos/{originalSlug} links.
-          Save will refresh both the old and new public URLs.
+          {t("casinos.editor.slugChangeWarn", { slug: originalSlug })}
         </p>
       ) : null}
 
       <section className="mt-12">
-        <h2 className="font-display text-2xl italic tracking-tight">Facts</h2>
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("casinos.editor.facts")}
+        </h2>
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <label className="block sm:col-span-2">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Slug
+              {t("casinos.editor.slug")}
             </span>
             <input
               value={form.slug}
@@ -273,7 +269,7 @@ export function CasinoEditor({
           </label>
           <label className="block sm:col-span-2">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Logo URL
+              {t("casinos.editor.logoUrl")}
             </span>
             <input
               value={form.logoUrl}
@@ -284,18 +280,20 @@ export function CasinoEditor({
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Established
+              {t("casinos.editor.established")}
             </span>
             <input
               value={form.establishedYear}
-              onChange={(event) => patch({ establishedYear: event.target.value })}
+              onChange={(event) =>
+                patch({ establishedYear: event.target.value })
+              }
               className={adminInputClass}
               inputMode="numeric"
             />
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Min deposit
+              {t("casinos.editor.minDeposit")}
             </span>
             <input
               value={form.minDeposit}
@@ -306,7 +304,7 @@ export function CasinoEditor({
           </label>
           <label className="block sm:col-span-2">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Default affiliate link
+              {t("casinos.editor.affiliateDefault")}
             </span>
             <input
               value={form.affiliateLink}
@@ -317,14 +315,14 @@ export function CasinoEditor({
           </label>
           <label className="block sm:col-span-2">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Payout speed
+              {t("casinos.editor.payoutSpeed")}
             </span>
             <select
               value={form.payoutSpeedId}
               onChange={(event) => patch({ payoutSpeedId: event.target.value })}
               className={adminSelectClass}
             >
-              <option value="">None</option>
+              <option value="">{t("casinos.editor.none")}</option>
               {catalogs.payoutSpeeds.map((row) => (
                 <option key={row.id} value={row.id}>
                   {row.label}
@@ -334,10 +332,10 @@ export function CasinoEditor({
           </label>
         </div>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {scoreFields.map(([key, label]) => (
+          {scoreFields.map(([key, labelKey]) => (
             <label key={key} className="block">
               <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-                {label}
+                {t(`casinos.editor.${labelKey}`)}
               </span>
               <input
                 value={form[key]}
@@ -352,8 +350,10 @@ export function CasinoEditor({
       </section>
 
       <section className="mt-14">
-        <h2 className="font-display text-2xl italic tracking-tight">Voice</h2>
-        <div className="mt-5 flex gap-1 border-b border-text/10">
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("casinos.editor.voice")}
+        </h2>
+        <div className="border-text/10 mt-5 flex gap-1 border-b">
           {CONTENT_LOCALES.map((item) => (
             <button
               key={item}
@@ -363,13 +363,13 @@ export function CasinoEditor({
                 "-mb-px border-b px-3 py-2 text-sm",
                 locale === item
                   ? "border-accent text-accent"
-                  : "border-transparent text-text/45 hover:text-text",
+                  : "text-text/45 hover:text-text border-transparent",
               )}
             >
-              {localeLabel[item]}
+              {t(`contentLocale.${item}`)}
               {item === "en" ? (
                 <span className="text-text/35 ml-2 text-[10px] tracking-wide uppercase">
-                  required
+                  {t("common.required")}
                 </span>
               ) : null}
             </button>
@@ -378,17 +378,19 @@ export function CasinoEditor({
         <div className="mt-6 space-y-5">
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Name
+              {t("casinos.editor.name")}
             </span>
             <input
               value={translation.name}
-              onChange={(event) => patchTranslation({ name: event.target.value })}
+              onChange={(event) =>
+                patchTranslation({ name: event.target.value })
+              }
               className={adminInputClass}
             />
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Review
+              {t("casinos.editor.review")}
             </span>
             <textarea
               value={translation.reviewBody}
@@ -401,30 +403,34 @@ export function CasinoEditor({
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block">
               <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-                Pros
+                {t("casinos.editor.prosShort")}
               </span>
               <textarea
                 value={translation.pros}
-                onChange={(event) => patchTranslation({ pros: event.target.value })}
+                onChange={(event) =>
+                  patchTranslation({ pros: event.target.value })
+                }
                 className={adminTextareaClass}
-                placeholder="One per line"
+                placeholder={t("common.onePerLine")}
               />
             </label>
             <label className="block">
               <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-                Cons
+                {t("casinos.editor.consShort")}
               </span>
               <textarea
                 value={translation.cons}
-                onChange={(event) => patchTranslation({ cons: event.target.value })}
+                onChange={(event) =>
+                  patchTranslation({ cons: event.target.value })
+                }
                 className={adminTextareaClass}
-                placeholder="One per line"
+                placeholder={t("common.onePerLine")}
               />
             </label>
           </div>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              SEO title
+              {t("casinos.editor.seoTitle")}
             </span>
             <input
               value={translation.seoTitle}
@@ -436,7 +442,7 @@ export function CasinoEditor({
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              SEO description
+              {t("casinos.editor.seoDescription")}
             </span>
             <textarea
               value={translation.seoDescription}
@@ -450,11 +456,13 @@ export function CasinoEditor({
       </section>
 
       <section className="mt-14">
-        <h2 className="font-display text-2xl italic tracking-tight">Catalog</h2>
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("casinos.editor.catalog")}
+        </h2>
         <div className="mt-6 space-y-8">
           <fieldset>
             <legend className="text-text/45 mb-3 text-[11px] tracking-[0.16em] uppercase">
-              Licenses
+              {t("casinos.editor.licenses")}
             </legend>
             <ul className="space-y-3">
               {catalogs.licenses.map((row) => {
@@ -469,7 +477,9 @@ export function CasinoEditor({
                         onChange={() =>
                           patch({
                             licenses: checked
-                              ? form.licenses.filter((item) => item.licenseId !== row.id)
+                              ? form.licenses.filter(
+                                  (item) => item.licenseId !== row.id,
+                                )
                               : [...form.licenses, licenseDraft(row.id)],
                           })
                         }
@@ -484,13 +494,16 @@ export function CasinoEditor({
                             patch({
                               licenses: form.licenses.map((item) =>
                                 item.licenseId === row.id
-                                  ? { ...item, licenseNumber: event.target.value }
+                                  ? {
+                                      ...item,
+                                      licenseNumber: event.target.value,
+                                    }
                                   : item,
                               ),
                             })
                           }
                           className={adminInputClass}
-                          placeholder="License number"
+                          placeholder={t("casinos.editor.licenseNumber")}
                         />
                         <input
                           value={draft.verificationUrl}
@@ -498,13 +511,16 @@ export function CasinoEditor({
                             patch({
                               licenses: form.licenses.map((item) =>
                                 item.licenseId === row.id
-                                  ? { ...item, verificationUrl: event.target.value }
+                                  ? {
+                                      ...item,
+                                      verificationUrl: event.target.value,
+                                    }
                                   : item,
                               ),
                             })
                           }
                           className={adminInputClass}
-                          placeholder="Verification URL"
+                          placeholder={t("casinos.editor.verificationUrl")}
                         />
                         <label className="flex items-center gap-2 text-sm">
                           <input
@@ -514,13 +530,16 @@ export function CasinoEditor({
                               patch({
                                 licenses: form.licenses.map((item) =>
                                   item.licenseId === row.id
-                                    ? { ...item, verified: event.target.checked }
+                                    ? {
+                                        ...item,
+                                        verified: event.target.checked,
+                                      }
                                     : item,
                                 ),
                               })
                             }
                           />
-                          Verified
+                          {t("casinos.editor.verified")}
                         </label>
                       </div>
                     ) : null}
@@ -531,13 +550,13 @@ export function CasinoEditor({
           </fieldset>
 
           <CheckboxSet
-            legend="Payments"
+            legend={t("casinos.editor.payments")}
             options={catalogs.payments}
             selected={form.paymentMethodIds}
             onChange={(paymentMethodIds) => patch({ paymentMethodIds })}
           />
           <CheckboxSet
-            legend="Game providers"
+            legend={t("casinos.editor.gameProviders")}
             options={catalogs.providers}
             selected={form.gameProviderIds}
             onChange={(gameProviderIds) => patch({ gameProviderIds })}
@@ -546,13 +565,14 @@ export function CasinoEditor({
       </section>
 
       <section className="mt-14">
-        <h2 className="font-display text-2xl italic tracking-tight">Reach</h2>
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("casinos.editor.reach")}
+        </h2>
         <p className="text-text/45 mt-2 mb-6 max-w-2xl text-sm">
-          Available or restricted per market. An affiliate override, if set,
-          replaces the default link for that country only.
+          {t("casinos.editor.reachHelp")}
         </p>
         <CasinoMarketTable
-          options={catalogs.markets}
+          initialOptions={casino?.marketOptions ?? []}
           value={form.markets}
           onChange={(markets) => patch({ markets })}
         />
@@ -560,26 +580,30 @@ export function CasinoEditor({
 
       {!isNew ? (
         <section className="border-text/10 mt-16 border-t pt-8">
-          <h2 className="font-display text-2xl italic tracking-tight">Remove</h2>
+          <h2 className="font-display text-2xl tracking-tight italic">
+            {t("casinos.editor.remove")}
+          </h2>
           <p className="text-text/45 mt-3 max-w-xl text-sm leading-relaxed">
-            Deleting this casino also deletes its bonuses, affiliate clicks,
-            reviews, and catalog joins. This cannot be undone.
+            {t("casinos.editor.removeHelp")}
           </p>
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
             className="text-accent hover:text-accent-highlight mt-4 text-sm"
           >
-            Delete casino
+            {t("actions.deleteCasino")}
           </button>
         </section>
       ) : null}
 
       {confirmSlug ? (
         <AdminConfirm
-          title="Change the public slug?"
-          body={`Old URLs at /casinos/${originalSlug} will 404 unless redirected elsewhere. The new slug will be ${normalizeSlug(form.slug) || "empty"}.`}
-          confirmLabel="Save with new slug"
+          title={t("casinos.editor.slugChangeTitle")}
+          body={t("casinos.editor.slugChangeBody", {
+            slug: originalSlug,
+            next: normalizeSlug(form.slug) || "—",
+          })}
+          confirmLabel={t("actions.saveWithNewSlug")}
           pending={isPending}
           onCancel={() => setConfirmSlug(false)}
           onConfirm={() => runSave("save")}
@@ -588,16 +612,16 @@ export function CasinoEditor({
 
       {confirmDelete && casino ? (
         <AdminConfirm
-          title="Delete this casino?"
-          body="Bonuses, clicks, and reviews attached to it will be deleted as well."
-          confirmLabel="Delete"
+          title={t("casinos.editor.deleteTitle")}
+          body={t("casinos.editor.deleteBody")}
+          confirmLabel={t("actions.delete")}
           pending={isPending}
           onCancel={() => setConfirmDelete(false)}
           onConfirm={() =>
             startTransition(async () => {
               const result = await deleteCasino(casino.id);
               if (!result.ok) {
-                setError(errorCopy[result.error] ?? result.error);
+                setError(err(result.error));
                 setConfirmDelete(false);
                 return;
               }

@@ -10,7 +10,8 @@ import {
   type CategorySaveInput,
 } from "@/lib/admin/category-input";
 import { isContentStatus } from "@/lib/admin/casino-input";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { adminPerfStart } from "@/lib/admin/perf-log";
+import { requireAdmin, requireVerifiedAdmin } from "@/lib/auth/require-admin";
 import { ContentStatus } from "@/lib/db-enums";
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
@@ -44,10 +45,10 @@ export type CategoryActionResult =
   | { ok: false; error: CategoryInputError };
 
 function enName(
-  translations: { locale: string; name: string }[],
+  translations: { name?: string }[],
   fallback: string,
 ) {
-  return translations.find((item) => item.locale === "en")?.name ?? fallback;
+  return translations[0]?.name ?? fallback;
 }
 
 function revalidateAdminCategoryPaths(id?: string) {
@@ -74,15 +75,25 @@ async function maybeRevalidatePublic(args: {
 }
 
 export async function listAdminCategories(): Promise<AdminCategoryListRow[]> {
+  const perf = adminPerfStart("listAdminCategories");
   await requireAdmin();
+  perf.mark("requireAdmin");
 
   const rows = await prisma.category.findMany({
     orderBy: { updatedAt: "desc" },
-    include: {
-      translations: { where: { locale: "en" } },
+    select: {
+      id: true,
+      slug: true,
+      status: true,
+      translations: {
+        where: { locale: "en" },
+        select: { name: true },
+        take: 1,
+      },
       _count: { select: { casinos: true } },
     },
   });
+  perf.end(`rows=${rows.length}`);
 
   return rows.map((row) => ({
     id: row.id,
@@ -100,7 +111,16 @@ export async function listAdminCategoryCasinos(): Promise<
 
   const rows = await prisma.casino.findMany({
     orderBy: { slug: "asc" },
-    include: { translations: { where: { locale: "en" } } },
+    select: {
+      id: true,
+      slug: true,
+      status: true,
+      translations: {
+        where: { locale: "en" },
+        select: { name: true },
+        take: 1,
+      },
+    },
   });
 
   return rows.map((row) => ({
@@ -366,7 +386,7 @@ export async function setCategoryStatus(
 }
 
 export async function deleteCategory(id: string): Promise<CategoryActionResult> {
-  await requireAdmin();
+  await requireVerifiedAdmin();
 
   const existing = await prisma.category.findUnique({
     where: { id },

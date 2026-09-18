@@ -396,5 +396,489 @@
   "LegalPage": {
     "eyebrow": "กฎหมาย",
     "lastUpdated": "อัปเดตล่าสุด {date}"
+  },
+  "Admin": {
+    "meta": {
+      "desk": "โต๊ะทำงาน",
+      "deskTemplate": "%s · โต๊ะทำงาน",
+      "overview": "ภาพรวม"
+    },
+    "nav": {
+      "casinos": "คาสิโน",
+      "bonuses": "โบนัส",
+      "categories": "หมวดหมู่",
+      "pages": "หน้า",
+      "reviews": "รีวิว",
+      "catalogs": "แคตตาล็อก",
+      "clicks": "คลิก",
+      "users": "ผู้ใช้",
+      "aria": "ผู้ดูแล"
+    },
+    "shell": {
+      "brand": "โต๊ะทำงาน",
+      "logOut": "ออกจากระบบ"
+    },
+    "actions": {
+      "save": "บันทึก",
+      "publish": "เผยแพร่",
+      "unpublish": "ยกเลิกเผยแพร่",
+      "delete": "ลบ",
+      "add": "เพิ่ม",
+      "cancel": "ยกเลิก",
+      "close": "ปิด",
+      "create": "สร้าง",
+      "filter": "กรอง",
+      "exportCsv": "ส่งออก CSV",
+      "exporting": "กำลังส่งออก…",
+      "newCasino": "คาสิโนใหม่",
+      "newBonus": "โบนัสใหม่",
+      "newCategory": "หมวดหมู่ใหม่",
+      "openQueue": "เปิดคิว →",
+      "edit": "แก้ไข",
+      "view": "ดู",
+      "promote": "ตั้งเป็นแอดมิน",
+      "demote": "ถอดแอดมิน",
+      "approve": "อนุมัติ",
+      "reject": "ปฏิเสธ",
+      "takeDown": "นำลง",
+      "restore": "คืนค่า",
+      "saving": "กำลังบันทึก…",
+      "working": "กำลังดำเนินการ…",
+      "saveSettings": "บันทึกการตั้งค่า",
+      "deleteCasino": "ลบคาสิโน",
+      "deleteBonus": "ลบโบนัส",
+      "deleteCategory": "ลบหมวดหมู่",
+      "saveWithNewSlug": "บันทึกด้วย slug ใหม่",
+      "confirm": "ยืนยัน"
+    },
+    "status": {
+      "all": "ทุกสถานะ",
+      "draft": "ฉบับร่าง",
+      "published": "เผยแพร่แล้ว",
+      "pending": "รอดำเนินการ",
+      "approved": "อนุมัติแล้ว",
+      "rejected": "ปฏิเสธแล้ว",
+      "removed": "นำลงแล้ว",
+      "unpublished": "ยกเลิกเผยแพร่แล้ว"
+    },
+    "contentLocale": {
+      "en": "English",
+      "zh": "中文",
+      "th": "ไทย"
+    },
+    "desk": {
+      "eyebrow": "การดำเนินงาน",
+      "title": "โต๊ะทำงาน",
+      "lede": "ควบคุมเนื้อหาเว็บสาธารณะ — เผยแพร่อย่างระวัง และเก็บฉบับร่างให้ออกจากหน้าเว็บ",
+      "sections": "ส่วนต่างๆ",
+      "needsAttention": "ต้องดำเนินการ",
+      "pendingOne": "มีรีวิวผู้ใช้ 1 รายการรอการตรวจสอบ",
+      "pendingMany": "มีรีวิวผู้ใช้ {count} รายการรอการตรวจสอบ",
+      "stats": {
+        "reviewsPending": "รีวิวผู้ใช้รอตรวจ",
+        "casinosPublished": "คาสิโนที่เผยแพร่",
+        "casinosDraft": "คาสิโนฉบับร่าง"
+      },
+      "sectionsMeta": {
+        "casinos": {
+          "kicker": "ผู้ให้บริการ",
+          "blurb": "รีวิว คะแนน ตลาด และสถานะเผยแพร่"
+        },
+        "bonuses": {
+          "kicker": "ข้อเสนอ",
+          "blurb": "โบนัสต้อนรับและข้อความในรายการ"
+        },
+        "categories": {
+          "kicker": "อันดับ",
+          "blurb": "รายการ Best-of และการจัดเรียง"
+        },
+        "pages": {
+          "kicker": "กฎหมาย",
+          "blurb": "ความเป็นส่วนตัว ข้อกำหนด การเล่นอย่างรับผิดชอบ Telegram"
+        },
+        "reviews": {
+          "kicker": "ตรวจสอบ",
+          "blurb": "อนุมัติ ปฏิเสธ หรือนำรีวิวลง"
+        },
+        "catalogs": {
+          "kicker": "อนุกรมวิธาน",
+          "blurb": "ใบอนุญาต การชำระเงิน ผู้ให้บริการ การจ่าย ตลาด"
+        },
+        "clicks": {
+          "kicker": "ทราฟฟิก",
+          "blurb": "รายงานคลิกพันธมิตรและส่งออก CSV"
+        },
+        "users": {
+          "kicker": "สิทธิ์",
+          "blurb": "เลื่อนหรือลดสิทธิ์ผู้ดูแล"
+        }
+      }
+    },
+    "casinos": {
+      "eyebrow": "บัญชีรายชื่อ",
+      "title": "คาสิโน",
+      "lede": "ฉบับร่างไม่ขึ้นบนเว็บสาธารณะ เผยแพร่จากตัวแก้ไขเมื่อรีวิวภาษาอังกฤษพร้อม",
+      "searchPlaceholder": "ค้นหาชื่อหรือ slug",
+      "empty": "ไม่พบคาสิโนที่ตรงกัน",
+      "columns": {
+        "name": "ชื่อ",
+        "slug": "Slug",
+        "status": "สถานะ",
+        "updated": "อัปเดต",
+        "rating": "คะแนน"
+      },
+      "editor": {
+        "newTitle": "คาสิโนใหม่",
+        "editTitle": "แก้ไขคาสิโน",
+        "startsDraft": "เริ่มเป็นฉบับร่าง",
+        "saved": "บันทึกแล้ว",
+        "published": "เผยแพร่แล้ว",
+        "unpublished": "ยกเลิกเผยแพร่แล้ว",
+        "deleteTitle": "ลบคาสิโนนี้?",
+        "deleteBody": "โบนัสและการจัดวางหมวดหมู่จะถูกลบด้วย",
+        "slug": "Slug",
+        "logoUrl": "URL โลโก้",
+        "established": "ก่อตั้ง",
+        "minDeposit": "ฝากขั้นต่ำ",
+        "payoutSpeed": "ความเร็วการจ่าย",
+        "affiliateLink": "ลิงก์พันธมิตร",
+        "scores": "คะแนน",
+        "overall": "รวม",
+        "bonuses": "โบนัส",
+        "games": "เกม",
+        "support": "ซัพพอร์ต",
+        "payout": "การจ่าย",
+        "trust": "ความน่าเชื่อถือ",
+        "name": "ชื่อ",
+        "reviewBody": "เนื้อหารีวิว",
+        "pros": "ข้อดี (บรรทัดละข้อ)",
+        "cons": "ข้อเสีย (บรรทัดละข้อ)",
+        "seoTitle": "ชื่อ SEO",
+        "seoDescription": "คำอธิบาย SEO",
+        "licenses": "ใบอนุญาต",
+        "licenseNumber": "เลขใบอนุญาต",
+        "payments": "การชำระเงิน",
+        "providers": "ผู้ให้บริการเกม",
+        "markets": "ตลาด",
+        "none": "ไม่มี",
+        "publishNeeds": "การเผยแพร่ต้องมีชื่อและเนื้อหารีวิวภาษาอังกฤษ คุณยังบันทึกฉบับร่างได้",
+        "slugChangeWarn": "การเปลี่ยน slug จะทำให้ลิงก์ /casinos/{slug} เดิมใช้ไม่ได้ การบันทึกจะรีเฟรชทั้ง URL เก่าและใหม่",
+        "slugChangeTitle": "เปลี่ยน slug สาธารณะ?",
+        "slugChangeBody": "URL เก่า /casinos/{slug} จะเป็น 404 เว้นแต่มี redirect slug ใหม่คือ {next}",
+        "facts": "ข้อมูล",
+        "affiliateDefault": "ลิงก์พันธมิตรเริ่มต้น",
+        "rating": "คะแนน",
+        "voice": "เสียง",
+        "catalog": "แคตตาล็อก",
+        "reach": "การเข้าถึง",
+        "remove": "นำออก",
+        "review": "รีวิว",
+        "prosShort": "ข้อดี",
+        "consShort": "ข้อเสีย",
+        "verificationUrl": "URL ยืนยัน",
+        "verified": "ยืนยันแล้ว",
+        "gameProviders": "ผู้ให้บริการเกม",
+        "reachHelp": "ใช้ได้หรือจำกัดตามตลาด หากตั้งค่า override พันธมิตร จะแทนที่ลิงก์เริ่มต้นเฉพาะประเทศนั้น",
+        "removeHelp": "การลบคาสิโนนี้จะลบโบนัส คลิกพันธมิตร รีวิว และการเชื่อมแคตตาล็อกด้วย ยกเลิกไม่ได้",
+        "marketSearch": "ค้นหาประเทศหรือรหัส ISO",
+        "marketSearchAria": "ค้นหาตลาด",
+        "marketNoMatch": "ไม่พบประเทศที่ตรงกัน",
+        "marketHint": "พิมพ์เพื่อเพิ่มจากรายการ ISO ตลาดที่เพิ่มไว้จะอยู่จนกว่าคุณจะนำออก",
+        "marketColumn": "ตลาด",
+        "accessColumn": "สิทธิ์เข้าถึง",
+        "overrideColumn": "ลิงก์พันธมิตรแทนที่",
+        "overridePlaceholder": "ลิงก์ (ไม่บังคับ)",
+        "available": "ใช้ได้",
+        "restricted": "จำกัด"
+      }
+    },
+    "bonuses": {
+      "eyebrow": "ข้อเสนอ",
+      "title": "โบนัส",
+      "lede": "หน้าสาธารณะแสดงเฉพาะโบนัสที่เผยแพร่บนคาสิโนที่เผยแพร่แล้ว วันหมดอายุแสดงอย่างเดียว ไม่ได้ใช้ซ่อนแถว",
+      "empty": "ไม่พบโบนัสที่ตรงกัน",
+      "columns": {
+        "title": "ชื่อ",
+        "casino": "คาสิโน",
+        "type": "ประเภท",
+        "status": "สถานะ",
+        "expiry": "หมดอายุ",
+        "order": "ลำดับ"
+      },
+      "allCasinos": "คาสิโนทั้งหมด",
+      "allTypes": "ทุกประเภท",
+      "editor": {
+        "newTitle": "โบนัสใหม่",
+        "editTitle": "แก้ไขโบนัส",
+        "startsDraft": "เริ่มเป็นฉบับร่าง",
+        "casinoDraftWarn": "คาสิโนนี้ยังเป็นฉบับร่าง คุณบันทึกโบนัสได้ แต่จะไม่ขึ้นจนกว่าผู้ให้บริการจะเผยแพร่",
+        "saved": "บันทึกแล้ว",
+        "published": "เผยแพร่แล้ว",
+        "unpublished": "ยกเลิกเผยแพร่แล้ว",
+        "deleteTitle": "ลบโบนัสนี้?",
+        "deleteBody": "ข้อเสนอนี้จะออกจากเว็บสาธารณะและรายการโต๊ะทำงาน",
+        "casino": "คาสิโน",
+        "type": "ประเภทโบนัส",
+        "amount": "จำนวน",
+        "wagering": "เทิร์นโอเวอร์",
+        "minDeposit": "ฝากขั้นต่ำ",
+        "code": "โค้ด",
+        "expiry": "วันหมดอายุ",
+        "titleField": "ชื่อ",
+        "terms": "เงื่อนไข",
+        "publishNeeds": "การเผยแพร่ต้องมีชื่อภาษาอังกฤษ",
+        "facts": "ข้อมูล",
+        "sortOrder": "ลำดับ",
+        "slug": "Slug",
+        "selectCasino": "เลือกคาสิโน",
+        "selectType": "เลือกประเภท",
+        "slugSuggested": "แนะนำจากคาสิโนและประเภท: {suggestion}",
+        "sortHelp": "ตัวเลขน้อยขึ้นก่อน แล้วตามด้วยรายการใหม่",
+        "voice": "เสียง",
+        "remove": "นำออก",
+        "removeHelp": "คลิกพันธมิตรที่ใช้โบนัสนี้ยังอยู่ในรายงาน แต่การเชื่อมโบนัสจะถูกล้าง"
+      },
+      "expired": "หมดอายุแล้ว"
+    },
+    "categories": {
+      "eyebrow": "คัดสรร",
+      "title": "หมวดหมู่",
+      "lede": "รายการจัดอันดับที่ /best/[slug] ฉบับร่างไม่อยู่ใน /best-of และ sitemap",
+      "empty": "ยังไม่มีหมวดหมู่",
+      "editor": {
+        "newTitle": "หมวดหมู่ใหม่",
+        "editTitle": "แก้ไขหมวดหมู่",
+        "startsDraft": "เริ่มเป็นฉบับร่าง",
+        "saved": "บันทึกแล้ว",
+        "published": "เผยแพร่แล้ว",
+        "unpublished": "ยกเลิกเผยแพร่แล้ว",
+        "deleteTitle": "ลบหมวดหมู่นี้?",
+        "deleteBody": "การจัดวางจะถูกลบพร้อมรายการ",
+        "slug": "Slug",
+        "name": "ชื่อ",
+        "description": "คำอธิบาย",
+        "seoTitle": "ชื่อ SEO",
+        "seoDescription": "คำอธิบาย SEO",
+        "methodology": "วิธีการ",
+        "casinos": "คาสิโนในรายการนี้",
+        "addCasino": "เพิ่มคาสิโน",
+        "rank": "อันดับ",
+        "note": "หมายเหตุ",
+        "remove": "นำออก",
+        "publishNeeds": "การเผยแพร่ต้องมีชื่อภาษาอังกฤษ",
+        "facts": "ข้อมูล",
+        "voice": "เสียง",
+        "publicUrl": "URL สาธารณะ: /best/{slug}",
+        "rankDuplicate": "อันดับซ้ำ — แต่ละคาสิโนต้องมีอันดับไม่ซ้ำ",
+        "rankingHelp": "อันดับ 1 มาก่อน คาสิโนฉบับร่างอยู่ในรายการโต๊ะทำงานได้ แต่ไม่ขึ้นหน้าสาธารณะจนกว่าจะเผยแพร่",
+        "removeHelp": "การลบหมวดหมู่นี้จะลบอันดับและหมายเหตุกองบรรณาธิการด้วย"
+      },
+      "columns": {
+        "name": "ชื่อ",
+        "slug": "Slug",
+        "status": "สถานะ",
+        "casinos": "คาสิโน"
+      }
+    },
+    "pages": {
+      "eyebrow": "กฎหมาย",
+      "title": "หน้า",
+      "lede": "slug ทั้งสามนี้คงที่ ยกเลิกเผยแพร่แล้ว URL สาธารณะจะเป็น 404",
+      "telegram": "URL ช่อง Telegram",
+      "telegramHelp": "แสดงที่ส่วนท้ายเมื่อตั้งค่า เว้นว่างเพื่อซ่อน",
+      "telegramSaved": "บันทึกลิงก์ Telegram แล้ว",
+      "columns": {
+        "page": "หน้า",
+        "status": "สถานะ",
+        "updated": "อัปเดต",
+        "slug": "Slug"
+      },
+      "missing": "หายไป",
+      "editor": {
+        "saved": "บันทึกแล้ว",
+        "published": "เผยแพร่แล้ว",
+        "unpublished": "ยกเลิกเผยแพร่แล้ว",
+        "titleField": "ชื่อ",
+        "content": "เนื้อหา (Markdown)",
+        "seoTitle": "ชื่อ SEO",
+        "seoDescription": "คำอธิบาย SEO",
+        "publishNeeds": "การเผยแพร่ต้องมีชื่อและเนื้อหา Markdown ภาษาอังกฤษ",
+        "unpublishTitle": "ยกเลิกเผยแพร่หน้ากฎหมายนี้?",
+        "unpublishBody": "URL สาธารณะจะคืน 404 จนกว่าจะเผยแพร่อีกครั้ง",
+        "unpublishedNotice": "ยกเลิกเผยแพร่แล้ว URL สาธารณะเป็น 404 แล้ว",
+        "notSaved": "ยังไม่บันทึก",
+        "markdown": "Markdown"
+      },
+      "telegramSavedLong": "บันทึกแล้ว ส่วนท้ายจะอัปเดตเมื่อโหลดครั้งถัดไป",
+      "siteEyebrow": "ไซต์",
+      "siteTitle": "การตั้งค่า",
+      "siteLede": "ลิงก์ Telegram ที่ส่วนท้าย เว้นว่างเพื่อซ่อนบนเว็บสาธารณะ",
+      "telegramHelpLong": "ต้องขึ้นต้นด้วย https:// เว้นว่างเพื่อซ่อนลิงก์ส่วนท้าย"
+    },
+    "reviews": {
+      "eyebrow": "คิว",
+      "title": "รีวิว",
+      "lede": "รอดำเนินการก่อน เผยแพร่ ปฏิเสธ หรือยกเลิกเผยแพร่ภายหลัง ไม่แก้ไขข้อความผู้เข้าชมที่นี่",
+      "empty": "ไม่มีรายการในคิวนี้",
+      "detailTitle": "รีวิว",
+      "allCasinos": "คาสิโนทั้งหมด",
+      "columns": {
+        "casino": "คาสิโน",
+        "author": "ผู้เขียน",
+        "rating": "คะแนน",
+        "status": "สถานะ",
+        "date": "วันที่",
+        "excerpt": "ข้อความย่อ"
+      },
+      "rejectTitle": "ปฏิเสธรีวิวนี้?",
+      "rejectBody": "จะไม่แสดงบนหน้าคาสิโนสาธารณะ",
+      "takeDownTitle": "นำรีวิวนี้ลง?",
+      "takeDownBody": "จะถูกซ่อนจากเว็บสาธารณะ",
+      "countOne": "{count} รีวิว",
+      "countMany": "{count} รีวิว",
+      "previous": "ก่อนหน้า",
+      "next": "ถัดไป",
+      "pageOf": "หน้า {page} จาก {pageCount}",
+      "statusUnpublished": "ยกเลิกเผยแพร่แล้ว",
+      "fromDate": "วันที่เริ่ม",
+      "toDate": "วันที่สิ้นสุด",
+      "submitted": "ส่งเมื่อ",
+      "moderated": "ตรวจสอบเมื่อ",
+      "body": "เนื้อหา",
+      "editInDesk": "แก้ไขในโต๊ะทำงาน",
+      "backToQueue": "กลับไปคิว"
+    },
+    "catalogs": {
+      "eyebrow": "แคตตาล็อก",
+      "lede": "ต้องมีภาษาอังกฤษ จีนและไทยเป็นทางเลือก ล็อก slug หลังสร้างเพื่อให้ตัวกรองสาธารณะคงที่",
+      "subnav": {
+        "payout": "ความเร็วการจ่าย",
+        "license": "ใบอนุญาต",
+        "payment": "การชำระเงิน",
+        "provider": "ผู้ให้บริการ",
+        "bonusType": "ประเภทโบนัส",
+        "markets": "ตลาด"
+      },
+      "kinds": {
+        "payout": {
+          "title": "ความเร็วการจ่าย",
+          "nameLabel": "ป้าย"
+        },
+        "license": {
+          "title": "ใบอนุญาต",
+          "nameLabel": "ชื่อ"
+        },
+        "payment": {
+          "title": "การชำระเงิน",
+          "nameLabel": "ชื่อ"
+        },
+        "provider": {
+          "title": "ผู้ให้บริการ",
+          "nameLabel": "ชื่อ"
+        },
+        "bonusType": {
+          "title": "ประเภทโบนัส",
+          "nameLabel": "ชื่อ"
+        }
+      },
+      "new": "ใหม่",
+      "slug": "Slug",
+      "sort": "เรียง",
+      "unused": "ไม่ได้ใช้",
+      "inUse": "ใช้ {count} รายการ",
+      "inUseWithNames": "ใช้ {count} รายการ · {names}",
+      "deleteTitle": "ลบ {name}?",
+      "deleteUnused": "ตัวเลือกนี้จะออกจากแคตตาล็อก",
+      "deleteChecking": "กำลังตรวจสอบการใช้งาน…",
+      "deletePayout": "จะล้างความเร็วการจ่ายของคาสิโน {count} แห่ง{sample}",
+      "deleteInUse": "ยังถูกใช้ {count} รายการ{sample} โปรดถอดก่อน",
+      "marketsTitle": "ตลาด",
+      "marketsLede": "ค้นหารหัสประเทศ ISO หรือชื่อ แล้วตั้งภาษาอังกฤษ (จำเป็น) พร้อมจีน/ไทยถ้าต้องการ",
+      "searchMarkets": "ค้นหาตลาด (อย่างน้อย 2 ตัวอักษร)",
+      "englishNameLabel": "ชื่ออังกฤษ ({label})",
+      "chinese": "จีน",
+      "thai": "ไทย",
+      "typeMinChars": "พิมพ์อย่างน้อยสองตัวอักษร",
+      "noMarkets": "ไม่พบตลาดที่ตรงกัน",
+      "searchByCode": "ค้นหาด้วยรหัสหรือชื่อ"
+    },
+    "clicks": {
+      "eyebrow": "ทราฟฟิก",
+      "title": "คลิก",
+      "lede": "คลิกออกไปเยี่ยมชมและรับสิทธิ์ นับอย่างเดียว — ไม่มีตัวตนผู้เข้าชม และแก้ไขแถวไม่ได้",
+      "from": "จาก",
+      "to": "ถึง",
+      "allLocales": "ทุกภาษา",
+      "total": "คลิกรวม",
+      "byCasino": "ตามคาสิโน",
+      "byBonus": "ตามโบนัส",
+      "byLocale": "ตามภาษา",
+      "byDay": "ตามวัน",
+      "empty": "ไม่มีคลิกในช่วงนี้",
+      "countOne": "{count} คลิก",
+      "countMany": "{count} คลิก",
+      "casinosHeading": "คาสิโน",
+      "localesHeading": "ภาษา",
+      "dailyHeading": "รายวัน",
+      "columns": {
+        "casino": "คาสิโน",
+        "bonus": "โบนัส",
+        "clicks": "คลิก",
+        "locale": "ภาษา",
+        "date": "วันที่"
+      },
+      "all": "ทั้งหมด",
+      "allCasinos": "คาสิโนทั้งหมด"
+    },
+    "users": {
+      "eyebrow": "สิทธิ์",
+      "title": "ผู้ใช้",
+      "lede": "บัญชีถูกสร้างบนเว็บสาธารณะ เลื่อนสิทธิ์บรรณาธิการที่นี่ ห้ามถอดแอดมินคนสุดท้าย",
+      "columns": {
+        "email": "อีเมล",
+        "name": "ชื่อ",
+        "role": "บทบาท",
+        "created": "สร้างเมื่อ"
+      },
+      "roleAdmin": "แอดมิน",
+      "roleUser": "ผู้ใช้",
+      "confirmPromote": "ตั้ง {email} เป็นแอดมิน?",
+      "confirmDemote": "ถอดแอดมินของ {email}?",
+      "confirmBody": "สิ่งนี้เปลี่ยนผู้ที่เปิดโต๊ะทำงานได้",
+      "you": "คุณ"
+    },
+    "errors": {
+      "invalidSlug": "Slug ต้องเป็นตัวพิมพ์เล็ก ตัวเลข และขีดกลาง",
+      "duplicateSlug": "slug นี้ถูกใช้แล้ว",
+      "englishRequired": "ต้องมีภาษาอังกฤษเพื่อเผยแพร่",
+      "invalidScore": "คะแนนต้องอยู่ระหว่าง 0 ถึง 5",
+      "invalidYear": "ปีที่ก่อตั้งไม่ถูกต้อง",
+      "invalidDeposit": "ฝากขั้นต่ำต้องเป็นจำนวนบวก",
+      "invalidCatalog": "เลือกใบอนุญาต การชำระเงิน และผู้ให้บริการจากแคตตาล็อก",
+      "missing": "รายการนี้ไม่อยู่ในโต๊ะทำงานแล้ว",
+      "invalidStatus": "ไม่อนุญาตสถานะนี้",
+      "casinoDraft": "เผยแพร่คาสิโนก่อน ผู้ให้บริการฉบับร่างแสดงโบนัสไม่ได้",
+      "invalidSort": "ลำดับต้องเป็นจำนวนเต็ม",
+      "inUse": "ยังผูกกับคาสิโนหรือโบนัส โปรดถอดก่อน",
+      "payoutInUse": "ยังมีคาสิโนใช้ความเร็วการจ่ายนี้ ยืนยันเพื่อล้าง",
+      "invalidTransition": "การกระทำนี้ไม่อนุญาตจากสถานะปัจจุบัน",
+      "lastAdmin": "ถอดแอดมินคนสุดท้ายไม่ได้",
+      "selfDemote": "ถอดสิทธิ์แอดมินของตัวเองไม่ได้",
+      "invalidUrl": "ใส่ URL https ที่ถูกต้อง หรือเว้นว่าง",
+      "casinoRequired": "เลือกคาสิโน",
+      "typeRequired": "เลือกประเภทโบนัสจากแคตตาล็อก",
+      "invalidExpiry": "วันหมดอายุต้องเป็นวันที่ถูกต้อง",
+      "invalidRank": "อันดับต้องเป็นจำนวนเต็มเริ่มที่ 1 หรือว่าง",
+      "invalidCasino": "เลือกคาสิโนจากรายการ"
+    },
+    "notices": {
+      "saved": "บันทึกแล้ว",
+      "published": "เผยแพร่แล้ว",
+      "unpublished": "ยกเลิกเผยแพร่แล้ว"
+    },
+    "common": {
+      "required": "จำเป็น",
+      "onePerLine": "บรรทัดละข้อ"
+    }
   }
 }

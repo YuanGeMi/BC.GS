@@ -1,10 +1,12 @@
 export const ADMIN_NAV = [
-  { href: "/admin/casinos", label: "Casinos" },
-  { href: "/admin/bonuses", label: "Bonuses" },
-  { href: "/admin/categories", label: "Categories" },
-  { href: "/admin/pages", label: "Pages" },
-  { href: "/admin/reviews", label: "Reviews" },
-  { href: "/admin/catalogs/payout", label: "Catalogs" },
-  { href: "/admin/clicks", label: "Clicks" },
-  { href: "/admin/users", label: "Users" },
+  { href: "/admin/casinos", labelKey: "casinos" },
+  { href: "/admin/bonuses", labelKey: "bonuses" },
+  { href: "/admin/categories", labelKey: "categories" },
+  { href: "/admin/pages", labelKey: "pages" },
+  { href: "/admin/reviews", labelKey: "reviews" },
+  { href: "/admin/catalogs/payout", labelKey: "catalogs" },
+  { href: "/admin/clicks", labelKey: "clicks" },
+  { href: "/admin/users", labelKey: "users" },
 ] as const;
+
+export type AdminNavLabelKey = (typeof ADMIN_NAV)[number]["labelKey"];

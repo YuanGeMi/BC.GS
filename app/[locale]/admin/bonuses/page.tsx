@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import {
@@ -8,24 +8,22 @@ import {
 } from "@/lib/admin/bonuses";
 import { adminSelectClass } from "@/lib/admin/fields";
 
-export const metadata: Metadata = {
-  title: "Bonuses",
-};
-
 type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ casino?: string; type?: string; status?: string }>;
 };
 
-const dateFmt = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Admin.bonuses" });
+  return { title: t("title") };
+}
 
 export default async function AdminBonusesPage({ params, searchParams }: Props) {
   const [{ locale }, query] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
+  const t = await getTranslations("Admin");
+  const tb = await getTranslations("Admin.bonuses");
 
   const casinoId = query.casino ?? "";
   const typeId = query.type ?? "";
@@ -41,25 +39,29 @@ export default async function AdminBonusesPage({ params, searchParams }: Props) 
   ]);
 
   const today = new Date().toISOString().slice(0, 10);
+  const dateFmt = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <section>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-            Offer
+            {tb("eyebrow")}
           </p>
-          <h1 className="font-display mt-3 text-4xl tracking-tight">Bonuses</h1>
-          <p className="text-text/55 mt-3 max-w-xl text-sm">
-            Public pages only show published bonuses on published casinos.
-            Expiry is displayed, not used to hide a row.
-          </p>
+          <h1 className="font-display mt-3 text-4xl tracking-tight">
+            {tb("title")}
+          </h1>
+          <p className="text-text/55 mt-3 max-w-xl text-sm">{tb("lede")}</p>
         </div>
         <Link
           href="/admin/bonuses/new"
           className="bg-accent text-background hover:bg-accent-highlight inline-flex h-10 items-center px-4 text-sm font-medium"
         >
-          New bonus
+          {t("actions.newBonus")}
         </Link>
       </div>
 
@@ -69,7 +71,7 @@ export default async function AdminBonusesPage({ params, searchParams }: Props) 
           defaultValue={casinoId}
           className={`${adminSelectClass} max-w-[14rem]`}
         >
-          <option value="">All casinos</option>
+          <option value="">{tb("allCasinos")}</option>
           {catalogs.casinos.map((row) => (
             <option key={row.id} value={row.id}>
               {row.label}
@@ -81,7 +83,7 @@ export default async function AdminBonusesPage({ params, searchParams }: Props) 
           defaultValue={typeId}
           className={`${adminSelectClass} max-w-[12rem]`}
         >
-          <option value="">All types</option>
+          <option value="">{tb("allTypes")}</option>
           {catalogs.types.map((row) => (
             <option key={row.id} value={row.id}>
               {row.label}
@@ -93,15 +95,15 @@ export default async function AdminBonusesPage({ params, searchParams }: Props) 
           defaultValue={status}
           className={`${adminSelectClass} max-w-[10rem]`}
         >
-          <option value="all">All statuses</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
+          <option value="all">{t("status.all")}</option>
+          <option value="draft">{t("status.draft")}</option>
+          <option value="published">{t("status.published")}</option>
         </select>
         <button
           type="submit"
           className="ring-text/20 hover:ring-accent/50 h-11 px-4 text-sm ring-1"
         >
-          Filter
+          {t("actions.filter")}
         </button>
       </form>
 
@@ -109,19 +111,19 @@ export default async function AdminBonusesPage({ params, searchParams }: Props) 
         <table className="w-full min-w-[48rem] text-left text-sm">
           <thead>
             <tr className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
-              <th className="py-3 pr-4 font-medium">Title</th>
-              <th className="py-3 pr-4 font-medium">Casino</th>
-              <th className="py-3 pr-4 font-medium">Type</th>
-              <th className="py-3 pr-4 font-medium">Status</th>
-              <th className="py-3 pr-4 font-medium">Expiry</th>
-              <th className="py-3 font-medium">Order</th>
+              <th className="py-3 pr-4 font-medium">{tb("columns.title")}</th>
+              <th className="py-3 pr-4 font-medium">{tb("columns.casino")}</th>
+              <th className="py-3 pr-4 font-medium">{tb("columns.type")}</th>
+              <th className="py-3 pr-4 font-medium">{tb("columns.status")}</th>
+              <th className="py-3 pr-4 font-medium">{tb("columns.expiry")}</th>
+              <th className="py-3 font-medium">{tb("columns.order")}</th>
             </tr>
           </thead>
           <tbody>
             {bonuses.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-text/45 py-8">
-                  No bonuses match.
+                  {tb("empty")}
                 </td>
               </tr>
             ) : (
@@ -148,7 +150,7 @@ export default async function AdminBonusesPage({ params, searchParams }: Props) 
                             : "text-text/40 text-[11px] tracking-[0.14em] uppercase"
                         }
                       >
-                        {row.status}
+                        {t(`status.${row.status}`)}
                       </span>
                     </td>
                     <td className="text-text/55 py-3.5 pr-4">
@@ -157,7 +159,7 @@ export default async function AdminBonusesPage({ params, searchParams }: Props) 
                         : "—"}
                       {expired ? (
                         <span className="text-accent/80 ml-2 text-[11px] tracking-wide uppercase">
-                          expired
+                          {tb("expired")}
                         </span>
                       ) : null}
                     </td>

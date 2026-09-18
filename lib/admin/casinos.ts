@@ -11,7 +11,7 @@ import {
   type CasinoSaveInput,
   type ParsedCasinoSave,
 } from "@/lib/admin/casino-input";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin, requireVerifiedAdmin } from "@/lib/auth/require-admin";
 import { ContentStatus } from "@/lib/db-enums";
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
@@ -57,6 +57,8 @@ export type AdminCasinoEditorData = {
   paymentMethodIds: string[];
   gameProviderIds: string[];
   markets: CasinoSaveInput["markets"];
+  /** Labels for already-attached markets (search loads the rest). */
+  marketOptions: AdminMarketOption[];
 };
 
 export type AdminCasinoCatalogs = {
@@ -72,10 +74,10 @@ export type CasinoActionResult =
   | { ok: false; error: CasinoInputError };
 
 function enLabel(
-  translations: { locale: string; name?: string; label?: string }[],
+  translations: { name?: string; label?: string }[],
   fallback: string,
 ) {
-  const row = translations.find((item) => item.locale === "en");
+  const row = translations[0];
   return row?.name ?? row?.label ?? fallback;
 }
 
@@ -208,26 +210,54 @@ export async function listAdminCasinos(filters: {
 export async function getAdminCasinoCatalogs(): Promise<AdminCasinoCatalogs> {
   await requireAdmin();
 
-  const [licenses, payments, providers, payoutSpeeds, markets] = await Promise.all([
+  const [licenses, payments, providers, payoutSpeeds] = await Promise.all([
     prisma.license.findMany({
       orderBy: { sortOrder: "asc" },
-      include: { translations: true },
+      select: {
+        id: true,
+        slug: true,
+        translations: {
+          where: { locale: "en" },
+          select: { name: true },
+          take: 1,
+        },
+      },
     }),
     prisma.paymentMethod.findMany({
       orderBy: { sortOrder: "asc" },
-      include: { translations: true },
+      select: {
+        id: true,
+        slug: true,
+        translations: {
+          where: { locale: "en" },
+          select: { name: true },
+          take: 1,
+        },
+      },
     }),
     prisma.gameProvider.findMany({
       orderBy: { sortOrder: "asc" },
-      include: { translations: true },
+      select: {
+        id: true,
+        slug: true,
+        translations: {
+          where: { locale: "en" },
+          select: { name: true },
+          take: 1,
+        },
+      },
     }),
     prisma.payoutSpeedOption.findMany({
       orderBy: { sortOrder: "asc" },
-      include: { translations: true },
-    }),
-    prisma.market.findMany({
-      orderBy: { code: "asc" },
-      include: { translations: { where: { locale: "en" } } },
+      select: {
+        id: true,
+        slug: true,
+        translations: {
+          where: { locale: "en" },
+          select: { label: true },
+          take: 1,
+        },
+      },
     }),
   ]);
 
@@ -248,11 +278,7 @@ export async function getAdminCasinoCatalogs(): Promise<AdminCasinoCatalogs> {
       id: row.id,
       label: enLabel(row.translations, row.slug),
     })),
-    markets: markets.map((row) => ({
-      id: row.id,
-      code: row.code,
-      name: row.translations[0]?.name || row.code,
-    })),
+    markets: [],
   };
 }
 
@@ -268,7 +294,21 @@ export async function getAdminCasino(
       licenses: true,
       paymentMethods: true,
       gameProviders: true,
-      markets: true,
+      markets: {
+        include: {
+          market: {
+            select: {
+              id: true,
+              code: true,
+              translations: {
+                where: { locale: "en" },
+                select: { name: true },
+                take: 1,
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -343,6 +383,11 @@ export async function getAdminCasino(
       marketId: item.marketId,
       status: item.status,
       affiliateLink: item.affiliateLink ?? "",
+    })),
+    marketOptions: row.markets.map((item) => ({
+      id: item.market.id,
+      code: item.market.code,
+      name: item.market.translations[0]?.name || item.market.code,
     })),
   };
 }
@@ -561,7 +606,7 @@ export async function setCasinoStatus(
 }
 
 export async function deleteCasino(id: string): Promise<CasinoActionResult> {
-  await requireAdmin();
+  await requireVerifiedAdmin();
 
   const existing = await prisma.casino.findUnique({
     where: { id },

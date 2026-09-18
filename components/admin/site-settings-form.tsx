@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
@@ -11,6 +12,7 @@ export function SiteSettingsForm({
 }: {
   telegramChannelUrl: string;
 }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [url, setUrl] = useState(telegramChannelUrl);
   const [error, setError] = useState<string | null>(null);
@@ -27,17 +29,17 @@ export function SiteSettingsForm({
         startTransition(async () => {
           const result = await updateSiteSettings(url);
           if (!result.ok) {
-            setError("Use an https URL, or leave the field empty to hide the footer link.");
+            setError(t("errors.invalidUrl"));
             return;
           }
-          setNotice("Saved. The footer will pick this up on the next load.");
+          setNotice(t("pages.telegramSavedLong"));
           router.refresh();
         });
       }}
     >
       <label className="block">
         <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-          Telegram channel URL
+          {t("pages.telegram")}
         </span>
         <input
           value={url}
@@ -48,9 +50,7 @@ export function SiteSettingsForm({
           spellCheck={false}
         />
       </label>
-      <p className="text-text/40 text-xs">
-        Must start with https://. Leave empty to hide the footer link.
-      </p>
+      <p className="text-text/40 text-xs">{t("pages.telegramHelpLong")}</p>
       {error ? <p className="text-accent text-sm">{error}</p> : null}
       {notice ? <p className="text-text/55 text-sm">{notice}</p> : null}
       <button
@@ -58,7 +58,7 @@ export function SiteSettingsForm({
         disabled={isPending}
         className="bg-accent text-background hover:bg-accent-highlight h-10 px-4 text-sm font-medium disabled:opacity-40"
       >
-        {isPending ? "Saving…" : "Save settings"}
+        {isPending ? t("actions.saving") : t("actions.saveSettings")}
       </button>
     </form>
   );

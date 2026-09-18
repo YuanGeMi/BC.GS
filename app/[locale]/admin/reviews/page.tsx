@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ReviewActions } from "@/components/admin/review-actions";
 import { Link } from "@/i18n/navigation";
@@ -8,10 +8,6 @@ import {
   listAdminReviewCasinos,
   listAdminReviews,
 } from "@/lib/admin/reviews";
-
-export const metadata: Metadata = {
-  title: "Reviews",
-};
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -24,15 +20,17 @@ type Props = {
   }>;
 };
 
-const dateFmt = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Admin.reviews" });
+  return { title: t("title") };
+}
 
 export default async function AdminReviewsPage({ params, searchParams }: Props) {
   const [{ locale }, query] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
+  const t = await getTranslations("Admin");
+  const tr = await getTranslations("Admin.reviews");
 
   const status = query.status ?? "pending";
   const casinoId = query.casino ?? "";
@@ -51,6 +49,12 @@ export default async function AdminReviewsPage({ params, searchParams }: Props) 
     }),
   ]);
 
+  const dateFmt = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   const queryForPage = (nextPage: number) => {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
@@ -62,16 +66,19 @@ export default async function AdminReviewsPage({ params, searchParams }: Props) 
     return qs ? `/admin/reviews?${qs}` : "/admin/reviews";
   };
 
+  function statusLabel(value: string) {
+    if (value === "unpublished") return tr("statusUnpublished");
+    if (t.has(`status.${value}`)) return t(`status.${value}`);
+    return value;
+  }
+
   return (
     <section>
       <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-        Queue
+        {tr("eyebrow")}
       </p>
-      <h1 className="font-display mt-3 text-4xl tracking-tight">Reviews</h1>
-      <p className="text-text/55 mt-3 max-w-xl text-sm">
-        Pending first. Publish, reject, or later unpublish. The visitor’s text
-        is not edited here.
-      </p>
+      <h1 className="font-display mt-3 text-4xl tracking-tight">{tr("title")}</h1>
+      <p className="text-text/55 mt-3 max-w-xl text-sm">{tr("lede")}</p>
 
       <form className="mt-10 flex flex-wrap gap-3" method="get">
         <select
@@ -79,18 +86,18 @@ export default async function AdminReviewsPage({ params, searchParams }: Props) 
           defaultValue={status}
           className={`${adminSelectClass} max-w-[10rem]`}
         >
-          <option value="pending">Pending</option>
-          <option value="published">Published</option>
-          <option value="unpublished">Unpublished</option>
-          <option value="rejected">Rejected</option>
-          <option value="all">All statuses</option>
+          <option value="pending">{t("status.pending")}</option>
+          <option value="published">{t("status.published")}</option>
+          <option value="unpublished">{tr("statusUnpublished")}</option>
+          <option value="rejected">{t("status.rejected")}</option>
+          <option value="all">{t("status.all")}</option>
         </select>
         <select
           name="casino"
           defaultValue={casinoId}
           className={`${adminSelectClass} max-w-[14rem]`}
         >
-          <option value="">All casinos</option>
+          <option value="">{tr("allCasinos")}</option>
           {casinos.map((row) => (
             <option key={row.id} value={row.id}>
               {row.label}
@@ -101,37 +108,39 @@ export default async function AdminReviewsPage({ params, searchParams }: Props) 
           type="date"
           name="from"
           defaultValue={from}
-          aria-label="From date"
+          aria-label={tr("fromDate")}
           className={`${adminInputClass} max-w-[11rem]`}
         />
         <input
           type="date"
           name="to"
           defaultValue={to}
-          aria-label="To date"
+          aria-label={tr("toDate")}
           className={`${adminInputClass} max-w-[11rem]`}
         />
         <button
           type="submit"
           className="ring-text/20 hover:ring-accent/50 h-11 px-4 text-sm ring-1"
         >
-          Filter
+          {t("actions.filter")}
         </button>
       </form>
 
       <p className="text-text/40 mt-6 text-xs tracking-wide">
-        {list.total} {list.total === 1 ? "review" : "reviews"}
+        {list.total === 1
+          ? tr("countOne", { count: list.total })
+          : tr("countMany", { count: list.total })}
       </p>
 
       <div className="border-text/10 mt-4 overflow-x-auto border-t">
         <table className="w-full min-w-[52rem] text-left text-sm">
           <thead>
             <tr className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
-              <th className="py-3 pr-4 font-medium">Author</th>
-              <th className="py-3 pr-4 font-medium">Casino</th>
-              <th className="py-3 pr-4 font-medium">Rating</th>
-              <th className="py-3 pr-4 font-medium">Excerpt</th>
-              <th className="py-3 pr-4 font-medium">Status</th>
+              <th className="py-3 pr-4 font-medium">{tr("columns.author")}</th>
+              <th className="py-3 pr-4 font-medium">{tr("columns.casino")}</th>
+              <th className="py-3 pr-4 font-medium">{tr("columns.rating")}</th>
+              <th className="py-3 pr-4 font-medium">{tr("columns.excerpt")}</th>
+              <th className="py-3 pr-4 font-medium">{tr("columns.status")}</th>
               <th className="py-3 font-medium"> </th>
             </tr>
           </thead>
@@ -139,7 +148,7 @@ export default async function AdminReviewsPage({ params, searchParams }: Props) 
             {list.rows.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-text/45 py-8">
-                  Nothing in this queue.
+                  {tr("empty")}
                 </td>
               </tr>
             ) : (
@@ -170,7 +179,7 @@ export default async function AdminReviewsPage({ params, searchParams }: Props) 
                           : "text-text/40 text-[11px] tracking-[0.14em] uppercase"
                       }
                     >
-                      {row.status}
+                      {statusLabel(row.status)}
                     </span>
                   </td>
                   <td className="py-3.5">
@@ -187,15 +196,15 @@ export default async function AdminReviewsPage({ params, searchParams }: Props) 
         <div className="mt-6 flex items-center gap-4 text-sm">
           {list.page > 1 ? (
             <Link href={queryForPage(list.page - 1)} className="text-accent">
-              Previous
+              {tr("previous")}
             </Link>
           ) : null}
           <span className="text-text/45">
-            Page {list.page} of {list.pageCount}
+            {tr("pageOf", { page: list.page, pageCount: list.pageCount })}
           </span>
           {list.page < list.pageCount ? (
             <Link href={queryForPage(list.page + 1)} className="text-accent">
-              Next
+              {tr("next")}
             </Link>
           ) : null}
         </div>

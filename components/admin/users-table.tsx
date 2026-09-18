@@ -1,22 +1,11 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 
 import { setUserRole, type AdminUserRow } from "@/lib/admin/users";
 import { cn } from "@/lib/utils";
-
-const dateFmt = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
-
-const errorCopy = {
-  missing: "That account is no longer in the list.",
-  lastAdmin: "At least one admin must remain.",
-  invalidRole: "That role is not allowed.",
-} as const;
 
 type Role = AdminUserRow["role"];
 
@@ -32,10 +21,27 @@ export function UsersTable({
   users: AdminUserRow[];
   currentUserId: string;
 }) {
+  const t = useTranslations("Admin");
+  const locale = useLocale();
   const router = useRouter();
   const [pendingChange, setPendingChange] = useState<PendingChange | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const dateFmt = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+    [locale],
+  );
+
+  function err(code: string) {
+    if (code === "invalidRole") return t("errors.invalidStatus");
+    return t.has(`errors.${code}`) ? t(`errors.${code}`) : code;
+  }
 
   function confirm() {
     if (!pendingChange) return;
@@ -43,7 +49,7 @@ export function UsersTable({
     startTransition(async () => {
       const result = await setUserRole(user.id, role);
       if (result.error) {
-        setError(errorCopy[result.error]);
+        setError(err(result.error));
         return;
       }
       setPendingChange(null);
@@ -62,10 +68,12 @@ export function UsersTable({
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead>
             <tr className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
-              <th className="py-3 pr-4 font-medium">Email</th>
-              <th className="py-3 pr-4 font-medium">Name</th>
-              <th className="py-3 pr-4 font-medium">Role</th>
-              <th className="py-3 pr-4 font-medium">Created</th>
+              <th className="py-3 pr-4 font-medium">{t("users.columns.email")}</th>
+              <th className="py-3 pr-4 font-medium">{t("users.columns.name")}</th>
+              <th className="py-3 pr-4 font-medium">{t("users.columns.role")}</th>
+              <th className="py-3 pr-4 font-medium">
+                {t("users.columns.created")}
+              </th>
               <th className="py-3 font-medium"> </th>
             </tr>
           </thead>
@@ -79,7 +87,7 @@ export function UsersTable({
                     {user.email}
                     {isSelf ? (
                       <span className="text-text/35 ml-2 text-[11px] tracking-wide uppercase">
-                        you
+                        {t("users.you")}
                       </span>
                     ) : null}
                   </td>
@@ -90,12 +98,12 @@ export function UsersTable({
                     <span
                       className={cn(
                         "text-[11px] tracking-[0.14em] uppercase",
-                        user.role === "admin"
-                          ? "text-accent"
-                          : "text-text/45",
+                        user.role === "admin" ? "text-accent" : "text-text/45",
                       )}
                     >
-                      {user.role}
+                      {user.role === "admin"
+                        ? t("users.roleAdmin")
+                        : t("users.roleUser")}
                     </span>
                   </td>
                   <td className="text-text/50 py-3.5 pr-4 tabular-nums">
@@ -110,7 +118,9 @@ export function UsersTable({
                       }}
                       className="text-accent hover:text-accent-highlight text-xs font-medium"
                     >
-                      {nextRole === "admin" ? "Promote" : "Demote"}
+                      {nextRole === "admin"
+                        ? t("actions.promote")
+                        : t("actions.demote")}
                     </button>
                   </td>
                 </tr>
@@ -138,13 +148,15 @@ export function UsersTable({
               className="font-display text-2xl tracking-tight"
             >
               {pendingChange.role === "admin"
-                ? "Promote to admin?"
-                : "Remove admin access?"}
+                ? t("users.confirmPromote", {
+                    email: pendingChange.user.email,
+                  })
+                : t("users.confirmDemote", {
+                    email: pendingChange.user.email,
+                  })}
             </p>
             <p className="text-text/60 mt-3 text-sm leading-relaxed">
-              {pendingChange.role === "admin"
-                ? `${pendingChange.user.email} will be able to open Desk.`
-                : `${pendingChange.user.email} will lose Desk access. The last remaining admin cannot be demoted.`}
+              {t("users.confirmBody")}
             </p>
             {error ? <p className="text-accent mt-3 text-sm">{error}</p> : null}
             <div className="mt-6 flex justify-end gap-3">
@@ -154,7 +166,7 @@ export function UsersTable({
                 onClick={() => setPendingChange(null)}
                 className="text-text/50 hover:text-text px-3 py-2 text-sm"
               >
-                Cancel
+                {t("actions.cancel")}
               </button>
               <button
                 type="button"
@@ -162,7 +174,7 @@ export function UsersTable({
                 onClick={confirm}
                 className="bg-accent text-background hover:bg-accent-highlight px-4 py-2 text-sm font-medium"
               >
-                {isPending ? "Saving…" : "Confirm"}
+                {isPending ? t("actions.saving") : t("actions.confirm")}
               </button>
             </div>
           </div>

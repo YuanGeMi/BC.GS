@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CategoryEditor } from "@/components/admin/category-editor";
 import { listAdminCategoryCasinos } from "@/lib/admin/categories";
 
-export const metadata: Metadata = {
-  title: "New category",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Admin.categories.editor" });
+  return { title: t("newTitle") };
+}
 
 type Props = {
   params: Promise<{ locale: string }>;

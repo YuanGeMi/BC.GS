@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { cn } from "@/lib/utils";
 
 export function AdminConfirm({
@@ -17,6 +19,8 @@ export function AdminConfirm({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const t = useTranslations("Admin.actions");
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-4 sm:items-center"
@@ -44,7 +48,7 @@ export function AdminConfirm({
             onClick={onCancel}
             className="text-text/50 hover:text-text px-3 py-2 text-sm"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -55,7 +59,7 @@ export function AdminConfirm({
               pending && "opacity-60",
             )}
           >
-            {pending ? "Working…" : confirmLabel}
+            {pending ? t("working") : confirmLabel}
           </button>
         </div>
       </div>

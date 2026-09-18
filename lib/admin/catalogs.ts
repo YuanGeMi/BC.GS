@@ -9,7 +9,7 @@ import {
   type CatalogNames,
 } from "@/lib/admin/catalog-kinds";
 import { CONTENT_LOCALES, normalizeSlug } from "@/lib/admin/casino-input";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin, requireVerifiedAdmin } from "@/lib/auth/require-admin";
 import { routing, type Locale } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
 import { revalidateCatalogSurfaces } from "@/lib/revalidate";
@@ -76,8 +76,11 @@ async function catalogUsage(
   if (kind === "payout") {
     const row = await prisma.payoutSpeedOption.findUnique({
       where: { id },
-      include: {
-        translations: true,
+      select: {
+        id: true,
+        slug: true,
+        sortOrder: true,
+        translations: { select: { locale: true, label: true } },
         casinos: {
           take: 8,
           select: {
@@ -104,11 +107,14 @@ async function catalogUsage(
   if (kind === "license") {
     const row = await prisma.license.findUnique({
       where: { id },
-      include: {
-        translations: true,
+      select: {
+        id: true,
+        slug: true,
+        sortOrder: true,
+        translations: { select: { locale: true, name: true } },
         casinos: {
           take: 8,
-          include: {
+          select: {
             casino: {
               select: {
                 slug: true,
@@ -136,11 +142,14 @@ async function catalogUsage(
   if (kind === "payment") {
     const row = await prisma.paymentMethod.findUnique({
       where: { id },
-      include: {
-        translations: true,
+      select: {
+        id: true,
+        slug: true,
+        sortOrder: true,
+        translations: { select: { locale: true, name: true } },
         casinos: {
           take: 8,
-          include: {
+          select: {
             casino: {
               select: {
                 slug: true,
@@ -168,11 +177,14 @@ async function catalogUsage(
   if (kind === "provider") {
     const row = await prisma.gameProvider.findUnique({
       where: { id },
-      include: {
-        translations: true,
+      select: {
+        id: true,
+        slug: true,
+        sortOrder: true,
+        translations: { select: { locale: true, name: true } },
         casinos: {
           take: 8,
-          include: {
+          select: {
             casino: {
               select: {
                 slug: true,
@@ -199,11 +211,14 @@ async function catalogUsage(
 
   const row = await prisma.bonusType.findUnique({
     where: { id },
-    include: {
-      translations: true,
+    select: {
+      id: true,
+      slug: true,
+      sortOrder: true,
+      translations: { select: { locale: true, name: true } },
       bonuses: {
         take: 8,
-        include: {
+        select: {
           translations: { where: { locale: "en" }, select: { title: true } },
           casino: {
             select: {
@@ -446,7 +461,7 @@ export async function deleteCatalogItem(
   id: string,
   confirmPayout = false,
 ): Promise<CatalogActionResult> {
-  await requireAdmin();
+  await requireVerifiedAdmin();
   const item = await catalogUsage(kind, id);
   if (!item) return { ok: false, error: "missing" };
 
@@ -509,7 +524,11 @@ export async function searchAdminMarkets(query: string): Promise<AdminMarketRow[
         },
     take: 20,
     orderBy: { code: "asc" },
-    include: { translations: true },
+    select: {
+      id: true,
+      code: true,
+      translations: { select: { locale: true, name: true } },
+    },
   });
 
   return rows.map((row) => ({

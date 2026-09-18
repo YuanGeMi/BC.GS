@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
@@ -22,28 +23,12 @@ import {
   type AdminBonusCatalogs,
   type AdminBonusEditorData,
 } from "@/lib/admin/bonuses";
-import { adminInputClass, adminSelectClass, adminTextareaClass } from "@/lib/admin/fields";
+import {
+  adminInputClass,
+  adminSelectClass,
+  adminTextareaClass,
+} from "@/lib/admin/fields";
 import { cn } from "@/lib/utils";
-
-const errorCopy: Record<string, string> = {
-  invalidSlug: "Slug must be lowercase letters, numbers, and hyphens.",
-  duplicateSlug: "That slug is already used by another bonus.",
-  englishRequired: "An English title is required to publish.",
-  casinoRequired: "Pick a casino.",
-  typeRequired: "Pick a bonus type from the catalog.",
-  casinoDraft: "Publish the casino first. A draft operator cannot show bonuses.",
-  invalidSort: "Sort order must be a whole number.",
-  invalidDeposit: "Minimum deposit must be a positive number.",
-  invalidExpiry: "Expiry must be a valid date.",
-  missing: "That bonus is no longer in Desk.",
-  invalidStatus: "That status is not allowed.",
-};
-
-const localeLabel: Record<Locale, string> = {
-  en: "English",
-  zh: "中文",
-  th: "ไทย",
-};
 
 function toInput(
   bonus?: AdminBonusEditorData | null,
@@ -75,6 +60,7 @@ export function BonusEditor({
   catalogs: AdminBonusCatalogs;
   presetCasinoId?: string;
 }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [form, setForm] = useState<BonusSaveInput>(() =>
     toInput(bonus, presetCasinoId),
@@ -87,7 +73,9 @@ export function BonusEditor({
   const isNew = !bonus;
   const lastSuggestion = useRef("");
 
-  const selectedCasino = catalogs.casinos.find((row) => row.id === form.casinoId);
+  const selectedCasino = catalogs.casinos.find(
+    (row) => row.id === form.casinoId,
+  );
   const selectedType = catalogs.types.find((row) => row.id === form.typeId);
   const suggestion =
     selectedCasino && selectedType
@@ -95,6 +83,10 @@ export function BonusEditor({
       : "";
   const casinoIsDraft = selectedCasino?.status === "draft";
   const canPublish = englishTitleReady(form) && !casinoIsDraft;
+
+  function err(code: string) {
+    return t.has(`errors.${code}`) ? t(`errors.${code}`) : code;
+  }
 
   useEffect(() => {
     setForm(toInput(bonus, presetCasinoId));
@@ -132,7 +124,7 @@ export function BonusEditor({
       if (isNew) {
         const result = await createBonus(form);
         if (!result.ok) {
-          setError(errorCopy[result.error] ?? result.error);
+          setError(err(result.error));
           return;
         }
         router.push(`/admin/bonuses/${result.id}`);
@@ -143,20 +135,20 @@ export function BonusEditor({
       if (kind === "publish") {
         const result = await saveAndPublishBonus(bonus.id, form);
         if (!result.ok) {
-          setError(errorCopy[result.error] ?? result.error);
+          setError(err(result.error));
           return;
         }
-        setNotice("Published.");
+        setNotice(t("bonuses.editor.published"));
         router.refresh();
         return;
       }
 
       const result = await updateBonus(bonus.id, form);
       if (!result.ok) {
-        setError(errorCopy[result.error] ?? result.error);
+        setError(err(result.error));
         return;
       }
-      setNotice("Saved.");
+      setNotice(t("bonuses.editor.saved"));
       router.refresh();
     });
   }
@@ -168,19 +160,23 @@ export function BonusEditor({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-            Offer
+            {t("bonuses.eyebrow")}
           </p>
           <h1 className="font-display mt-3 text-4xl tracking-tight">
             {isNew
-              ? "New bonus"
-              : form.translations.en.title.trim() || form.slug || "Bonus"}
+              ? t("bonuses.editor.newTitle")
+              : form.translations.en.title.trim() ||
+                form.slug ||
+                t("bonuses.title")}
           </h1>
           {!isNew ? (
             <p className="text-text/45 mt-2 text-xs tracking-[0.16em] uppercase">
-              {bonus.status}
+              {t(`status.${bonus.status}`)}
             </p>
           ) : (
-            <p className="text-text/45 mt-2 text-sm">Starts as draft.</p>
+            <p className="text-text/45 mt-2 text-sm">
+              {t("bonuses.editor.startsDraft")}
+            </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -190,7 +186,7 @@ export function BonusEditor({
             onClick={() => runSave("save")}
             className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
           >
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("actions.saving") : t("actions.save")}
           </button>
           {!isNew && bonus.status !== "published" ? (
             <button
@@ -199,7 +195,7 @@ export function BonusEditor({
               onClick={() => runSave("publish")}
               className="bg-accent text-background hover:bg-accent-highlight h-10 px-4 text-sm font-medium disabled:opacity-40"
             >
-              Publish
+              {t("actions.publish")}
             </button>
           ) : null}
           {!isNew && bonus.status === "published" ? (
@@ -210,16 +206,16 @@ export function BonusEditor({
                 startTransition(async () => {
                   const result = await setBonusStatus(bonus.id, "draft");
                   if (!result.ok) {
-                    setError(errorCopy[result.error] ?? result.error);
+                    setError(err(result.error));
                     return;
                   }
-                  setNotice("Unpublished.");
+                  setNotice(t("bonuses.editor.unpublished"));
                   router.refresh();
                 })
               }
               className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
             >
-              Unpublish
+              {t("actions.unpublish")}
             </button>
           ) : null}
         </div>
@@ -229,46 +225,47 @@ export function BonusEditor({
       {notice ? <p className="text-text/55 mt-6 text-sm">{notice}</p> : null}
       {casinoIsDraft ? (
         <p className="text-text/45 mt-6 max-w-2xl text-sm">
-          This casino is still a draft. You can save the bonus, but it cannot
-          go live until the operator is published.
+          {t("bonuses.editor.casinoDraftWarn")}
         </p>
       ) : null}
       {!englishTitleReady(form) ? (
         <p className="text-text/45 mt-4 max-w-2xl text-sm">
-          Publishing needs an English title.
+          {t("bonuses.editor.publishNeeds")}
         </p>
       ) : null}
 
       <section className="mt-12 space-y-5">
-        <h2 className="font-display text-2xl italic tracking-tight">Facts</h2>
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("bonuses.editor.facts")}
+        </h2>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Casino
+            {t("bonuses.editor.casino")}
           </span>
           <select
             value={form.casinoId}
             onChange={(event) => patch({ casinoId: event.target.value })}
             className={adminSelectClass}
           >
-            <option value="">Select casino</option>
+            <option value="">{t("bonuses.editor.selectCasino")}</option>
             {catalogs.casinos.map((row) => (
               <option key={row.id} value={row.id}>
                 {row.label}
-                {row.status === "draft" ? " (draft)" : ""}
+                {row.status === "draft" ? ` (${t("status.draft")})` : ""}
               </option>
             ))}
           </select>
         </label>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Type
+            {t("bonuses.editor.type")}
           </span>
           <select
             value={form.typeId}
             onChange={(event) => patch({ typeId: event.target.value })}
             className={adminSelectClass}
           >
-            <option value="">Select type</option>
+            <option value="">{t("bonuses.editor.selectType")}</option>
             {catalogs.types.map((row) => (
               <option key={row.id} value={row.id}>
                 {row.label}
@@ -278,7 +275,7 @@ export function BonusEditor({
         </label>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Slug
+            {t("bonuses.editor.slug")}
           </span>
           <input
             value={form.slug}
@@ -289,14 +286,14 @@ export function BonusEditor({
           />
           {isNew && suggestion ? (
             <span className="text-text/40 mt-1.5 block text-xs">
-              Suggested from casino and type: {suggestion}
+              {t("bonuses.editor.slugSuggested", { suggestion })}
             </span>
           ) : null}
         </label>
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Sort order
+              {t("bonuses.editor.sortOrder")}
             </span>
             <input
               value={form.sortOrder}
@@ -305,12 +302,12 @@ export function BonusEditor({
               inputMode="numeric"
             />
             <span className="text-text/40 mt-1.5 block text-xs">
-              Lower numbers appear first, then newest.
+              {t("bonuses.editor.sortHelp")}
             </span>
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Expiry
+              {t("bonuses.editor.expiry")}
             </span>
             <input
               type="date"
@@ -322,7 +319,7 @@ export function BonusEditor({
         </div>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Amount
+            {t("bonuses.editor.amount")}
           </span>
           <input
             value={form.amount}
@@ -334,7 +331,7 @@ export function BonusEditor({
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Wagering
+              {t("bonuses.editor.wagering")}
             </span>
             <input
               value={form.wageringRequirement}
@@ -346,7 +343,7 @@ export function BonusEditor({
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Min deposit
+              {t("bonuses.editor.minDeposit")}
             </span>
             <input
               value={form.minDeposit}
@@ -358,7 +355,7 @@ export function BonusEditor({
         </div>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Code
+            {t("bonuses.editor.code")}
           </span>
           <input
             value={form.code}
@@ -369,8 +366,10 @@ export function BonusEditor({
       </section>
 
       <section className="mt-14">
-        <h2 className="font-display text-2xl italic tracking-tight">Voice</h2>
-        <div className="mt-5 flex gap-1 border-b border-text/10">
+        <h2 className="font-display text-2xl tracking-tight italic">
+          {t("bonuses.editor.voice")}
+        </h2>
+        <div className="border-text/10 mt-5 flex gap-1 border-b">
           {CONTENT_LOCALES.map((item) => (
             <button
               key={item}
@@ -380,13 +379,13 @@ export function BonusEditor({
                 "-mb-px border-b px-3 py-2 text-sm",
                 locale === item
                   ? "border-accent text-accent"
-                  : "border-transparent text-text/45 hover:text-text",
+                  : "text-text/45 hover:text-text border-transparent",
               )}
             >
-              {localeLabel[item]}
+              {t(`contentLocale.${item}`)}
               {item === "en" ? (
                 <span className="text-text/35 ml-2 text-[10px] tracking-wide uppercase">
-                  required
+                  {t("common.required")}
                 </span>
               ) : null}
             </button>
@@ -395,21 +394,25 @@ export function BonusEditor({
         <div className="mt-6 space-y-5">
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Title
+              {t("bonuses.editor.titleField")}
             </span>
             <input
               value={translation.title}
-              onChange={(event) => patchTranslation({ title: event.target.value })}
+              onChange={(event) =>
+                patchTranslation({ title: event.target.value })
+              }
               className={adminInputClass}
             />
           </label>
           <label className="block">
             <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-              Terms
+              {t("bonuses.editor.terms")}
             </span>
             <textarea
               value={translation.terms}
-              onChange={(event) => patchTranslation({ terms: event.target.value })}
+              onChange={(event) =>
+                patchTranslation({ terms: event.target.value })
+              }
               className={adminTextareaClass}
             />
           </label>
@@ -418,33 +421,34 @@ export function BonusEditor({
 
       {!isNew ? (
         <section className="border-text/10 mt-16 border-t pt-8">
-          <h2 className="font-display text-2xl italic tracking-tight">Remove</h2>
+          <h2 className="font-display text-2xl tracking-tight italic">
+            {t("bonuses.editor.remove")}
+          </h2>
           <p className="text-text/45 mt-3 max-w-xl text-sm leading-relaxed">
-            Affiliate clicks that used this bonus stay in reporting. Their
-            bonus link is cleared.
+            {t("bonuses.editor.removeHelp")}
           </p>
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
             className="text-accent hover:text-accent-highlight mt-4 text-sm"
           >
-            Delete bonus
+            {t("actions.deleteBonus")}
           </button>
         </section>
       ) : null}
 
       {confirmDelete && bonus ? (
         <AdminConfirm
-          title="Delete this bonus?"
-          body="Click rows remain. The bonusId on those clicks will be emptied."
-          confirmLabel="Delete"
+          title={t("bonuses.editor.deleteTitle")}
+          body={t("bonuses.editor.deleteBody")}
+          confirmLabel={t("actions.delete")}
           pending={isPending}
           onCancel={() => setConfirmDelete(false)}
           onConfirm={() =>
             startTransition(async () => {
               const result = await deleteBonus(bonus.id);
               if (!result.ok) {
-                setError(errorCopy[result.error] ?? result.error);
+                setError(err(result.error));
                 setConfirmDelete(false);
                 return;
               }

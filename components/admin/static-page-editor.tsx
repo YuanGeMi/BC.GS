@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -21,25 +22,16 @@ import { adminInputClass, adminTextareaClass } from "@/lib/admin/fields";
 import { LEGAL_PAGE_LABELS } from "@/lib/static-pages";
 import { cn } from "@/lib/utils";
 
-const errorCopy: Record<string, string> = {
-  invalidSlug: "That page cannot be edited here.",
-  englishRequired: "English title and markdown are required to publish.",
-  missing: "Save the page as a draft first.",
-  invalidStatus: "That status is not allowed.",
-  invalidUrl: "Use an https URL.",
-};
-
-const localeLabel: Record<Locale, string> = {
-  en: "English",
-  zh: "中文",
-  th: "ไทย",
-};
-
 function toInput(page: AdminStaticPageEditorData): StaticPageSaveInput {
   return { translations: page.translations };
 }
 
-export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) {
+export function StaticPageEditor({
+  page,
+}: {
+  page: AdminStaticPageEditorData;
+}) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [form, setForm] = useState<StaticPageSaveInput>(() => toInput(page));
   const [locale, setLocale] = useState<Locale>("en");
@@ -49,6 +41,10 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
   const [isPending, startTransition] = useTransition();
   const canPublish = englishPageReady(form);
   const warnUnpublish = page.slug === "privacy" || page.slug === "terms";
+
+  function err(code: string) {
+    return t.has(`errors.${code}`) ? t(`errors.${code}`) : code;
+  }
 
   useEffect(() => {
     setForm(toInput(page));
@@ -70,20 +66,20 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
       if (kind === "publish") {
         const result = await saveAndPublishStaticPage(page.slug, form);
         if (!result.ok) {
-          setError(errorCopy[result.error] ?? result.error);
+          setError(err(result.error));
           return;
         }
-        setNotice("Published.");
+        setNotice(t("pages.editor.published"));
         router.refresh();
         return;
       }
 
       const result = await updateStaticPage(page.slug, form);
       if (!result.ok) {
-        setError(errorCopy[result.error] ?? result.error);
+        setError(err(result.error));
         return;
       }
-      setNotice("Saved.");
+      setNotice(t("pages.editor.saved"));
       router.refresh();
     });
   }
@@ -92,12 +88,12 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
     startTransition(async () => {
       const result = await setStaticPageStatus(page.slug, "draft");
       if (!result.ok) {
-        setError(errorCopy[result.error] ?? result.error);
+        setError(err(result.error));
         setConfirmUnpublish(false);
         return;
       }
       setConfirmUnpublish(false);
-      setNotice("Unpublished. The public URL now 404s.");
+      setNotice(t("pages.editor.unpublishedNotice"));
       router.refresh();
     });
   }
@@ -109,13 +105,15 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-            Legal
+            {t("pages.eyebrow")}
           </p>
           <h1 className="font-display mt-3 text-4xl tracking-tight">
             {LEGAL_PAGE_LABELS[page.slug]}
           </h1>
           <p className="text-text/45 mt-2 text-xs tracking-[0.16em] uppercase">
-            {page.exists ? page.status : "not saved"}
+            {page.exists
+              ? t(`status.${page.status}`)
+              : t("pages.editor.notSaved")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -125,7 +123,7 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
             onClick={() => runSave("save")}
             className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
           >
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("actions.saving") : t("actions.save")}
           </button>
           {page.status !== "published" ? (
             <button
@@ -134,7 +132,7 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
               onClick={() => runSave("publish")}
               className="bg-accent text-background hover:bg-accent-highlight h-10 px-4 text-sm font-medium disabled:opacity-40"
             >
-              Publish
+              {t("actions.publish")}
             </button>
           ) : (
             <button
@@ -145,7 +143,7 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
               }
               className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1"
             >
-              Unpublish
+              {t("actions.unpublish")}
             </button>
           )}
         </div>
@@ -155,11 +153,11 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
       {notice ? <p className="text-text/55 mt-6 text-sm">{notice}</p> : null}
       {!canPublish ? (
         <p className="text-text/45 mt-6 max-w-2xl text-sm">
-          Publishing needs an English title and markdown body.
+          {t("pages.editor.publishNeeds")}
         </p>
       ) : null}
 
-      <div className="mt-10 flex gap-1 border-b border-text/10">
+      <div className="border-text/10 mt-10 flex gap-1 border-b">
         {CONTENT_LOCALES.map((item) => (
           <button
             key={item}
@@ -169,13 +167,13 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
               "-mb-px border-b px-3 py-2 text-sm",
               locale === item
                 ? "border-accent text-accent"
-                : "border-transparent text-text/45 hover:text-text",
+                : "text-text/45 hover:text-text border-transparent",
             )}
           >
-            {localeLabel[item]}
+            {t(`contentLocale.${item}`)}
             {item === "en" ? (
               <span className="text-text/35 ml-2 text-[10px] tracking-wide uppercase">
-                required
+                {t("common.required")}
               </span>
             ) : null}
           </button>
@@ -185,17 +183,19 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
       <div className="mt-6 space-y-5">
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Title
+            {t("pages.editor.titleField")}
           </span>
           <input
             value={translation.title}
-            onChange={(event) => patchTranslation({ title: event.target.value })}
+            onChange={(event) =>
+              patchTranslation({ title: event.target.value })
+            }
             className={adminInputClass}
           />
         </label>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            Markdown
+            {t("pages.editor.markdown")}
           </span>
           <textarea
             value={translation.content}
@@ -207,7 +207,7 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
         </label>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            SEO title
+            {t("pages.editor.seoTitle")}
           </span>
           <input
             value={translation.seoTitle}
@@ -219,7 +219,7 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
         </label>
         <label className="block">
           <span className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
-            SEO description
+            {t("pages.editor.seoDescription")}
           </span>
           <textarea
             value={translation.seoDescription}
@@ -233,9 +233,9 @@ export function StaticPageEditor({ page }: { page: AdminStaticPageEditorData }) 
 
       {confirmUnpublish ? (
         <AdminConfirm
-          title="Unpublish this legal page?"
-          body="The public URL will 404. Keep this unpublished only if you intend to take the policy down."
-          confirmLabel="Unpublish"
+          title={t("pages.editor.unpublishTitle")}
+          body={t("pages.editor.unpublishBody")}
+          confirmLabel={t("actions.unpublish")}
           pending={isPending}
           onCancel={() => setConfirmUnpublish(false)}
           onConfirm={unpublish}

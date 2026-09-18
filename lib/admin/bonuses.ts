@@ -10,7 +10,7 @@ import {
   type BonusInputError,
   type BonusSaveInput,
 } from "@/lib/admin/bonus-input";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin, requireVerifiedAdmin } from "@/lib/auth/require-admin";
 import { ContentStatus } from "@/lib/db-enums";
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
@@ -59,10 +59,10 @@ export type BonusActionResult =
   | { ok: false; error: BonusInputError };
 
 function enName(
-  translations: { locale: string; name?: string; title?: string }[],
+  translations: { name?: string; title?: string }[],
   fallback: string,
 ) {
-  const row = translations.find((item) => item.locale === "en");
+  const row = translations[0];
   return row?.name ?? row?.title ?? fallback;
 }
 
@@ -94,11 +94,28 @@ export async function getAdminBonusCatalogs(): Promise<AdminBonusCatalogs> {
   const [casinos, types] = await Promise.all([
     prisma.casino.findMany({
       orderBy: { slug: "asc" },
-      include: { translations: { where: { locale: "en" } } },
+      select: {
+        id: true,
+        slug: true,
+        status: true,
+        translations: {
+          where: { locale: "en" },
+          select: { name: true },
+          take: 1,
+        },
+      },
     }),
     prisma.bonusType.findMany({
       orderBy: { sortOrder: "asc" },
-      include: { translations: { where: { locale: "en" } } },
+      select: {
+        id: true,
+        slug: true,
+        translations: {
+          where: { locale: "en" },
+          select: { name: true },
+          take: 1,
+        },
+      },
     }),
   ]);
 
@@ -134,10 +151,37 @@ export async function listAdminBonuses(filters: {
       ...(status ? { status } : {}),
     },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    include: {
-      translations: { where: { locale: "en" } },
-      casino: { include: { translations: { where: { locale: "en" } } } },
-      bonusType: { include: { translations: { where: { locale: "en" } } } },
+    select: {
+      id: true,
+      slug: true,
+      status: true,
+      expiryDate: true,
+      sortOrder: true,
+      translations: {
+        where: { locale: "en" },
+        select: { title: true },
+        take: 1,
+      },
+      casino: {
+        select: {
+          slug: true,
+          translations: {
+            where: { locale: "en" },
+            select: { name: true },
+            take: 1,
+          },
+        },
+      },
+      bonusType: {
+        select: {
+          slug: true,
+          translations: {
+            where: { locale: "en" },
+            select: { name: true },
+            take: 1,
+          },
+        },
+      },
     },
   });
 
@@ -371,7 +415,7 @@ export async function setBonusStatus(
 }
 
 export async function deleteBonus(id: string): Promise<BonusActionResult> {
-  await requireAdmin();
+  await requireVerifiedAdmin();
 
   const existing = await prisma.bonus.findUnique({
     where: { id },

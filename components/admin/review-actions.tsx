@@ -1,16 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
 import { AdminConfirm } from "@/components/admin/admin-confirm";
 import { setReviewStatus } from "@/lib/admin/reviews";
-
-const errorCopy: Record<string, string> = {
-  missing: "That review is no longer in Desk.",
-  invalidStatus: "That status is not allowed.",
-  invalidTransition: "That action is not allowed from the current status.",
-};
 
 export function ReviewActions({
   id,
@@ -19,17 +14,22 @@ export function ReviewActions({
   id: string;
   status: string;
 }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [confirmReject, setConfirmReject] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  function err(code: string) {
+    return t.has(`errors.${code}`) ? t(`errors.${code}`) : code;
+  }
 
   function run(next: "published" | "rejected" | "unpublished") {
     setError(null);
     startTransition(async () => {
       const result = await setReviewStatus(id, next);
       if (!result.ok) {
-        setError(errorCopy[result.error] ?? result.error);
+        setError(err(result.error));
         setConfirmReject(false);
         return;
       }
@@ -49,7 +49,7 @@ export function ReviewActions({
             onClick={() => run("published")}
             className="bg-accent text-background hover:bg-accent-highlight h-10 px-4 text-sm font-medium disabled:opacity-40"
           >
-            Publish
+            {t("actions.publish")}
           </button>
         )}
         {status === "pending" && (
@@ -59,7 +59,7 @@ export function ReviewActions({
             onClick={() => setConfirmReject(true)}
             className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1 disabled:opacity-40"
           >
-            Reject
+            {t("actions.reject")}
           </button>
         )}
         {status === "published" && (
@@ -69,16 +69,16 @@ export function ReviewActions({
             onClick={() => run("unpublished")}
             className="ring-text/20 hover:ring-accent/50 h-10 px-4 text-sm ring-1 disabled:opacity-40"
           >
-            Unpublish
+            {t("actions.unpublish")}
           </button>
         )}
       </div>
 
       {confirmReject ? (
         <AdminConfirm
-          title="Reject this review?"
-          body="It will never appear on the public page. The author still cannot submit another review for this casino."
-          confirmLabel="Reject"
+          title={t("reviews.rejectTitle")}
+          body={t("reviews.rejectBody")}
+          confirmLabel={t("actions.reject")}
           pending={isPending}
           onCancel={() => setConfirmReject(false)}
           onConfirm={() => run("rejected")}

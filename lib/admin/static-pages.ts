@@ -57,7 +57,16 @@ export async function listAdminStaticPages(): Promise<AdminStaticPageListRow[]> 
 
   const rows = await prisma.staticPage.findMany({
     where: { slug: { in: [...LEGAL_PAGE_SLUGS] } },
-    include: { translations: { where: { locale: "en" } } },
+    select: {
+      slug: true,
+      status: true,
+      updatedAt: true,
+      translations: {
+        where: { locale: "en" },
+        select: { title: true },
+        take: 1,
+      },
+    },
   });
   const bySlug = new Map(rows.map((row) => [row.slug, row]));
 

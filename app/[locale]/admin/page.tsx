@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import { ADMIN_NAV } from "@/lib/admin/nav";
@@ -7,55 +7,21 @@ import { ContentStatus, ReviewStatus } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Overview",
-};
-
 type Props = {
   params: Promise<{ locale: string }>;
 };
 
-const DESK_COPY: Record<
-  (typeof ADMIN_NAV)[number]["href"],
-  { kicker: string; blurb: string }
-> = {
-  "/admin/casinos": {
-    kicker: "Operators",
-    blurb: "Reviews, scores, markets, and publish state.",
-  },
-  "/admin/bonuses": {
-    kicker: "Offers",
-    blurb: "Welcome deals and listing copy on each desk.",
-  },
-  "/admin/categories": {
-    kicker: "Rankings",
-    blurb: "Best-of lists and editorial ordering.",
-  },
-  "/admin/pages": {
-    kicker: "Legal",
-    blurb: "Privacy, terms, responsible gambling, Telegram.",
-  },
-  "/admin/reviews": {
-    kicker: "Moderation",
-    blurb: "Approve, reject, or take user reviews down.",
-  },
-  "/admin/catalogs/payout": {
-    kicker: "Taxonomy",
-    blurb: "Licenses, payments, providers, payouts, markets.",
-  },
-  "/admin/clicks": {
-    kicker: "Traffic",
-    blurb: "Affiliate click reports and CSV export.",
-  },
-  "/admin/users": {
-    kicker: "Access",
-    blurb: "Promote or demote admin accounts.",
-  },
-};
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Admin.meta" });
+  return { title: t("overview") };
+}
 
 export default async function AdminHomePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("Admin");
+  const tDesk = await getTranslations("Admin.desk");
 
   const [pendingReviews, draftCasinos, publishedCasinos] = await Promise.all([
     prisma.userReview.count({ where: { status: ReviewStatus.pending } }),
@@ -63,7 +29,7 @@ export default async function AdminHomePage({ params }: Props) {
     prisma.casino.count({ where: { status: ContentStatus.published } }),
   ]);
 
-  const today = new Intl.DateTimeFormat("en-GB", {
+  const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -75,14 +41,13 @@ export default async function AdminHomePage({ params }: Props) {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
-              Operations
+              {tDesk("eyebrow")}
             </p>
             <h1 className="font-display mt-3 text-5xl tracking-tight italic md:text-6xl">
-              Desk
+              {tDesk("title")}
             </h1>
             <p className="text-text/50 mt-4 text-sm leading-relaxed">
-              Editorial controls for the public site — publish carefully, keep
-              drafts off the floor.
+              {tDesk("lede")}
             </p>
           </div>
           <p className="text-text/35 text-[11px] tracking-[0.16em] uppercase">
@@ -92,13 +57,18 @@ export default async function AdminHomePage({ params }: Props) {
 
         <dl className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-sm bg-text/10 sm:grid-cols-3">
           <Stat
-            label="User reviews pending"
+            label={tDesk("stats.reviewsPending")}
             value={pendingReviews}
             emphasize={pendingReviews > 0}
-            href={pendingReviews > 0 ? "/admin/reviews?status=pending" : undefined}
+            href={
+              pendingReviews > 0 ? "/admin/reviews?status=pending" : undefined
+            }
           />
-          <Stat label="Casinos published" value={publishedCasinos} />
-          <Stat label="Casinos in draft" value={draftCasinos} />
+          <Stat
+            label={tDesk("stats.casinosPublished")}
+            value={publishedCasinos}
+          />
+          <Stat label={tDesk("stats.casinosDraft")} value={draftCasinos} />
         </dl>
       </header>
 
@@ -109,59 +79,56 @@ export default async function AdminHomePage({ params }: Props) {
         >
           <div>
             <p className="text-accent text-[11px] font-medium tracking-[0.16em] uppercase">
-              Needs attention
+              {tDesk("needsAttention")}
             </p>
             <p className="text-text/80 mt-1 text-sm">
               {pendingReviews === 1
-                ? "1 user review is waiting for moderation."
-                : `${pendingReviews} user reviews are waiting for moderation.`}
+                ? tDesk("pendingOne")
+                : tDesk("pendingMany", { count: pendingReviews })}
             </p>
           </div>
           <span className="text-accent text-sm font-medium whitespace-nowrap">
-            Open queue →
+            {t("actions.openQueue")}
           </span>
         </Link>
       ) : null}
 
       <div className="mt-12">
         <p className="text-text/40 text-[11px] font-medium tracking-[0.18em] uppercase">
-          Sections
+          {tDesk("sections")}
         </p>
         <ul className="border-text/10 mt-4 grid grid-cols-1 gap-px overflow-hidden border-y bg-text/10 lg:grid-cols-2">
-          {ADMIN_NAV.map((item, index) => {
-            const copy = DESK_COPY[item.href];
-            return (
-              <li key={item.href} className="bg-background">
-                <Link
-                  href={item.href}
-                  className="group hover:bg-text/[0.03] flex h-full items-baseline gap-4 px-4 py-5 transition-colors sm:gap-5 sm:px-5"
+          {ADMIN_NAV.map((item, index) => (
+            <li key={item.href} className="bg-background">
+              <Link
+                href={item.href}
+                className="group hover:bg-text/[0.03] flex h-full items-baseline gap-4 px-4 py-5 transition-colors sm:gap-5 sm:px-5"
+              >
+                <span className="text-text/25 group-hover:text-accent/70 w-6 shrink-0 text-right font-mono text-[11px] tabular-nums transition-colors">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="text-text group-hover:text-accent flex flex-wrap items-baseline gap-x-3 gap-y-1 transition-colors">
+                    <span className="font-display text-xl tracking-tight sm:text-2xl">
+                      {t(`nav.${item.labelKey}`)}
+                    </span>
+                    <span className="text-text/35 text-[10px] tracking-[0.16em] uppercase">
+                      {tDesk(`sectionsMeta.${item.labelKey}.kicker`)}
+                    </span>
+                  </span>
+                  <span className="text-text/45 mt-1 block text-sm leading-relaxed">
+                    {tDesk(`sectionsMeta.${item.labelKey}.blurb`)}
+                  </span>
+                </span>
+                <span
+                  aria-hidden
+                  className="text-text/20 group-hover:text-accent shrink-0 text-sm transition-colors"
                 >
-                  <span className="text-text/25 group-hover:text-accent/70 w-6 shrink-0 text-right font-mono text-[11px] tabular-nums transition-colors">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="text-text group-hover:text-accent flex flex-wrap items-baseline gap-x-3 gap-y-1 transition-colors">
-                      <span className="font-display text-xl tracking-tight sm:text-2xl">
-                        {item.label}
-                      </span>
-                      <span className="text-text/35 text-[10px] tracking-[0.16em] uppercase">
-                        {copy.kicker}
-                      </span>
-                    </span>
-                    <span className="text-text/45 mt-1 block text-sm leading-relaxed">
-                      {copy.blurb}
-                    </span>
-                  </span>
-                  <span
-                    aria-hidden
-                    className="text-text/20 group-hover:text-accent shrink-0 text-sm transition-colors"
-                  >
-                    →
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
+                  →
+                </span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
     </section>

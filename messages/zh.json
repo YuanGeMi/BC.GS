@@ -396,5 +396,489 @@
   "LegalPage": {
     "eyebrow": "法律",
     "lastUpdated": "最近更新 {date}"
+  },
+  "Admin": {
+    "meta": {
+      "desk": "工作台",
+      "deskTemplate": "%s · 工作台",
+      "overview": "概览"
+    },
+    "nav": {
+      "casinos": "娱乐场",
+      "bonuses": "优惠",
+      "categories": "分类",
+      "pages": "页面",
+      "reviews": "评价",
+      "catalogs": "目录",
+      "clicks": "点击",
+      "users": "用户",
+      "aria": "管理"
+    },
+    "shell": {
+      "brand": "工作台",
+      "logOut": "退出"
+    },
+    "actions": {
+      "save": "保存",
+      "publish": "发布",
+      "unpublish": "取消发布",
+      "delete": "删除",
+      "add": "添加",
+      "cancel": "取消",
+      "close": "关闭",
+      "create": "创建",
+      "filter": "筛选",
+      "exportCsv": "导出 CSV",
+      "exporting": "导出中…",
+      "newCasino": "新建娱乐场",
+      "newBonus": "新建优惠",
+      "newCategory": "新建分类",
+      "openQueue": "打开队列 →",
+      "edit": "编辑",
+      "view": "查看",
+      "promote": "设为管理员",
+      "demote": "取消管理员",
+      "approve": "通过",
+      "reject": "拒绝",
+      "takeDown": "下架",
+      "restore": "恢复",
+      "saving": "保存中…",
+      "working": "处理中…",
+      "saveSettings": "保存设置",
+      "deleteCasino": "删除娱乐场",
+      "deleteBonus": "删除优惠",
+      "deleteCategory": "删除分类",
+      "saveWithNewSlug": "使用新 slug 保存",
+      "confirm": "确认"
+    },
+    "status": {
+      "all": "全部状态",
+      "draft": "草稿",
+      "published": "已发布",
+      "pending": "待审",
+      "approved": "已通过",
+      "rejected": "已拒绝",
+      "removed": "已下架",
+      "unpublished": "已取消发布"
+    },
+    "contentLocale": {
+      "en": "English",
+      "zh": "中文",
+      "th": "ไทย"
+    },
+    "desk": {
+      "eyebrow": "运营",
+      "title": "工作台",
+      "lede": "管理公开站点的编辑内容——谨慎发布，草稿勿上线。",
+      "sections": "分区",
+      "needsAttention": "需要处理",
+      "pendingOne": "有 1 条用户评价等待审核。",
+      "pendingMany": "有 {count} 条用户评价等待审核。",
+      "stats": {
+        "reviewsPending": "待审用户评价",
+        "casinosPublished": "已发布娱乐场",
+        "casinosDraft": "草稿娱乐场"
+      },
+      "sectionsMeta": {
+        "casinos": {
+          "kicker": "运营商",
+          "blurb": "评测、评分、市场与发布状态。"
+        },
+        "bonuses": {
+          "kicker": "优惠",
+          "blurb": "欢迎奖金与各列表文案。"
+        },
+        "categories": {
+          "kicker": "榜单",
+          "blurb": "精选列表与编辑排序。"
+        },
+        "pages": {
+          "kicker": "法律",
+          "blurb": "隐私、条款、负责任博彩、Telegram。"
+        },
+        "reviews": {
+          "kicker": "审核",
+          "blurb": "通过、拒绝或下架用户评价。"
+        },
+        "catalogs": {
+          "kicker": "分类法",
+          "blurb": "牌照、支付、厂商、出款、市场。"
+        },
+        "clicks": {
+          "kicker": "流量",
+          "blurb": "联盟点击报表与 CSV 导出。"
+        },
+        "users": {
+          "kicker": "权限",
+          "blurb": "提升或取消管理员账户。"
+        }
+      }
+    },
+    "casinos": {
+      "eyebrow": "台账",
+      "title": "娱乐场",
+      "lede": "草稿不会出现在公开站。英文评测就绪后再从编辑器发布。",
+      "searchPlaceholder": "搜索名称或 slug",
+      "empty": "没有匹配的娱乐场。",
+      "columns": {
+        "name": "名称",
+        "slug": "Slug",
+        "status": "状态",
+        "updated": "更新",
+        "rating": "评分"
+      },
+      "editor": {
+        "newTitle": "新建娱乐场",
+        "editTitle": "编辑娱乐场",
+        "startsDraft": "默认为草稿。",
+        "saved": "已保存。",
+        "published": "已发布。",
+        "unpublished": "已取消发布。",
+        "deleteTitle": "删除此娱乐场？",
+        "deleteBody": "相关优惠与分类位置也会被移除。",
+        "slug": "Slug",
+        "logoUrl": "Logo 链接",
+        "established": "成立年份",
+        "minDeposit": "最低存款",
+        "payoutSpeed": "出款速度",
+        "affiliateLink": "联盟链接",
+        "scores": "评分",
+        "overall": "综合",
+        "bonuses": "优惠",
+        "games": "游戏",
+        "support": "客服",
+        "payout": "出款",
+        "trust": "信任",
+        "name": "名称",
+        "reviewBody": "评测正文",
+        "pros": "优点（每行一条）",
+        "cons": "缺点（每行一条）",
+        "seoTitle": "SEO 标题",
+        "seoDescription": "SEO 描述",
+        "licenses": "牌照",
+        "licenseNumber": "牌照编号",
+        "payments": "支付方式",
+        "providers": "游戏厂商",
+        "markets": "市场",
+        "none": "无",
+        "publishNeeds": "发布需要英文名称与评测正文。你仍可保存草稿。",
+        "slugChangeWarn": "更改 slug 会破坏现有 /casinos/{slug} 链接。保存后会刷新新旧公开 URL。",
+        "slugChangeTitle": "更改公开 slug？",
+        "slugChangeBody": "旧 URL /casinos/{slug} 将 404，除非另行重定向。新 slug 为 {next}。",
+        "facts": "基本信息",
+        "affiliateDefault": "默认联盟链接",
+        "rating": "评分",
+        "voice": "文案",
+        "catalog": "目录",
+        "reach": "覆盖",
+        "remove": "移除",
+        "review": "评测",
+        "prosShort": "优点",
+        "consShort": "缺点",
+        "verificationUrl": "验证链接",
+        "verified": "已验证",
+        "gameProviders": "游戏厂商",
+        "reachHelp": "按市场设为可用或限制。若设置联盟覆盖，仅对该国家替换默认链接。",
+        "removeHelp": "删除此娱乐场也会删除其优惠、联盟点击、评价与目录关联。无法撤销。",
+        "marketSearch": "搜索国家或 ISO 代码",
+        "marketSearchAria": "搜索市场",
+        "marketNoMatch": "没有匹配的国家",
+        "marketHint": "输入以从 ISO 列表中添加。已添加的市场会保留，直到你移除。",
+        "marketColumn": "市场",
+        "accessColumn": "准入",
+        "overrideColumn": "联盟覆盖链接",
+        "overridePlaceholder": "可选链接",
+        "available": "可用",
+        "restricted": "受限"
+      }
+    },
+    "bonuses": {
+      "eyebrow": "优惠",
+      "title": "优惠",
+      "lede": "公开页仅显示已发布娱乐场上的已发布优惠。到期日仅展示，不会隐藏行。",
+      "empty": "没有匹配的优惠。",
+      "columns": {
+        "title": "标题",
+        "casino": "娱乐场",
+        "type": "类型",
+        "status": "状态",
+        "expiry": "到期",
+        "order": "排序"
+      },
+      "allCasinos": "全部娱乐场",
+      "allTypes": "全部类型",
+      "editor": {
+        "newTitle": "新建优惠",
+        "editTitle": "编辑优惠",
+        "startsDraft": "默认为草稿。",
+        "casinoDraftWarn": "此娱乐场仍为草稿。你可以保存优惠，但运营商发布前无法上线。",
+        "saved": "已保存。",
+        "published": "已发布。",
+        "unpublished": "已取消发布。",
+        "deleteTitle": "删除此优惠？",
+        "deleteBody": "该优惠将从公开站与工作台列表中移除。",
+        "casino": "娱乐场",
+        "type": "优惠类型",
+        "amount": "金额",
+        "wagering": "流水",
+        "minDeposit": "最低存款",
+        "code": "兑换码",
+        "expiry": "截止日期",
+        "titleField": "标题",
+        "terms": "条款",
+        "publishNeeds": "发布需要英文标题。",
+        "facts": "基本信息",
+        "sortOrder": "排序",
+        "slug": "Slug",
+        "selectCasino": "选择娱乐场",
+        "selectType": "选择类型",
+        "slugSuggested": "根据娱乐场与类型建议：{suggestion}",
+        "sortHelp": "数字越小越靠前，其次按最新。",
+        "voice": "文案",
+        "remove": "移除",
+        "removeHelp": "使用过此优惠的联盟点击仍保留在报表中，其优惠关联会被清空。"
+      },
+      "expired": "已过期"
+    },
+    "categories": {
+      "eyebrow": "精选",
+      "title": "分类",
+      "lede": "榜单位于 /best/[slug]。草稿不会出现在 /best-of 与站点地图。",
+      "empty": "暂无分类。",
+      "editor": {
+        "newTitle": "新建分类",
+        "editTitle": "编辑分类",
+        "startsDraft": "默认为草稿。",
+        "saved": "已保存。",
+        "published": "已发布。",
+        "unpublished": "已取消发布。",
+        "deleteTitle": "删除此分类？",
+        "deleteBody": "列表位置将一并移除。",
+        "slug": "Slug",
+        "name": "名称",
+        "description": "描述",
+        "seoTitle": "SEO 标题",
+        "seoDescription": "SEO 描述",
+        "methodology": "方法说明",
+        "casinos": "本列表中的娱乐场",
+        "addCasino": "添加娱乐场",
+        "rank": "排名",
+        "note": "备注",
+        "remove": "移除",
+        "publishNeeds": "发布需要英文名称。",
+        "facts": "基本信息",
+        "voice": "文案",
+        "publicUrl": "公开 URL：/best/{slug}",
+        "rankDuplicate": "排名重复——每家娱乐场需要唯一排名。",
+        "rankingHelp": "排名 1 为首。草稿娱乐场可留在工作台列表中，发布前不会出现在公开页。",
+        "removeHelp": "删除此分类也会删除其排名与编辑备注。"
+      },
+      "columns": {
+        "name": "名称",
+        "slug": "Slug",
+        "status": "状态",
+        "casinos": "娱乐场"
+      }
+    },
+    "pages": {
+      "eyebrow": "法律",
+      "title": "页面",
+      "lede": "这三个 slug 固定。取消发布会使公开 URL 返回 404。",
+      "telegram": "Telegram 频道链接",
+      "telegramHelp": "设置后显示在页脚。留空则隐藏。",
+      "telegramSaved": "Telegram 链接已保存。",
+      "columns": {
+        "page": "页面",
+        "status": "状态",
+        "updated": "更新",
+        "slug": "Slug"
+      },
+      "missing": "缺失",
+      "editor": {
+        "saved": "已保存。",
+        "published": "已发布。",
+        "unpublished": "已取消发布。",
+        "titleField": "标题",
+        "content": "正文（Markdown）",
+        "seoTitle": "SEO 标题",
+        "seoDescription": "SEO 描述",
+        "publishNeeds": "发布需要英文标题与 Markdown 正文。",
+        "unpublishTitle": "取消发布此法律页？",
+        "unpublishBody": "公开 URL 将返回 404，直至再次发布。",
+        "unpublishedNotice": "已取消发布。公开 URL 现为 404。",
+        "notSaved": "未保存",
+        "markdown": "Markdown"
+      },
+      "telegramSavedLong": "已保存。页脚将在下次加载时更新。",
+      "siteEyebrow": "站点",
+      "siteTitle": "设置",
+      "siteLede": "页脚 Telegram 链接。留空则在公开站隐藏。",
+      "telegramHelpLong": "须以 https:// 开头。留空则隐藏页脚链接。"
+    },
+    "reviews": {
+      "eyebrow": "队列",
+      "title": "评价",
+      "lede": "优先待审。可发布、拒绝或稍后取消发布。此处不编辑访客正文。",
+      "empty": "此队列为空。",
+      "detailTitle": "评价",
+      "allCasinos": "全部娱乐场",
+      "columns": {
+        "casino": "娱乐场",
+        "author": "作者",
+        "rating": "评分",
+        "status": "状态",
+        "date": "日期",
+        "excerpt": "摘要"
+      },
+      "rejectTitle": "拒绝此评价？",
+      "rejectBody": "它不会出现在公开娱乐场页面。",
+      "takeDownTitle": "下架此评价？",
+      "takeDownBody": "它将从公开站隐藏。",
+      "countOne": "{count} 条评价",
+      "countMany": "{count} 条评价",
+      "previous": "上一页",
+      "next": "下一页",
+      "pageOf": "第 {page} / {pageCount} 页",
+      "statusUnpublished": "已取消发布",
+      "fromDate": "开始日期",
+      "toDate": "结束日期",
+      "submitted": "提交时间",
+      "moderated": "审核时间",
+      "body": "正文",
+      "editInDesk": "在工作台编辑",
+      "backToQueue": "返回队列"
+    },
+    "catalogs": {
+      "eyebrow": "目录",
+      "lede": "英文必填，中文与泰文可选。创建后 slug 锁定，以保持公开筛选稳定。",
+      "subnav": {
+        "payout": "出款速度",
+        "license": "牌照",
+        "payment": "支付",
+        "provider": "厂商",
+        "bonusType": "优惠类型",
+        "markets": "市场"
+      },
+      "kinds": {
+        "payout": {
+          "title": "出款速度",
+          "nameLabel": "标签"
+        },
+        "license": {
+          "title": "牌照",
+          "nameLabel": "名称"
+        },
+        "payment": {
+          "title": "支付",
+          "nameLabel": "名称"
+        },
+        "provider": {
+          "title": "厂商",
+          "nameLabel": "名称"
+        },
+        "bonusType": {
+          "title": "优惠类型",
+          "nameLabel": "名称"
+        }
+      },
+      "new": "新建",
+      "slug": "Slug",
+      "sort": "排序",
+      "unused": "未使用",
+      "inUse": "{count} 处使用中",
+      "inUseWithNames": "{count} 处使用中 · {names}",
+      "deleteTitle": "删除 {name}？",
+      "deleteUnused": "此选项将离开目录。",
+      "deleteChecking": "正在检查使用位置…",
+      "deletePayout": "这将清除 {count} 个娱乐场的出款速度{sample}。",
+      "deleteInUse": "仍被 {count} 处使用{sample}。请先解除关联。",
+      "marketsTitle": "市场",
+      "marketsLede": "搜索 ISO 国家代码或名称，然后设置英文（必填）及可选中文、泰文。",
+      "searchMarkets": "搜索市场（至少 2 个字符）",
+      "englishNameLabel": "英文{label}",
+      "chinese": "中文",
+      "thai": "泰文",
+      "typeMinChars": "请至少输入两个字符。",
+      "noMarkets": "没有匹配的市场。",
+      "searchByCode": "按代码或名称搜索"
+    },
+    "clicks": {
+      "eyebrow": "流量",
+      "title": "点击",
+      "lede": "出站访问与领取点击。仅计数——无访客身份，且不可编辑。",
+      "from": "从",
+      "to": "到",
+      "allLocales": "全部语言",
+      "total": "总点击",
+      "byCasino": "按娱乐场",
+      "byBonus": "按优惠",
+      "byLocale": "按语言",
+      "byDay": "按日",
+      "empty": "此范围内无点击。",
+      "countOne": "{count} 次点击",
+      "countMany": "{count} 次点击",
+      "casinosHeading": "娱乐场",
+      "localesHeading": "语言",
+      "dailyHeading": "按日",
+      "columns": {
+        "casino": "娱乐场",
+        "bonus": "优惠",
+        "clicks": "点击",
+        "locale": "语言",
+        "date": "日期"
+      },
+      "all": "全部",
+      "allCasinos": "全部娱乐场"
+    },
+    "users": {
+      "eyebrow": "权限",
+      "title": "用户",
+      "lede": "账户在公开站创建。在此提升编辑；不可降级最后一位管理员。",
+      "columns": {
+        "email": "邮箱",
+        "name": "姓名",
+        "role": "角色",
+        "created": "创建"
+      },
+      "roleAdmin": "管理员",
+      "roleUser": "用户",
+      "confirmPromote": "将 {email} 设为管理员？",
+      "confirmDemote": "取消 {email} 的管理员？",
+      "confirmBody": "这将改变谁可以打开工作台。",
+      "you": "你"
+    },
+    "errors": {
+      "invalidSlug": "Slug 须为小写字母、数字与连字符。",
+      "duplicateSlug": "该 slug 已被使用。",
+      "englishRequired": "发布需要英文内容。",
+      "invalidScore": "评分须在 0 到 5 之间。",
+      "invalidYear": "成立年份不正确。",
+      "invalidDeposit": "最低存款须为正数。",
+      "invalidCatalog": "请从目录中选择牌照、支付与厂商。",
+      "missing": "该项已不在工作台中。",
+      "invalidStatus": "不允许该状态。",
+      "casinoDraft": "请先发布娱乐场。草稿运营商无法展示优惠。",
+      "invalidSort": "排序须为整数。",
+      "inUse": "仍关联到娱乐场或优惠。请先解除。",
+      "payoutInUse": "仍有娱乐场使用该出款速度。确认后将一并清除。",
+      "invalidTransition": "当前状态不允许该操作。",
+      "lastAdmin": "不能取消最后一个管理员。",
+      "selfDemote": "不能取消自己的管理员权限。",
+      "invalidUrl": "请输入有效的 https 链接，或留空。",
+      "casinoRequired": "请选择娱乐场。",
+      "typeRequired": "请从目录中选择优惠类型。",
+      "invalidExpiry": "到期日须为有效日期。",
+      "invalidRank": "排名须为从 1 开始的整数，或留空。",
+      "invalidCasino": "请从列表中选择娱乐场。"
+    },
+    "notices": {
+      "saved": "已保存。",
+      "published": "已发布。",
+      "unpublished": "已取消发布。"
+    },
+    "common": {
+      "required": "必填",
+      "onePerLine": "每行一条"
+    }
   }
 }

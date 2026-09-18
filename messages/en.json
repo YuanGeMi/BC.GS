@@ -396,5 +396,489 @@
   "LegalPage": {
     "eyebrow": "Legal",
     "lastUpdated": "Last updated {date}"
+  },
+  "Admin": {
+    "meta": {
+      "desk": "Desk",
+      "deskTemplate": "%s · Desk",
+      "overview": "Overview"
+    },
+    "nav": {
+      "casinos": "Casinos",
+      "bonuses": "Bonuses",
+      "categories": "Categories",
+      "pages": "Pages",
+      "reviews": "Reviews",
+      "catalogs": "Catalogs",
+      "clicks": "Clicks",
+      "users": "Users",
+      "aria": "Admin"
+    },
+    "shell": {
+      "brand": "Desk",
+      "logOut": "Log out"
+    },
+    "actions": {
+      "save": "Save",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "delete": "Delete",
+      "add": "Add",
+      "cancel": "Cancel",
+      "close": "Close",
+      "create": "Create",
+      "filter": "Filter",
+      "exportCsv": "Export CSV",
+      "exporting": "Exporting…",
+      "newCasino": "New casino",
+      "newBonus": "New bonus",
+      "newCategory": "New category",
+      "openQueue": "Open queue →",
+      "edit": "Edit",
+      "view": "View",
+      "promote": "Promote",
+      "demote": "Demote",
+      "approve": "Approve",
+      "reject": "Reject",
+      "takeDown": "Take down",
+      "restore": "Restore",
+      "saving": "Saving…",
+      "working": "Working…",
+      "saveSettings": "Save settings",
+      "deleteCasino": "Delete casino",
+      "deleteBonus": "Delete bonus",
+      "deleteCategory": "Delete category",
+      "saveWithNewSlug": "Save with new slug",
+      "confirm": "Confirm"
+    },
+    "status": {
+      "all": "All statuses",
+      "draft": "Draft",
+      "published": "Published",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "removed": "Removed",
+      "unpublished": "Unpublished"
+    },
+    "contentLocale": {
+      "en": "English",
+      "zh": "中文",
+      "th": "ไทย"
+    },
+    "desk": {
+      "eyebrow": "Operations",
+      "title": "Desk",
+      "lede": "Editorial controls for the public site — publish carefully, keep drafts off the floor.",
+      "sections": "Sections",
+      "needsAttention": "Needs attention",
+      "pendingOne": "1 user review is waiting for moderation.",
+      "pendingMany": "{count} user reviews are waiting for moderation.",
+      "stats": {
+        "reviewsPending": "User reviews pending",
+        "casinosPublished": "Casinos published",
+        "casinosDraft": "Casinos in draft"
+      },
+      "sectionsMeta": {
+        "casinos": {
+          "kicker": "Operators",
+          "blurb": "Reviews, scores, markets, and publish state."
+        },
+        "bonuses": {
+          "kicker": "Offers",
+          "blurb": "Welcome deals and listing copy on each desk."
+        },
+        "categories": {
+          "kicker": "Rankings",
+          "blurb": "Best-of lists and editorial ordering."
+        },
+        "pages": {
+          "kicker": "Legal",
+          "blurb": "Privacy, terms, responsible gambling, Telegram."
+        },
+        "reviews": {
+          "kicker": "Moderation",
+          "blurb": "Approve, reject, or take user reviews down."
+        },
+        "catalogs": {
+          "kicker": "Taxonomy",
+          "blurb": "Licenses, payments, providers, payouts, markets."
+        },
+        "clicks": {
+          "kicker": "Traffic",
+          "blurb": "Affiliate click reports and CSV export."
+        },
+        "users": {
+          "kicker": "Access",
+          "blurb": "Promote or demote admin accounts."
+        }
+      }
+    },
+    "casinos": {
+      "eyebrow": "Ledger",
+      "title": "Casinos",
+      "lede": "Drafts stay off the public site. Publish from the editor when the English review is ready.",
+      "searchPlaceholder": "Search name or slug",
+      "empty": "No casinos match.",
+      "columns": {
+        "name": "Name",
+        "slug": "Slug",
+        "status": "Status",
+        "updated": "Updated",
+        "rating": "Rating"
+      },
+      "editor": {
+        "newTitle": "New casino",
+        "editTitle": "Edit casino",
+        "startsDraft": "Starts as draft.",
+        "saved": "Saved.",
+        "published": "Published.",
+        "unpublished": "Unpublished.",
+        "deleteTitle": "Delete this casino?",
+        "deleteBody": "Bonuses and category placements for this operator will be removed too.",
+        "slug": "Slug",
+        "logoUrl": "Logo URL",
+        "established": "Established",
+        "minDeposit": "Min deposit",
+        "payoutSpeed": "Payout speed",
+        "affiliateLink": "Affiliate link",
+        "scores": "Scores",
+        "overall": "Overall",
+        "bonuses": "Bonuses",
+        "games": "Games",
+        "support": "Support",
+        "payout": "Payout",
+        "trust": "Trust",
+        "name": "Name",
+        "reviewBody": "Review body",
+        "pros": "Pros (one per line)",
+        "cons": "Cons (one per line)",
+        "seoTitle": "SEO title",
+        "seoDescription": "SEO description",
+        "licenses": "Licenses",
+        "licenseNumber": "License number",
+        "payments": "Payments",
+        "providers": "Providers",
+        "markets": "Markets",
+        "none": "None",
+        "publishNeeds": "Publishing needs an English name and review body. You can still save a draft.",
+        "slugChangeWarn": "Changing the slug will break existing /casinos/{slug} links. Save will refresh both the old and new public URLs.",
+        "slugChangeTitle": "Change the public slug?",
+        "slugChangeBody": "Old URLs at /casinos/{slug} will 404 unless redirected elsewhere. The new slug will be {next}.",
+        "facts": "Facts",
+        "affiliateDefault": "Default affiliate link",
+        "rating": "Rating",
+        "voice": "Voice",
+        "catalog": "Catalog",
+        "reach": "Reach",
+        "remove": "Remove",
+        "review": "Review",
+        "prosShort": "Pros",
+        "consShort": "Cons",
+        "verificationUrl": "Verification URL",
+        "verified": "Verified",
+        "gameProviders": "Game providers",
+        "reachHelp": "Available or restricted per market. An affiliate override, if set, replaces the default link for that country only.",
+        "removeHelp": "Deleting this casino also deletes its bonuses, affiliate clicks, reviews, and catalog joins. This cannot be undone.",
+        "marketSearch": "Search country or ISO code",
+        "marketSearchAria": "Search markets",
+        "marketNoMatch": "No matching country",
+        "marketHint": "Type to add from the ISO list. Attached markets stay until you remove them.",
+        "marketColumn": "Market",
+        "accessColumn": "Access",
+        "overrideColumn": "Affiliate override",
+        "overridePlaceholder": "Optional URL",
+        "available": "Available",
+        "restricted": "Restricted"
+      }
+    },
+    "bonuses": {
+      "eyebrow": "Offers",
+      "title": "Bonuses",
+      "lede": "Public pages only show published bonuses on published casinos. Expiry is displayed, not used to hide a row.",
+      "empty": "No bonuses match.",
+      "columns": {
+        "title": "Title",
+        "casino": "Casino",
+        "type": "Type",
+        "status": "Status",
+        "expiry": "Expiry",
+        "order": "Order"
+      },
+      "allCasinos": "All casinos",
+      "allTypes": "All types",
+      "editor": {
+        "newTitle": "New bonus",
+        "editTitle": "Edit bonus",
+        "startsDraft": "Starts as draft.",
+        "casinoDraftWarn": "This casino is still a draft. You can save the bonus, but it cannot go live until the operator is published.",
+        "saved": "Saved.",
+        "published": "Published.",
+        "unpublished": "Unpublished.",
+        "deleteTitle": "Delete this bonus?",
+        "deleteBody": "This offer will leave the public site and Desk list.",
+        "casino": "Casino",
+        "type": "Bonus type",
+        "amount": "Amount",
+        "wagering": "Wagering",
+        "minDeposit": "Min deposit",
+        "code": "Code",
+        "expiry": "Expiry date",
+        "titleField": "Title",
+        "terms": "Terms",
+        "publishNeeds": "Publishing needs an English title.",
+        "facts": "Facts",
+        "sortOrder": "Sort order",
+        "slug": "Slug",
+        "selectCasino": "Select casino",
+        "selectType": "Select type",
+        "slugSuggested": "Suggested from casino and type: {suggestion}",
+        "sortHelp": "Lower numbers appear first, then newest.",
+        "voice": "Voice",
+        "remove": "Remove",
+        "removeHelp": "Affiliate clicks that used this bonus stay in reporting. Their bonus link is cleared."
+      },
+      "expired": "Expired"
+    },
+    "categories": {
+      "eyebrow": "Best of",
+      "title": "Categories",
+      "lede": "Ranked lists at /best/[slug]. Drafts stay off /best-of and the sitemap.",
+      "empty": "No categories yet.",
+      "editor": {
+        "newTitle": "New category",
+        "editTitle": "Edit category",
+        "startsDraft": "Starts as draft.",
+        "saved": "Saved.",
+        "published": "Published.",
+        "unpublished": "Unpublished.",
+        "deleteTitle": "Delete this category?",
+        "deleteBody": "Placements will be removed with the list.",
+        "slug": "Slug",
+        "name": "Name",
+        "description": "Description",
+        "seoTitle": "SEO title",
+        "seoDescription": "SEO description",
+        "methodology": "Methodology",
+        "casinos": "Casinos on this list",
+        "addCasino": "Add casino",
+        "rank": "Rank",
+        "note": "Note",
+        "remove": "Remove",
+        "publishNeeds": "Publishing needs an English name.",
+        "facts": "Facts",
+        "voice": "Voice",
+        "publicUrl": "Public URL: /best/{slug}",
+        "rankDuplicate": "Duplicate ranks — each casino needs a unique rank.",
+        "rankingHelp": "Rank 1 is first. Draft casinos can sit on the list in Desk and stay off the public page until they are published.",
+        "removeHelp": "Deleting this category also deletes its ranks and editorial notes."
+      },
+      "columns": {
+        "name": "Name",
+        "slug": "Slug",
+        "status": "Status",
+        "casinos": "Casinos"
+      }
+    },
+    "pages": {
+      "eyebrow": "Legal",
+      "title": "Pages",
+      "lede": "These three slugs are fixed. Unpublish to 404 the public URL.",
+      "telegram": "Telegram channel URL",
+      "telegramHelp": "Shown in the footer when set. Leave empty to hide.",
+      "telegramSaved": "Telegram link saved.",
+      "columns": {
+        "page": "Page",
+        "status": "Status",
+        "updated": "Updated",
+        "slug": "Slug"
+      },
+      "missing": "Missing",
+      "editor": {
+        "saved": "Saved.",
+        "published": "Published.",
+        "unpublished": "Unpublished.",
+        "titleField": "Title",
+        "content": "Content (Markdown)",
+        "seoTitle": "SEO title",
+        "seoDescription": "SEO description",
+        "publishNeeds": "Publishing needs an English title and markdown body.",
+        "unpublishTitle": "Unpublish this legal page?",
+        "unpublishBody": "The public URL will return 404 until you publish again.",
+        "unpublishedNotice": "Unpublished. The public URL now 404s.",
+        "notSaved": "not saved",
+        "markdown": "Markdown"
+      },
+      "telegramSavedLong": "Saved. The footer will pick this up on the next load.",
+      "siteEyebrow": "Site",
+      "siteTitle": "Settings",
+      "siteLede": "Footer Telegram link. Empty hides it on the public site.",
+      "telegramHelpLong": "Must start with https://. Leave empty to hide the footer link."
+    },
+    "reviews": {
+      "eyebrow": "Queue",
+      "title": "Reviews",
+      "lede": "Pending first. Publish, reject, or later unpublish. The visitor’s text is not edited here.",
+      "empty": "Nothing in this queue.",
+      "detailTitle": "Review",
+      "allCasinos": "All casinos",
+      "columns": {
+        "casino": "Casino",
+        "author": "Author",
+        "rating": "Rating",
+        "status": "Status",
+        "date": "Date",
+        "excerpt": "Excerpt"
+      },
+      "rejectTitle": "Reject this review?",
+      "rejectBody": "It will not appear on the public casino page.",
+      "takeDownTitle": "Take this review down?",
+      "takeDownBody": "It will be hidden from the public site.",
+      "countOne": "{count} review",
+      "countMany": "{count} reviews",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {pageCount}",
+      "statusUnpublished": "Unpublished",
+      "fromDate": "From date",
+      "toDate": "To date",
+      "submitted": "Submitted",
+      "moderated": "Moderated",
+      "body": "Body",
+      "editInDesk": "Edit in Desk",
+      "backToQueue": "Back to queue"
+    },
+    "catalogs": {
+      "eyebrow": "Catalog",
+      "lede": "English is required. Chinese and Thai are optional. Slug stays locked after create so public filters stay stable.",
+      "subnav": {
+        "payout": "Payout speed",
+        "license": "Licenses",
+        "payment": "Payments",
+        "provider": "Providers",
+        "bonusType": "Bonus types",
+        "markets": "Markets"
+      },
+      "kinds": {
+        "payout": {
+          "title": "Payout speed",
+          "nameLabel": "Label"
+        },
+        "license": {
+          "title": "Licenses",
+          "nameLabel": "Name"
+        },
+        "payment": {
+          "title": "Payments",
+          "nameLabel": "Name"
+        },
+        "provider": {
+          "title": "Providers",
+          "nameLabel": "Name"
+        },
+        "bonusType": {
+          "title": "Bonus types",
+          "nameLabel": "Name"
+        }
+      },
+      "new": "New",
+      "slug": "Slug",
+      "sort": "Sort",
+      "unused": "Unused",
+      "inUse": "{count} in use",
+      "inUseWithNames": "{count} in use · {names}",
+      "deleteTitle": "Delete {name}?",
+      "deleteUnused": "This option will leave the catalog.",
+      "deleteChecking": "Checking where this option is used…",
+      "deletePayout": "This will clear payout speed on {count} casino(s){sample}.",
+      "deleteInUse": "Still in use by {count}{sample}. Detach it first.",
+      "marketsTitle": "Markets",
+      "marketsLede": "Search ISO country codes or names, then set English (required) plus optional Chinese and Thai.",
+      "searchMarkets": "Search markets (min 2 characters)",
+      "englishNameLabel": "English {label}",
+      "chinese": "Chinese",
+      "thai": "Thai",
+      "typeMinChars": "Type at least two characters.",
+      "noMarkets": "No markets match.",
+      "searchByCode": "Search by code or name"
+    },
+    "clicks": {
+      "eyebrow": "Traffic",
+      "title": "Clicks",
+      "lede": "Outbound visit and claim clicks. Counts only — no visitor identity, and rows cannot be edited.",
+      "from": "From",
+      "to": "To",
+      "allLocales": "All locales",
+      "total": "Total clicks",
+      "byCasino": "By casino",
+      "byBonus": "By bonus",
+      "byLocale": "By locale",
+      "byDay": "By day",
+      "empty": "No clicks in this range.",
+      "countOne": "{count} click",
+      "countMany": "{count} clicks",
+      "casinosHeading": "Casinos",
+      "localesHeading": "Locales",
+      "dailyHeading": "Daily",
+      "columns": {
+        "casino": "Casino",
+        "bonus": "Bonus",
+        "clicks": "Clicks",
+        "locale": "Locale",
+        "date": "Date"
+      },
+      "all": "All",
+      "allCasinos": "All casinos"
+    },
+    "users": {
+      "eyebrow": "Access",
+      "title": "Users",
+      "lede": "Accounts are created on the public site. Promote an editor here; demote anyone except the last remaining admin.",
+      "columns": {
+        "email": "Email",
+        "name": "Name",
+        "role": "Role",
+        "created": "Created"
+      },
+      "roleAdmin": "Admin",
+      "roleUser": "User",
+      "confirmPromote": "Promote {email} to admin?",
+      "confirmDemote": "Demote {email} from admin?",
+      "confirmBody": "This changes who can open Desk.",
+      "you": "you"
+    },
+    "errors": {
+      "invalidSlug": "Slug must be lowercase letters, numbers, and hyphens.",
+      "duplicateSlug": "That slug is already in use.",
+      "englishRequired": "English is required to publish.",
+      "invalidScore": "Scores must be between 0 and 5.",
+      "invalidYear": "Established year looks wrong.",
+      "invalidDeposit": "Minimum deposit must be a positive number.",
+      "invalidCatalog": "Pick licenses, payments, and providers from the catalog.",
+      "missing": "That item is no longer in Desk.",
+      "invalidStatus": "That status is not allowed.",
+      "casinoDraft": "Publish the casino first. A draft operator cannot show bonuses.",
+      "invalidSort": "Sort order must be a whole number.",
+      "inUse": "Still attached to casinos or bonuses. Detach it first.",
+      "payoutInUse": "Casinos still use this payout speed. Confirm to clear it on them.",
+      "invalidTransition": "That action is not allowed from the current status.",
+      "lastAdmin": "You cannot demote the last admin.",
+      "selfDemote": "You cannot demote yourself.",
+      "invalidUrl": "Enter a valid https URL or leave it empty.",
+      "casinoRequired": "Pick a casino.",
+      "typeRequired": "Pick a bonus type from the catalog.",
+      "invalidExpiry": "Expiry must be a valid date.",
+      "invalidRank": "Rank must be a whole number starting at 1, or blank.",
+      "invalidCasino": "Pick a casino from the list."
+    },
+    "notices": {
+      "saved": "Saved.",
+      "published": "Published.",
+      "unpublished": "Unpublished."
+    },
+    "common": {
+      "required": "required",
+      "onePerLine": "One per line"
+    }
   }
 }
