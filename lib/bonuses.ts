@@ -9,6 +9,7 @@ import { cache } from "react";
 
 import type { MockBonus } from "@/data/mock-bonuses";
 import { BONUS_DIRECTORY_TAG } from "@/lib/cache-tags";
+import { toIsoString, toIsoStringOrNull } from "@/lib/dates";
 import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
@@ -61,8 +62,8 @@ function toDirectoryBonus(
     type: bonus.bonusType.slug,
     typeName: bonusTypeName(bonus.bonusType, locale),
     valueAmount: parseValueAmount(bonus.amount),
-    listedAt: bonus.createdAt.toISOString(),
-    expiresAt: bonus.expiryDate ? bonus.expiryDate.toISOString() : "9999-12-31",
+    listedAt: toIsoString(bonus.createdAt),
+    expiresAt: toIsoStringOrNull(bonus.expiryDate) ?? "9999-12-31",
     wagering: { en: bonus.wageringRequirement ?? "—" },
   };
 }
@@ -172,10 +173,14 @@ function formatMinDeposit(value: number | null): string | null {
   return `$${value}`;
 }
 
-function formatExpiryDate(value: Date | null, locale: string): string | null {
+function formatExpiryDate(
+  value: Date | string | null,
+  locale: string,
+): string | null {
   if (!value) return null;
+  const date = typeof value === "string" ? new Date(value) : value;
   const tag = locale === "zh" ? "zh-CN" : locale === "th" ? "th-TH" : "en-GB";
-  return value.toLocaleDateString(tag, {
+  return date.toLocaleDateString(tag, {
     year: "numeric",
     month: "short",
     day: "numeric",

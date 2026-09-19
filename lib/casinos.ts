@@ -33,6 +33,7 @@ import {
   CASINO_DIRECTORY_TAG,
   casinoCompareDetailTag,
 } from "@/lib/cache-tags";
+import { toIsoString } from "@/lib/dates";
 import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
@@ -196,7 +197,7 @@ function toDirectoryCasino(
       casino.gameProviders.map((row) => row.gameProvider),
     ),
     bonusTypes,
-    listedAt: casino.createdAt.toISOString(),
+    listedAt: toIsoString(casino.createdAt),
     bonusValue,
   };
 }
