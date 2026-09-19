@@ -7,10 +7,16 @@ import type {
   PayoutSpeedOption,
   PayoutSpeedOptionTranslation,
 } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { bonusListOrder } from "@/lib/bonuses";
+import {
+  CASINO_DIRECTORY_TAG,
+  CATEGORY_DIRECTORY_TAG,
+} from "@/lib/cache-tags";
 import { getPayoutSpeedLabel } from "@/lib/casinos";
+import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 
@@ -144,10 +150,16 @@ function toCategoryCasino(
 
 export const getCategoryBySlug = cache(
   async (slug: string, locale: string): Promise<CategoryView | null> => {
-    const row = await prisma.category.findFirst({
-      where: { slug, ...publishedContentWhere },
-      include: { translations: true },
-    });
+    const row = await unstable_cache(
+      async () => {
+        return prisma.category.findFirst({
+          where: { slug, ...publishedContentWhere },
+          include: { translations: true },
+        });
+      },
+      ["category-by-slug", slug],
+      { revalidate: false, tags: [CATEGORY_DIRECTORY_TAG] },
+    )();
 
     if (!row) return null;
 
@@ -158,88 +170,116 @@ export const getCategoryBySlug = cache(
   },
 );
 
-export async function getCasinosForCategory(
-  categoryId: string,
-  locale: string,
-): Promise<CategoryCasinoView[]> {
-  const rows = await prisma.casinoCategory.findMany({
-    where: {
-      categoryId,
-      casino: publishedContentWhere,
-    },
-    include: {
-      notes: true,
-      casino: {
-        include: {
-          translations: true,
-          bonuses: {
-            where: publishedContentWhere,
-            include: {
-              translations: true,
-              bonusType: { select: { slug: true } },
-            },
-            orderBy: bonusListOrder,
+export const getCasinosForCategory = cache(
+  async (
+    categoryId: string,
+    locale: string,
+  ): Promise<CategoryCasinoView[]> => {
+    const rows = await unstable_cache(
+      async () => {
+        return prisma.casinoCategory.findMany({
+          where: {
+            categoryId,
+            casino: publishedContentWhere,
           },
-          payoutSpeed: { include: { translations: true } },
-        },
+          include: {
+            notes: true,
+            casino: {
+              include: {
+                translations: true,
+                bonuses: {
+                  where: publishedContentWhere,
+                  include: {
+                    translations: true,
+                    bonusType: { select: { slug: true } },
+                  },
+                  orderBy: bonusListOrder,
+                },
+                payoutSpeed: { include: { translations: true } },
+              },
+            },
+          },
+          orderBy: [
+            { rank: { sort: "asc", nulls: "last" } },
+            { casino: { slug: "asc" } },
+          ],
+        });
       },
-    },
-    orderBy: [
-      { rank: { sort: "asc", nulls: "last" } },
-      { casino: { slug: "asc" } },
-    ],
-  });
+      ["category-casino-rows", categoryId],
+      {
+        revalidate: false,
+        tags: [CATEGORY_DIRECTORY_TAG, CASINO_DIRECTORY_TAG],
+      },
+    )();
 
-  return rows.flatMap(({ casino, notes }) => {
-    const translation = pickTranslation(casino.translations, locale);
-    if (!translation) return [];
-    const note = pickTranslation(notes, locale)?.editorialNote.trim();
-    return [
-      toCategoryCasino(
-        casino,
-        translation,
-        casino.bonuses,
-        locale,
-        note || undefined,
-      ),
-    ];
-  });
-}
+    return rows.flatMap(({ casino, notes }) => {
+      const translation = pickTranslation(casino.translations, locale);
+      if (!translation) return [];
+      const note = pickTranslation(notes, locale)?.editorialNote.trim();
+      return [
+        toCategoryCasino(
+          casino,
+          translation,
+          casino.bonuses,
+          locale,
+          note || undefined,
+        ),
+      ];
+    });
+  },
+);
 
 export async function getRelatedCategories(
   slug: string,
   locale: string,
   count = 3,
 ): Promise<RelatedCategoryView[]> {
-  const rows = await prisma.category.findMany({
-    where: { ...publishedContentWhere, slug: { not: slug } },
-    include: { translations: true },
-    orderBy: { createdAt: "asc" },
-    take: count,
-  });
+  const rows = await getCachedPublishedCategoryRows();
+  return rows
+    .filter((category) => category.slug !== slug)
+    .slice(0, count)
+    .flatMap((category) => {
+      const translation = pickTranslation(category.translations, locale);
+      if (!translation) return [];
 
-  return rows.flatMap((category) => {
-    const translation = pickTranslation(category.translations, locale);
-    if (!translation) return [];
-
-    return [
-      {
-        slug: category.slug,
-        name: translation.name,
-        description: translation.description ?? "",
-      },
-    ];
-  });
+      return [
+        {
+          slug: category.slug,
+          name: translation.name,
+          description: translation.description ?? "",
+        },
+      ];
+    });
 }
+
+const publishedCategoryRowsInflight: {
+  current: Promise<
+    {
+      slug: string;
+      translations: CategoryTranslation[];
+    }[]
+  > | null;
+} = { current: null };
+
+const getCachedPublishedCategoryRows = cache(async () => {
+  return unstable_cache(
+    () =>
+      dedupeInflight(publishedCategoryRowsInflight, async () => {
+        return prisma.category.findMany({
+          where: publishedContentWhere,
+          include: { translations: true },
+          orderBy: { createdAt: "asc" },
+        });
+      }),
+    ["published-category-rows"],
+    { revalidate: false, tags: [CATEGORY_DIRECTORY_TAG] },
+  )();
+});
 
 export async function getPublishedCategories(
   locale: string,
 ): Promise<RelatedCategoryView[]> {
-  const rows = await prisma.category.findMany({
-    where: publishedContentWhere,
-    include: { translations: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const rows = await getCachedPublishedCategoryRows();
 
   return rows.flatMap((category) => {
     const translation = pickTranslation(category.translations, locale);

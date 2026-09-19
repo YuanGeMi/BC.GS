@@ -29,9 +29,13 @@ import {
   catalogLabels,
   catalogSlugs,
 } from "@/lib/catalogs";
+import {
+  CASINO_DIRECTORY_TAG,
+  casinoCompareDetailTag,
+} from "@/lib/cache-tags";
+import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
-import { casinoCompareDetailTag } from "@/lib/cache-tags";
 
 function pickTranslation(
   translations: CasinoTranslation[],
@@ -201,9 +205,30 @@ const casinoLicenseInclude = {
   license: { include: { translations: true } },
 } as const;
 
-export async function getCasinos(locale: string): Promise<MockCasino[]> {
-  const [rows, t] = await Promise.all([
-    prisma.casino.findMany({
+type CasinoDirectoryRow = CasinoWithRelations & {
+  translations: CasinoTranslation[];
+  bonuses: BonusWithType[];
+};
+
+const casinoDirectoryInflight: {
+  current: Promise<CasinoDirectoryRow[]> | null;
+} = { current: null };
+
+const casinoPickerInflight: {
+  current: Promise<
+    {
+      id: string;
+      slug: string;
+      logoUrl: string | null;
+      overallRating: number | null;
+      translations: { locale: string; name: string }[];
+    }[]
+  > | null;
+} = { current: null };
+
+async function loadCasinoDirectoryRows(): Promise<CasinoDirectoryRow[]> {
+  return dedupeInflight(casinoDirectoryInflight, async () => {
+    return prisma.casino.findMany({
       where: publishedContentWhere,
       include: {
         translations: true,
@@ -217,15 +242,38 @@ export async function getCasinos(locale: string): Promise<MockCasino[]> {
         ...casinoCatalogInclude,
       },
       orderBy: { overallRating: "desc" },
-    }),
-    getTranslations({ locale, namespace: "CasinoDetail" }),
-  ]);
+    });
+  });
+}
 
-  const labels = {
+/** Shared published-casino payload for directory / home strips. */
+const getCachedCasinoDirectoryRows = cache(async () => {
+  return unstable_cache(loadCasinoDirectoryRows, ["casino-directory-rows"], {
+    revalidate: false,
+    tags: [CASINO_DIRECTORY_TAG],
+  })();
+});
+
+async function directoryHighlightLabels(
+  locale: string,
+): Promise<CasinoHighlightLabels> {
+  const t = await getTranslations({ locale, namespace: "CasinoDetail" });
+  return {
     minDeposit: t("facts.minDeposit"),
     payoutSpeed: t("scores.payoutSpeed"),
     license: t("facts.license"),
   };
+}
+
+/**
+ * Published casino directory. DB rows are cached across locales/pages;
+ * i18n highlight labels stay outside the data cache.
+ */
+export async function getCasinos(locale: string): Promise<MockCasino[]> {
+  const [rows, labels] = await Promise.all([
+    getCachedCasinoDirectoryRows(),
+    directoryHighlightLabels(locale),
+  ]);
 
   return rows.flatMap((casino) => {
     const translation = pickTranslation(casino.translations, locale);
@@ -273,22 +321,36 @@ export type CasinoCompareDetail = {
   bonus: CasinoCompareBonus | null;
 };
 
+const getCachedCasinoPickerRows = cache(async () => {
+  return unstable_cache(
+    () =>
+      dedupeInflight(casinoPickerInflight, async () => {
+        return prisma.casino.findMany({
+          where: publishedContentWhere,
+          orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
+          select: {
+            id: true,
+            slug: true,
+            logoUrl: true,
+            overallRating: true,
+            translations: {
+              select: { locale: true, name: true },
+            },
+          },
+        });
+      }),
+    ["casino-picker-rows"],
+    {
+      revalidate: false,
+      tags: [CASINO_DIRECTORY_TAG],
+    },
+  )();
+});
+
 export async function getCasinoPickerList(
   locale: string,
 ): Promise<CasinoPickerItem[]> {
-  const rows = await prisma.casino.findMany({
-    where: publishedContentWhere,
-    orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
-    select: {
-      id: true,
-      slug: true,
-      logoUrl: true,
-      overallRating: true,
-      translations: {
-        select: { locale: true, name: true },
-      },
-    },
-  });
+  const rows = await getCachedCasinoPickerRows();
 
   return rows.flatMap((row) => {
     const translation = pickLocaleTranslation(row.translations, locale);
@@ -414,39 +476,21 @@ export const getCasinoCompareDetail = cache(
 );
 
 /**
- * Homepage top-rated strip + hero. Caps at `limit` in SQL and skips the
- * directory-only bonus payload while keeping card highlight fields
- * (min deposit, payout speed, license names).
+ * Homepage top-rated strip + hero. Reuses the cached directory payload
+ * (bonus fields omitted from the card mapping).
  */
 export async function getTopCasinos(
   locale: string,
   limit = 8,
 ): Promise<MockCasino[]> {
-  const [rows, t] = await Promise.all([
-    prisma.casino.findMany({
-      where: publishedContentWhere,
-      orderBy: [{ overallRating: "desc" }, { slug: "asc" }],
-      take: limit,
-      include: {
-        translations: true,
-        payoutSpeed: { include: { translations: true } },
-        licenses: { include: casinoLicenseInclude },
-        ...casinoCatalogInclude,
-      },
-    }),
-    getTranslations({ locale, namespace: "CasinoDetail" }),
+  const [rows, labels] = await Promise.all([
+    getCachedCasinoDirectoryRows(),
+    directoryHighlightLabels(locale),
   ]);
 
-  const labels = {
-    minDeposit: t("facts.minDeposit"),
-    payoutSpeed: t("scores.payoutSpeed"),
-    license: t("facts.license"),
-  };
-
-  return rows.flatMap((casino) => {
+  return rows.slice(0, limit).flatMap((casino) => {
     const translation = pickTranslation(casino.translations, locale);
     if (!translation) return [];
-    // Homepage cards do not use bonusTypes / bonusValue — pass empty bonuses.
     return [toDirectoryCasino(casino, translation, [], locale, labels)];
   });
 }

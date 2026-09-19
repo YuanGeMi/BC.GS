@@ -4,8 +4,12 @@ import type {
   BonusType,
   BonusTypeTranslation,
 } from "@prisma/client";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
 import type { MockBonus } from "@/data/mock-bonuses";
+import { BONUS_DIRECTORY_TAG } from "@/lib/cache-tags";
+import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { publishedContentWhere } from "@/lib/db-enums";
 import { prisma } from "@/lib/prisma";
 
@@ -89,20 +93,38 @@ export const bonusListOrder = [
   { createdAt: "desc" as const },
 ];
 
-export async function getBonuses(locale: string): Promise<MockBonus[]> {
-  const rows = await prisma.bonus.findMany({
-    where: {
-      ...publishedContentWhere,
-      casino: publishedContentWhere,
-    },
-    include: {
-      translations: true,
-      casino: { include: { translations: true } },
-      ...bonusTypeInclude,
-    },
-    orderBy: bonusListOrder,
-  });
+const bonusDirectoryInflight: {
+  current: Promise<BonusWithRelations[]> | null;
+} = { current: null };
 
+async function loadBonusDirectoryRows(): Promise<BonusWithRelations[]> {
+  return dedupeInflight(bonusDirectoryInflight, async () => {
+    return prisma.bonus.findMany({
+      where: {
+        ...publishedContentWhere,
+        casino: publishedContentWhere,
+      },
+      include: {
+        translations: true,
+        casino: { include: { translations: true } },
+        ...bonusTypeInclude,
+      },
+      orderBy: bonusListOrder,
+    });
+  });
+}
+
+const getCachedBonusDirectoryRows = cache(async () => {
+  return unstable_cache(loadBonusDirectoryRows, ["bonus-directory-rows"], {
+    revalidate: false,
+    tags: [BONUS_DIRECTORY_TAG],
+  })();
+});
+
+function mapDirectoryBonuses(
+  rows: BonusWithRelations[],
+  locale: string,
+): MockBonus[] {
   return rows.flatMap((bonus) => {
     const translation = pickTranslation(bonus.translations, locale);
     const casinoTranslation = pickTranslation(
@@ -116,54 +138,23 @@ export async function getBonuses(locale: string): Promise<MockBonus[]> {
   });
 }
 
+export async function getBonuses(locale: string): Promise<MockBonus[]> {
+  const rows = await getCachedBonusDirectoryRows();
+  return mapDirectoryBonuses(rows, locale);
+}
+
 /**
  * Homepage featured bonuses. Ranking uses parsed dollar amounts (not a DB
- * column), so we load published listing bonuses, sort by value, then take.
+ * column), so we sort the cached directory in memory, then take.
  */
 export async function getFeaturedBonuses(
   locale: string,
   limit = 6,
 ): Promise<MockBonus[]> {
-  const rows = await prisma.bonus.findMany({
-    where: {
-      ...publishedContentWhere,
-      casino: publishedContentWhere,
-    },
-    include: {
-      translations: true,
-      casino: {
-        select: {
-          id: true,
-          slug: true,
-          logoUrl: true,
-          translations: {
-            select: {
-              locale: true,
-              name: true,
-            },
-          },
-        },
-      },
-      ...bonusTypeInclude,
-    },
-  });
-
-  const mapped: MockBonus[] = [];
-
-  for (const bonus of rows) {
-    const translation = pickTranslation(bonus.translations, locale);
-    const casinoTranslation = pickTranslation(
-      bonus.casino.translations,
-      locale,
-    );
-    if (!translation || !casinoTranslation) continue;
-
-    mapped.push(
-      toDirectoryBonus(bonus, translation, casinoTranslation, locale),
-    );
-  }
-
-  return mapped.sort((a, b) => b.valueAmount - a.valueAmount).slice(0, limit);
+  const rows = await getCachedBonusDirectoryRows();
+  return mapDirectoryBonuses(rows, locale)
+    .sort((a, b) => b.valueAmount - a.valueAmount)
+    .slice(0, limit);
 }
 
 export type CasinoBonusTermsView = {

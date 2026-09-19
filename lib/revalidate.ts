@@ -2,6 +2,10 @@ import { revalidatePath, revalidateTag } from "next/cache";
 
 import { routing } from "@/i18n/routing";
 import {
+  BONUS_DIRECTORY_TAG,
+  CASINO_DIRECTORY_TAG,
+  CATALOG_OPTIONS_TAG,
+  CATEGORY_DIRECTORY_TAG,
   casinoCompareDetailTag,
   LEGAL_PAGE_SLUGS_TAG,
   SITE_SETTINGS_TAG,
@@ -52,10 +56,15 @@ export function revalidatePublicIndexes() {
 export function revalidateCasinoPublicSurfaces(
   slugs: Array<string | null | undefined>,
 ) {
-  const unique = [...new Set(slugs.filter((slug): slug is string => Boolean(slug)))];
+  const unique = [
+    ...new Set(slugs.filter((slug): slug is string => Boolean(slug))),
+  ];
   for (const slug of unique) {
     revalidateCasinoPage(slug);
   }
+  revalidateTag(CASINO_DIRECTORY_TAG, "max");
+  revalidateTag(BONUS_DIRECTORY_TAG, "max");
+  revalidateTag(CATEGORY_DIRECTORY_TAG, "max");
   revalidateCompareList();
   revalidatePublicIndexes();
 }
@@ -69,13 +78,17 @@ export function revalidateSiteSettings() {
 }
 
 /** Casino review, bonus directory, and home featured strip. */
-export function revalidateBonusSurfaces(casinoSlugs: Array<string | null | undefined>) {
+export function revalidateBonusSurfaces(
+  casinoSlugs: Array<string | null | undefined>,
+) {
   const unique = [
     ...new Set(casinoSlugs.filter((slug): slug is string => Boolean(slug))),
   ];
   for (const slug of unique) {
     revalidateCasinoPage(slug);
   }
+  revalidateTag(BONUS_DIRECTORY_TAG, "max");
+  revalidateTag(CASINO_DIRECTORY_TAG, "max");
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}`);
     revalidatePath(`/${locale}/bonuses`);
@@ -83,10 +96,13 @@ export function revalidateBonusSurfaces(casinoSlugs: Array<string | null | undef
 }
 
 /** Best-of index, ranked list pages, related blocks, sitemap. */
-export function revalidateBestOfSurfaces(slugs: Array<string | null | undefined>) {
+export function revalidateBestOfSurfaces(
+  slugs: Array<string | null | undefined>,
+) {
   const unique = [
     ...new Set(slugs.filter((slug): slug is string => Boolean(slug))),
   ];
+  revalidateTag(CATEGORY_DIRECTORY_TAG, "max");
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}/best-of`);
     for (const slug of unique) {
@@ -113,6 +129,10 @@ export function revalidateStaticPage(slug: string) {
  * those pages at render time.
  */
 export async function revalidateCatalogSurfaces() {
+  revalidateTag(CATALOG_OPTIONS_TAG, "max");
+  revalidateTag(CASINO_DIRECTORY_TAG, "max");
+  revalidateTag(BONUS_DIRECTORY_TAG, "max");
+
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}`);
     revalidatePath(`/${locale}/casinos`);
