@@ -129,18 +129,28 @@
       "browseAll": "Browse all casinos",
       "methodLink": "How we score operators"
     },
+    "emptyHero": {
+      "title": "Casino reviews are coming soon",
+      "body": "We are rebuilding the review desk with verified operators, cleaner bonus data, and transparent scoring before anything goes live."
+    },
     "casinos": {
       "title": "Top Rated Casinos",
       "viewAll": "View all",
-      "cta": "Read review"
+      "cta": "Read review",
+      "emptyTitle": "Reviews coming soon",
+      "emptyBody": "The demo operators have been removed. New public reviews will appear here after editorial checks are complete."
     },
     "bonuses": {
       "title": "Featured Bonuses",
       "viewAll": "View all",
-      "cta": "Claim"
+      "cta": "Claim",
+      "emptyTitle": "Bonus tracking coming soon",
+      "emptyBody": "We will only list bonuses after the casino review and offer terms have been checked."
     },
     "categories": {
-      "title": "Explore by category"
+      "title": "Explore by category",
+      "emptyTitle": "Category lists coming soon",
+      "emptyBody": "Best-of rankings will return once enough reviewed operators are ready for comparison."
     },
     "review": {
       "eyebrow": "Editorial standards",

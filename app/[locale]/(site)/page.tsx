@@ -59,7 +59,76 @@ function SectionHeader({
   );
 }
 
-function ReviewIcon({ name }: { name: "research" | "test" | "score" | "update" }) {
+function HomeEmptyHero({
+  title,
+  body,
+}: {
+  title: string;
+  body: string;
+}) {
+  return (
+    <section className="border-text/5 bg-card/25 border-b">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_0.8fr] md:items-center md:py-20 lg:px-8">
+        <div>
+          <p className="text-accent mb-4 text-xs font-medium tracking-[0.22em] uppercase">
+            BC.GS
+          </p>
+          <h1 className="text-text max-w-3xl text-3xl font-semibold tracking-tight md:text-5xl">
+            {title}
+          </h1>
+          <p className="text-text/60 mt-5 max-w-2xl text-base leading-relaxed md:text-lg">
+            {body}
+          </p>
+        </div>
+        <div className="ring-text/10 bg-background/60 p-5 ring-1">
+          <div className="space-y-3">
+            {["Research", "Testing", "Scoring"].map((item, index) => (
+              <div
+                key={item}
+                className="bg-card/80 ring-text/8 flex items-center justify-between p-4 ring-1"
+              >
+                <span className="text-text/70 text-sm">{item}</span>
+                <span className="text-accent text-xs font-medium tracking-[0.18em] uppercase">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EmptySectionPanel({
+  title,
+  body,
+  className,
+}: {
+  title: string;
+  body: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "border-text/10 bg-background/45 col-span-full border border-dashed p-6 text-center sm:p-8",
+        className,
+      )}
+    >
+      <p className="text-text text-sm font-semibold tracking-tight">{title}</p>
+      <p className="text-text/55 mx-auto mt-2 max-w-xl text-sm leading-relaxed">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+function ReviewIcon({
+  name,
+}: {
+  name: "research" | "test" | "score" | "update";
+}) {
   const className = "text-accent h-5 w-5";
 
   if (name === "research") {
@@ -151,15 +220,38 @@ export default async function HomePage({ params }: Props) {
   const topCasinos = casinos;
 
   const reviewSteps = [
-    { icon: "research" as const, title: t("review.researchTitle"), body: t("review.researchBody") },
-    { icon: "test" as const, title: t("review.testTitle"), body: t("review.testBody") },
-    { icon: "score" as const, title: t("review.scoreTitle"), body: t("review.scoreBody") },
-    { icon: "update" as const, title: t("review.updateTitle"), body: t("review.updateBody") },
+    {
+      icon: "research" as const,
+      title: t("review.researchTitle"),
+      body: t("review.researchBody"),
+    },
+    {
+      icon: "test" as const,
+      title: t("review.testTitle"),
+      body: t("review.testBody"),
+    },
+    {
+      icon: "score" as const,
+      title: t("review.scoreTitle"),
+      body: t("review.scoreBody"),
+    },
+    {
+      icon: "update" as const,
+      title: t("review.updateTitle"),
+      body: t("review.updateBody"),
+    },
   ];
 
   return (
     <>
-      {cover ? <HomeHero locale={locale} cover={cover} desk={desk} /> : null}
+      {cover ? (
+        <HomeHero locale={locale} cover={cover} desk={desk} />
+      ) : (
+        <HomeEmptyHero
+          title={t("emptyHero.title")}
+          body={t("emptyHero.body")}
+        />
+      )}
 
       {/* Top-rated casinos */}
       <Section>
@@ -169,43 +261,57 @@ export default async function HomePage({ params }: Props) {
           viewAllLabel={t("casinos.viewAll")}
         />
         <CasinoCardList className="xl:grid-cols-4">
-          {topCasinos.map((casino) => (
-            <CasinoCard
-              key={casino.id}
-              name={casino.name.en}
-              logoUrl={casino.logoUrl}
-              rating={casino.rating}
-              badges={casino.badges.map((badge) => badge.en)}
-              highlights={casino.highlights.map((item) => ({
-                label: item.label.en,
-                value: item.value.en,
-              }))}
-              ctaHref={`/casinos/${casino.slug}`}
-              ctaLabel={t("casinos.cta")}
+          {topCasinos.length > 0 ? (
+            topCasinos.map((casino) => (
+              <CasinoCard
+                key={casino.id}
+                name={casino.name.en}
+                logoUrl={casino.logoUrl}
+                rating={casino.rating}
+                badges={casino.badges.map((badge) => badge.en)}
+                highlights={casino.highlights.map((item) => ({
+                  label: item.label.en,
+                  value: item.value.en,
+                }))}
+                ctaHref={`/casinos/${casino.slug}`}
+                ctaLabel={t("casinos.cta")}
+              />
+            ))
+          ) : (
+            <EmptySectionPanel
+              title={t("casinos.emptyTitle")}
+              body={t("casinos.emptyBody")}
             />
-          ))}
+          )}
         </CasinoCardList>
       </Section>
 
       {/* Featured bonuses */}
-      <Section className="bg-card/30 border-y border-text/5">
+      <Section className="bg-card/30 border-text/5 border-y">
         <SectionHeader
           title={t("bonuses.title")}
           viewAllHref="/bonuses"
           viewAllLabel={t("bonuses.viewAll")}
         />
         <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          {featuredBonuses.map((bonus) => (
-            <BonusCard
-              key={bonus.id}
-              casinoName={bonus.casinoName.en}
-              logoUrl={bonus.logoUrl}
-              title={bonus.title.en}
-              bonusValue={bonus.bonusValue.en}
-              ctaHref={`/casinos/${bonus.casinoSlug}`}
-              ctaLabel={t("bonuses.cta")}
+          {featuredBonuses.length > 0 ? (
+            featuredBonuses.map((bonus) => (
+              <BonusCard
+                key={bonus.id}
+                casinoName={bonus.casinoName.en}
+                logoUrl={bonus.logoUrl}
+                title={bonus.title.en}
+                bonusValue={bonus.bonusValue.en}
+                ctaHref={`/casinos/${bonus.casinoSlug}`}
+                ctaLabel={t("bonuses.cta")}
+              />
+            ))
+          ) : (
+            <EmptySectionPanel
+              title={t("bonuses.emptyTitle")}
+              body={t("bonuses.emptyBody")}
             />
-          ))}
+          )}
         </div>
       </Section>
 
@@ -213,30 +319,37 @@ export default async function HomePage({ params }: Props) {
       <Section>
         <SectionHeader title={t("categories.title")} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((category, index) => (
-            <Link
-              key={category.slug}
-              href={`/best/${category.slug}`}
-              className={cn(
-                "bg-card group ring-text/8 hover:ring-accent/30 rounded-xl p-5 ring-1 transition-all duration-300 ease-out hover:-translate-y-0.5",
-              )}
-            >
-              <span className="text-accent/70 mb-3 block text-[11px] font-medium tracking-[0.18em] uppercase">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h3 className="text-text group-hover:text-accent-highlight text-base font-semibold tracking-tight transition-colors duration-200">
-                {category.name}
-              </h3>
-              <p className="text-text/55 mt-2 text-sm leading-relaxed">
-                {category.description}
-              </p>
-            </Link>
-          ))}
+          {categories.length > 0 ? (
+            categories.map((category, index) => (
+              <Link
+                key={category.slug}
+                href={`/best/${category.slug}`}
+                className={cn(
+                  "bg-card group ring-text/8 hover:ring-accent/30 rounded-xl p-5 ring-1 transition-all duration-300 ease-out hover:-translate-y-0.5",
+                )}
+              >
+                <span className="text-accent/70 mb-3 block text-[11px] font-medium tracking-[0.18em] uppercase">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3 className="text-text group-hover:text-accent-highlight text-base font-semibold tracking-tight transition-colors duration-200">
+                  {category.name}
+                </h3>
+                <p className="text-text/55 mt-2 text-sm leading-relaxed">
+                  {category.description}
+                </p>
+              </Link>
+            ))
+          ) : (
+            <EmptySectionPanel
+              title={t("categories.emptyTitle")}
+              body={t("categories.emptyBody")}
+            />
+          )}
         </div>
       </Section>
 
       {/* Trust / editorial */}
-      <Section id="review-process" className="border-t border-text/5">
+      <Section id="review-process" className="border-text/5 border-t">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-accent mb-3 text-xs font-medium tracking-[0.22em] uppercase">
             {t("review.eyebrow")}

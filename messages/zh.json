@@ -129,18 +129,28 @@
       "browseAll": "浏览全部娱乐场",
       "methodLink": "我们如何评分"
     },
+    "emptyHero": {
+      "title": "娱乐场评测即将上线",
+      "body": "我们正在用已核验的运营商、更清晰的优惠数据和透明评分重建评测台，准备好后再公开上线。"
+    },
     "casinos": {
       "title": "高分娱乐场",
       "viewAll": "查看全部",
-      "cta": "阅读评测"
+      "cta": "阅读评测",
+      "emptyTitle": "评测即将上线",
+      "emptyBody": "演示运营商已移除。新的公开评测会在编辑审核完成后显示在这里。"
     },
     "bonuses": {
       "title": "精选优惠",
       "viewAll": "查看全部",
-      "cta": "领取"
+      "cta": "领取",
+      "emptyTitle": "优惠追踪即将上线",
+      "emptyBody": "只有在娱乐场评测和优惠条款核验后，我们才会展示优惠。"
     },
     "categories": {
-      "title": "按分类探索"
+      "title": "按分类探索",
+      "emptyTitle": "分类榜单即将上线",
+      "emptyBody": "当有足够已评测运营商可供比较时，精选榜单会重新显示。"
     },
     "review": {
       "eyebrow": "编辑标准",
