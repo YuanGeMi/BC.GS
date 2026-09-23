@@ -5,7 +5,10 @@ import { routing, type Locale } from "@/i18n/routing";
 const DEFAULT_SITE_URL = "https://www.bc.gs";
 
 export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? DEFAULT_SITE_URL;
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") ??
+    DEFAULT_SITE_URL
+  );
 }
 
 export const siteMetadataBase = new URL(getSiteUrl());
