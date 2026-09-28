@@ -3,10 +3,6 @@
 import { useEffect } from "react";
 
 import { usePathname, useRouter } from "@/i18n/navigation";
-import {
-  logPasswordResetClientDebug,
-  logPasswordResetSessionDebug,
-} from "@/lib/auth/password-reset-debug";
 import { PASSWORD_RECOVERY_FLAG } from "@/lib/auth/recovery-flag";
 import { createClient } from "@/lib/supabase/client";
 
@@ -23,9 +19,6 @@ export function PasswordRecoveryListener() {
   const router = useRouter();
 
   useEffect(() => {
-    logPasswordResetClientDebug("PasswordRecoveryListener");
-    void logPasswordResetSessionDebug("PasswordRecoveryListener");
-
     const hashParams = new URLSearchParams(
       window.location.hash.replace(/^#/, ""),
     );
@@ -43,13 +36,6 @@ export function PasswordRecoveryListener() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[password-reset debug] onAuthStateChange", {
-        source: "PasswordRecoveryListener",
-        event,
-        hasSession: Boolean(session),
-        userId: session?.user.id ?? null,
-      });
-
       if (event === "PASSWORD_RECOVERY" || recoveryHint) {
         sessionStorage.setItem(PASSWORD_RECOVERY_FLAG, "1");
       }

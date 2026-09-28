@@ -29,25 +29,11 @@ export function AdminShell({
   const t = useTranslations("Admin");
   const aligned = useRef(false);
 
-  useEffect(() => {
-    console.log(
-      `[admin-perf client] shell ready path=${pathname} t=${performance.now().toFixed(0)}`,
-    );
-  }, [pathname]);
-
   // Refresh session cookies once so JWT carries app_metadata.role (RSC cannot).
   useEffect(() => {
     if (aligned.current) return;
     aligned.current = true;
-    void alignSessionRoleClaim()
-      .then((result) => {
-        console.log(
-          `[admin-perf client] alignSessionRoleClaim refreshed=${result.refreshed} role=${result.role}`,
-        );
-      })
-      .catch((error) => {
-        console.error("[admin-perf client] alignSessionRoleClaim", error);
-      });
+    void alignSessionRoleClaim().catch(() => {});
   }, []);
 
   return (
@@ -132,11 +118,6 @@ function AdminNav({
           <Link
             key={item.href}
             href={item.href}
-            onClick={() => {
-              console.log(
-                `[admin-perf client] click → ${item.href} t=${performance.now().toFixed(0)}`,
-              );
-            }}
             className={cn(
               "block px-2 py-2 text-[13px] tracking-wide transition-colors",
               horizontal && "whitespace-nowrap",

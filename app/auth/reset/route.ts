@@ -23,16 +23,6 @@ export async function GET(request: Request) {
   const loginError = `${origin}/${locale}/login?error=auth`;
   const resetPassword = `${origin}/${locale}/reset-password`;
 
-  console.error("[password-reset debug] /auth/reset", {
-    href: request.url,
-    pathname: url.pathname,
-    search: url.search,
-    queryType: type,
-    queryHasTokenHash: Boolean(tokenHash),
-    locale,
-    localeFromCookie: cookieStore.get(RESET_LOCALE_COOKIE)?.value ?? null,
-  });
-
   function withExpiredLocaleCookie(response: NextResponse) {
     response.cookies.set(
       RESET_LOCALE_COOKIE,

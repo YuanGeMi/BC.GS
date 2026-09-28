@@ -31,11 +31,6 @@ import { createClient } from "@/lib/supabase/server";
 
 export type AuthFormState = {
   error?: string;
-  debug?: {
-    message?: string;
-    status?: number;
-    code?: string;
-  };
   checkEmail?: boolean;
   resetSent?: boolean;
   passwordUpdated?: boolean;
@@ -73,8 +68,6 @@ export async function signup(
     origin,
     safeRedirectPath(locale, next),
   );
-  console.error("[signup] emailRedirectTo", emailRedirectTo);
-
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -86,13 +79,8 @@ export async function signup(
   });
 
   if (error) {
-    const debug = {
-      message: error.message,
-      status: error.status,
-      code: error.code,
-    };
-    console.error("[signup] supabase.auth.signUp", debug);
-    return { error: mapSupabaseAuthError(error), debug };
+    console.error("[signup] supabase.auth.signUp", error.message);
+    return { error: mapSupabaseAuthError(error) };
   }
 
   if (data.session && data.user) {
@@ -195,10 +183,6 @@ export async function requestPasswordReset(
     locale,
     resetLocaleCookieOptions(),
   );
-  console.error("[password-reset debug] resetPasswordForEmail", {
-    locale,
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? null,
-  });
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email);
