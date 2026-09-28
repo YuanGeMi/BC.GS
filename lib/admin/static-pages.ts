@@ -6,6 +6,7 @@ import { isContentStatus } from "@/lib/admin/casino-input";
 import {
   englishPageReady,
   parseHttpsUrl,
+  parseFooterTagline,
   parseLogoUrl,
   parseSiteName,
   parseStaticPageSaveInput,
@@ -22,7 +23,9 @@ import {
   DEFAULT_LOGO_URL,
   DEFAULT_OG_IMAGE_URL,
   DEFAULT_SITE_NAME,
+  FOOTER_TAGLINE_KEYS,
   SITE_SETTING_KEYS,
+  type FooterTaglines,
 } from "@/lib/site";
 import {
   LEGAL_PAGE_LABELS,
@@ -58,6 +61,7 @@ export type SiteSettings = {
   seoDescriptionDefault: string;
   telegramChannelUrl: string;
   discordChannelUrl: string;
+  footerTagline: FooterTaglines;
 };
 
 function revalidateAdminPagePaths(slug?: string) {
@@ -247,6 +251,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       byKey.get(SITE_SETTING_KEYS.seoDescriptionDefault) ?? "",
     telegramChannelUrl: byKey.get(SITE_SETTING_KEYS.telegramChannelUrl) ?? "",
     discordChannelUrl: byKey.get(SITE_SETTING_KEYS.discordChannelUrl) ?? "",
+    footerTagline: {
+      en: byKey.get(FOOTER_TAGLINE_KEYS.en) ?? "",
+      zh: byKey.get(FOOTER_TAGLINE_KEYS.zh) ?? "",
+      th: byKey.get(FOOTER_TAGLINE_KEYS.th) ?? "",
+    },
   };
 }
 
@@ -258,16 +267,7 @@ async function upsertSetting(key: string, value: string) {
   });
 }
 
-export async function updateSiteSettings(input: {
-  siteName: string;
-  logoUrl: string;
-  ogImageUrl: string;
-  faviconUrl: string;
-  seoTitleDefault: string;
-  seoDescriptionDefault: string;
-  telegramChannelUrl: string;
-  discordChannelUrl: string;
-}): Promise<{ ok: true } | { ok: false; error: StaticPageInputError }> {
+export async function updateSiteSettings(input: SiteSettings): Promise<{ ok: true } | { ok: false; error: StaticPageInputError }> {
   await requireAdmin();
 
   const siteName = parseSiteName(input.siteName);
@@ -299,6 +299,12 @@ export async function updateSiteSettings(input: {
     upsertSetting(SITE_SETTING_KEYS.seoDescriptionDefault, seoDescription),
     upsertSetting(SITE_SETTING_KEYS.telegramChannelUrl, telegram.value),
     upsertSetting(SITE_SETTING_KEYS.discordChannelUrl, discord.value),
+    ...routing.locales.map((locale) =>
+      upsertSetting(
+        FOOTER_TAGLINE_KEYS[locale],
+        parseFooterTagline(input.footerTagline?.[locale]),
+      ),
+    ),
   ]);
 
   for (const locale of routing.locales) {

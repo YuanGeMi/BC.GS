@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import type { Locale } from "@/i18n/routing";
 import { SITE_SETTINGS_TAG } from "@/lib/cache-tags";
 import { dedupeInflight } from "@/lib/dedupe-inflight";
 import { prisma } from "@/lib/prisma";
@@ -15,7 +16,18 @@ export const SITE_SETTING_KEYS = {
   seoDescriptionDefault: "seo_description_default",
   telegramChannelUrl: "telegram_channel_url",
   discordChannelUrl: "discord_channel_url",
+  footerTaglineEn: "footer_tagline_en",
+  footerTaglineZh: "footer_tagline_zh",
+  footerTaglineTh: "footer_tagline_th",
 } as const;
+
+export const FOOTER_TAGLINE_KEYS = {
+  en: SITE_SETTING_KEYS.footerTaglineEn,
+  zh: SITE_SETTING_KEYS.footerTaglineZh,
+  th: SITE_SETTING_KEYS.footerTaglineTh,
+} as const satisfies Record<Locale, string>;
+
+export type FooterTaglines = Record<Locale, string>;
 
 export const DEFAULT_SITE_NAME = "BC.GS";
 export const DEFAULT_LOGO_URL = "/brand/logo-mark-bc.png";
@@ -32,6 +44,8 @@ export type SiteConfig = {
   seoDescriptionDefault: string;
   telegramChannelUrl: string | null;
   discordChannelUrl: string | null;
+  /** Per-locale footer tagline. Empty means fall back to Footer.tagline i18n copy. */
+  footerTagline: FooterTaglines;
 };
 
 const siteConfigInflight: { current: Promise<SiteConfig> | null } = {
@@ -85,6 +99,11 @@ async function loadSiteConfig(): Promise<SiteConfig> {
       seoDescriptionDefault,
       telegramChannelUrl: telegram || null,
       discordChannelUrl: discord || null,
+      footerTagline: {
+        en: readTrimmed(byKey, FOOTER_TAGLINE_KEYS.en),
+        zh: readTrimmed(byKey, FOOTER_TAGLINE_KEYS.zh),
+        th: readTrimmed(byKey, FOOTER_TAGLINE_KEYS.th),
+      },
     };
   });
 }

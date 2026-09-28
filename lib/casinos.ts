@@ -536,7 +536,7 @@ export type RelatedCasinoCard = {
 
 function splitReviewBody(body: string): string[] {
   return body
-    .split(/\n\n+/)
+    .split(/\n+/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
 }

@@ -50,9 +50,9 @@ function LogoMark({ name, logoUrl }: { name: string; logoUrl?: string }) {
       <Image
         src={logoUrl}
         alt={`${name} logo`}
-        width={64}
-        height={64}
-        className="h-16 w-16 rounded-lg object-contain"
+        width={112}
+        height={112}
+        className="h-20 w-20 shrink-0 rounded-xl object-contain md:h-28 md:w-28"
       />
     );
   }
@@ -60,7 +60,7 @@ function LogoMark({ name, logoUrl }: { name: string; logoUrl?: string }) {
   return (
     <div
       aria-hidden
-      className="from-accent/20 to-accent/5 text-accent ring-accent/20 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br text-lg font-semibold tracking-wide ring-1"
+      className="from-accent/20 to-accent/5 text-accent ring-accent/20 flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-2xl font-semibold md:h-28 md:w-28 md:text-3xl tracking-wide ring-1"
     >
       {initials || "BC"}
     </div>
@@ -339,7 +339,7 @@ export default async function CasinoDetailPage({ params }: Props) {
         <h2 className="text-text mb-6 text-xl font-semibold tracking-tight md:text-2xl">
           {t("review.title", { name: casino.name })}
         </h2>
-        <div className="max-w-2xl space-y-5">
+        <div className="space-y-5">
           {casino.review.map((paragraph) => (
             <p
               key={paragraph}

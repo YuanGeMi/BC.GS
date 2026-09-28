@@ -7,6 +7,9 @@ import { useState, useTransition } from "react";
 import { uploadSiteAsset } from "@/lib/admin/site-assets";
 import { updateSiteSettings } from "@/lib/admin/static-pages";
 import { adminInputClass } from "@/lib/admin/fields";
+import { FOOTER_TAGLINE_MAX_LENGTH } from "@/lib/admin/static-page-input";
+import type { FooterTaglines } from "@/lib/site";
+import { routing } from "@/i18n/routing";
 import type { SiteAssetKind } from "@/lib/supabase/storage";
 
 export function SiteSettingsForm({
@@ -18,6 +21,8 @@ export function SiteSettingsForm({
   seoDescriptionDefault: initialSeoDescription,
   telegramChannelUrl,
   discordChannelUrl,
+  footerTagline: initialFooterTagline,
+  defaultFooterTagline,
 }: {
   siteName: string;
   logoUrl: string;
@@ -27,6 +32,8 @@ export function SiteSettingsForm({
   seoDescriptionDefault: string;
   telegramChannelUrl: string;
   discordChannelUrl: string;
+  footerTagline: FooterTaglines;
+  defaultFooterTagline: FooterTaglines;
 }) {
   const t = useTranslations("Admin");
   const router = useRouter();
@@ -40,6 +47,7 @@ export function SiteSettingsForm({
   );
   const [telegramUrl, setTelegramUrl] = useState(telegramChannelUrl);
   const [discordUrl, setDiscordUrl] = useState(discordChannelUrl);
+  const [footerTagline, setFooterTagline] = useState(initialFooterTagline);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [uploadingKind, setUploadingKind] = useState<SiteAssetKind | null>(
@@ -78,6 +86,7 @@ export function SiteSettingsForm({
         seoDescriptionDefault,
         telegramChannelUrl: telegramUrl,
         discordChannelUrl: discordUrl,
+        footerTagline,
       });
       setUploadingKind(null);
       if (!saved.ok) {
@@ -106,6 +115,7 @@ export function SiteSettingsForm({
             seoDescriptionDefault,
             telegramChannelUrl: telegramUrl,
             discordChannelUrl: discordUrl,
+            footerTagline,
           });
           if (!result.ok) {
             if (result.error === "invalidLogoUrl") {
@@ -346,6 +356,33 @@ export function SiteSettingsForm({
         />
       </label>
       <p className="text-text/40 text-xs">{t("pages.discordHelpLong")}</p>
+
+      <fieldset className="space-y-3">
+        <legend className="text-text/45 mb-1.5 block text-[11px] tracking-[0.16em] uppercase">
+          {t("pages.footerTagline")}
+        </legend>
+        {routing.locales.map((locale) => (
+          <label key={locale} className="block">
+            <span className="text-text/35 mb-1 block text-[10px] tracking-[0.16em] uppercase">
+              {t(`pages.footerTaglineLocale.${locale}`)}
+            </span>
+            <textarea
+              value={footerTagline[locale]}
+              onChange={(event) =>
+                setFooterTagline((current) => ({
+                  ...current,
+                  [locale]: event.target.value,
+                }))
+              }
+              className={`${adminInputClass} min-h-20`}
+              placeholder={defaultFooterTagline[locale]}
+              maxLength={FOOTER_TAGLINE_MAX_LENGTH}
+              rows={2}
+            />
+          </label>
+        ))}
+      </fieldset>
+      <p className="text-text/40 text-xs">{t("pages.footerTaglineHelp")}</p>
 
       {error ? <p className="text-accent text-sm">{error}</p> : null}
       {notice ? <p className="text-text/55 text-sm">{notice}</p> : null}

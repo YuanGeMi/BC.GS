@@ -770,12 +770,19 @@
       "seoDescriptionDefault": "Default meta description",
       "seoDescriptionDefaultHelp": "Used as the default meta description when set. Leave empty to use locale copy.",
       "telegramHelpLong": "Must start with https://. Leave empty to hide the Telegram footer link.",
-      "discordHelpLong": "Must start with https://. Leave empty to hide the Discord footer link."
+      "discordHelpLong": "Must start with https://. Leave empty to hide the Discord footer link.",
+      "footerTagline": "Footer text",
+      "footerTaglineLocale": {
+        "en": "English",
+        "zh": "Chinese",
+        "th": "Thai"
+      },
+      "footerTaglineHelp": "Shown under the logo in the footer, per language. Leave a language empty to use the default text shown in grey."
     },
     "settings": {
       "eyebrow": "Site",
       "title": "Settings",
-      "lede": "Site name, logo, favicon, default SEO, and footer community links."
+      "lede": "Site name, logo, favicon, default SEO, footer text, and footer community links."
     },
     "reviews": {
       "eyebrow": "Queue",

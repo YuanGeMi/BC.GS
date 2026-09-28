@@ -1,8 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { SiDiscord, SiTelegram } from "react-icons/si";
 
 import { Logo } from "@/components/logo";
 import { Link } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
 import { MAIN_NAV } from "@/lib/nav";
 import { getSiteConfig } from "@/lib/site";
 import {
@@ -13,6 +14,7 @@ import {
 export async function Footer() {
   const tNav = await getTranslations("Nav");
   const tFooter = await getTranslations("Footer");
+  const locale = (await getLocale()) as Locale;
   const year = new Date().getFullYear();
   const [site, publishedLegalSlugs] = await Promise.all([
     getSiteConfig(),
@@ -33,7 +35,7 @@ export async function Footer() {
           <div className="max-w-xs">
             <Logo size="sm" />
             <p className="text-text/50 mt-3 text-sm leading-relaxed">
-              {tFooter("tagline")}
+              {site.footerTagline[locale] || tFooter("tagline")}
             </p>
           </div>
 

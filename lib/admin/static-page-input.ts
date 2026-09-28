@@ -135,6 +135,12 @@ export function parseSiteName(
   return { ok: true, value: trimmed };
 }
 
+export const FOOTER_TAGLINE_MAX_LENGTH = 300;
+
+export function parseFooterTagline(value: string | undefined): string {
+  return (value ?? "").trim().slice(0, FOOTER_TAGLINE_MAX_LENGTH);
+}
+
 export function assertLegalSlug(slug: string): slug is StaticPageSlug {
   return isLegalPageSlug(slug);
 }

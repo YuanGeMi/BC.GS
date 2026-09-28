@@ -770,12 +770,19 @@
       "seoDescriptionDefault": "默认 Meta 描述",
       "seoDescriptionDefaultHelp": "设置后作为默认 meta 描述。留空则使用各语言文案。",
       "telegramHelpLong": "须以 https:// 开头。留空则隐藏页脚 Telegram 链接。",
-      "discordHelpLong": "须以 https:// 开头。留空则隐藏页脚 Discord 链接。"
+      "discordHelpLong": "须以 https:// 开头。留空则隐藏页脚 Discord 链接。",
+      "footerTagline": "页脚文字",
+      "footerTaglineLocale": {
+        "en": "英文",
+        "zh": "中文",
+        "th": "泰文"
+      },
+      "footerTaglineHelp": "按语言显示在页脚标志下方。某语言留空则使用灰色显示的默认文字。"
     },
     "settings": {
       "eyebrow": "站点",
       "title": "设置",
-      "lede": "站点名称、标志、网站图标、默认 SEO，以及页脚社区链接。"
+      "lede": "站点名称、标志、网站图标、默认 SEO、页脚文字，以及页脚社区链接。"
     },
     "reviews": {
       "eyebrow": "队列",

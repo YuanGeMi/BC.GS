@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { SiteSettingsForm } from "@/components/admin/site-settings-form";
+import { routing } from "@/i18n/routing";
 import { getSiteSettings } from "@/lib/admin/static-pages";
+import type { FooterTaglines } from "@/lib/site";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -18,7 +20,16 @@ export default async function AdminSettingsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Admin.settings");
-  const settings = await getSiteSettings();
+  const [settings, ...defaultTaglines] = await Promise.all([
+    getSiteSettings(),
+    ...routing.locales.map(async (item) => {
+      const tFooter = await getTranslations({
+        locale: item,
+        namespace: "Footer",
+      });
+      return [item, tFooter("tagline")] as const;
+    }),
+  ]);
 
   return (
     <section>
@@ -36,6 +47,10 @@ export default async function AdminSettingsPage({ params }: Props) {
         seoDescriptionDefault={settings.seoDescriptionDefault}
         telegramChannelUrl={settings.telegramChannelUrl}
         discordChannelUrl={settings.discordChannelUrl}
+        footerTagline={settings.footerTagline}
+        defaultFooterTagline={
+          Object.fromEntries(defaultTaglines) as FooterTaglines
+        }
       />
     </section>
   );
