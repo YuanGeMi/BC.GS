@@ -4,6 +4,7 @@ export const ADMIN_NAV = [
   { href: "/admin/categories", labelKey: "categories" },
   { href: "/admin/pages", labelKey: "pages" },
   { href: "/admin/reviews", labelKey: "reviews" },
+  { href: "/admin/complaints", labelKey: "complaints" },
   { href: "/admin/catalogs/payout", labelKey: "catalogs" },
   { href: "/admin/clicks", labelKey: "clicks" },
   { href: "/admin/users", labelKey: "users" },

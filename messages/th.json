@@ -422,6 +422,7 @@
       "pages": "หน้า",
       "settings": "การตั้งค่า",
       "reviews": "รีวิว",
+      "complaints": "ข้อร้องเรียน",
       "catalogs": "แคตตาล็อก",
       "clicks": "คลิก",
       "users": "ผู้ใช้",
@@ -784,6 +785,66 @@
       "title": "การตั้งค่า",
       "lede": "ชื่อไซต์ โลโก้ favicon SEO เริ่มต้น ข้อความส่วนท้าย และลิงก์ชุมชนที่ส่วนท้าย"
     },
+    "complaints": {
+      "eyebrow": "เคส",
+      "title": "ข้อร้องเรียน",
+      "lede": "ข้อร้องเรียนและรายงานการหลอกลวงที่ส่งผ่าน Telegram และเว็บไซต์ เรียงจากใหม่สุด มีข้อมูลส่วนบุคคล ห้ามเผยแพร่นอก Desk",
+      "detailTitle": "ข้อร้องเรียน",
+      "empty": "ไม่มีข้อร้องเรียนที่ตรงกับตัวกรองนี้",
+      "tableMissing": "ฐานข้อมูลนี้ยังไม่มีตารางข้อร้องเรียน โปรดรัน migration ของ Complaint ที่ค้างอยู่ก่อน",
+      "searchCaseId": "ค้นหา Case ID",
+      "allTypes": "ทุกประเภท",
+      "allSources": "ทุกช่องทาง",
+      "columns": {
+        "caseId": "Case ID",
+        "type": "ประเภท",
+        "casino": "คาสิโน",
+        "subject": "หัวข้อ",
+        "status": "สถานะ",
+        "source": "ช่องทาง",
+        "created": "สร้างเมื่อ"
+      },
+      "status": {
+        "open": "เปิด",
+        "in_review": "กำลังตรวจสอบ",
+        "resolved": "แก้ไขแล้ว",
+        "rejected": "ปฏิเสธ"
+      },
+      "types": {
+        "complaint": "ข้อร้องเรียน",
+        "scam_report": "รายงานการหลอกลวง"
+      },
+      "sources": {
+        "telegram": "Telegram",
+        "web": "เว็บ"
+      },
+      "notInDatabase": "{name} (ไม่มีในฐานข้อมูล)",
+      "notProvided": "ไม่ได้ระบุ",
+      "contactName": "ชื่อผู้ติดต่อ",
+      "contactEmail": "อีเมลผู้ติดต่อ",
+      "telegramUserId": "Telegram user ID",
+      "updated": "อัปเดตเมื่อ",
+      "moderator": "ตรวจสอบโดย",
+      "moderatedAt": "ตรวจสอบเมื่อ",
+      "description": "รายละเอียด",
+      "evidence": "หลักฐาน",
+      "noEvidence": "ไม่มีไฟล์แนบ",
+      "attachment": "ไฟล์แนบ {number}",
+      "attachmentUnavailable": "ไฟล์แนบ {number}: ไม่พร้อมใช้งาน",
+      "evidenceHelp": "ไฟล์มาจากบุคคลภายนอกและจะถูกดาวน์โหลดโดยไม่เปิด โปรดสแกนก่อนเปิดดู",
+      "adminNotes": "บันทึกภายใน",
+      "adminNotesHelp": "เห็นได้เฉพาะทีมงาน Desk เท่านั้น จะไม่แสดงต่อผู้ส่งเคส",
+      "saveNotes": "บันทึกโน้ต",
+      "updateStatus": "อัปเดตสถานะ",
+      "statusSaved": "อัปเดตสถานะแล้ว",
+      "notesSaved": "บันทึกโน้ตแล้ว",
+      "countOne": "{count} เคส",
+      "countMany": "{count} เคส",
+      "previous": "ก่อนหน้า",
+      "next": "ถัดไป",
+      "pageOf": "หน้า {page} จาก {pageCount}",
+      "backToList": "กลับไปที่ข้อร้องเรียน"
+    },
     "reviews": {
       "eyebrow": "คิว",
       "title": "รีวิว",
@@ -940,7 +1001,8 @@
       "typeRequired": "เลือกประเภทโบนัสจากแคตตาล็อก",
       "invalidExpiry": "วันหมดอายุต้องเป็นวันที่ถูกต้อง",
       "invalidRank": "อันดับต้องเป็นจำนวนเต็มเริ่มที่ 1 หรือว่าง",
-      "invalidCasino": "เลือกคาสิโนจากรายการ"
+      "invalidCasino": "เลือกคาสิโนจากรายการ",
+      "notesTooLong": "บันทึกต้องมีความยาวไม่เกิน 10,000 ตัวอักษร"
     },
     "notices": {
       "saved": "บันทึกแล้ว",

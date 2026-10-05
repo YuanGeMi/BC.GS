@@ -30,6 +30,23 @@ enum UserRole {
   admin
 }
 
+enum ComplaintStatus {
+  open
+  in_review
+  resolved
+  rejected
+}
+
+enum ComplaintSource {
+  web
+  telegram
+}
+
+enum ReportType {
+  complaint
+  scam_report
+}
+
 model Casino {
   id              String                @id @default(cuid())
   slug            String                @unique
@@ -55,6 +72,7 @@ model Casino {
   markets         CasinoMarket[]
   affiliateClicks AffiliateClick[]
   userReviews     UserReview[]
+  complaints      Complaint[]
   createdById     String?
   createdBy       User?                 @relation("CasinoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById     String?
@@ -302,6 +320,8 @@ model User {
   pagesCreated        StaticPage[] @relation("StaticPageCreatedBy")
   pagesUpdated        StaticPage[] @relation("StaticPageUpdatedBy")
   reviewsModerated    UserReview[] @relation("ReviewModeratedBy")
+  complaints          Complaint[]  @relation("ComplaintUser")
+  complaintsModerated Complaint[]  @relation("ComplaintModeratedBy")
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 }
@@ -324,6 +344,36 @@ model UserReview {
   @@unique([userId, casinoId])
   @@index([status, createdAt])
   @@index([casinoId, createdAt])
+}
+
+model Complaint {
+  id            String          @id @default(cuid())
+  caseId        String          @unique
+  type          ReportType
+  casinoId      String?
+  casino        Casino?         @relation(fields: [casinoId], references: [id], onDelete: SetNull)
+  /// Free-text casino name when the casino isn't in the database yet (casinoId is null).
+  casinoName    String?
+  source        ComplaintSource @default(web)
+  userId        String?
+  user          User?           @relation("ComplaintUser", fields: [userId], references: [id], onDelete: SetNull)
+  telegramUserId String?
+  contactEmail   String?
+  contactName    String?
+  subject        String
+  description    String          @db.Text
+  evidenceUrls   String[]        @default([])
+  status         ComplaintStatus @default(open)
+  moderatedById  String?
+  moderatedBy    User?           @relation("ComplaintModeratedBy", fields: [moderatedById], references: [id], onDelete: SetNull)
+  moderatedAt    DateTime?
+  adminNotes     String?         @db.Text
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([status, createdAt])
+  @@index([casinoId, createdAt])
+  @@index([telegramUserId])
 }
 
 model Market {

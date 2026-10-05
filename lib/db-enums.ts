@@ -1,11 +1,22 @@
 import {
+  ComplaintSource,
+  ComplaintStatus,
   ContentStatus,
   MarketAvailability,
+  ReportType,
   ReviewStatus,
   UserRole,
 } from "@prisma/client";
 
-export { ContentStatus, MarketAvailability, ReviewStatus, UserRole };
+export {
+  ComplaintSource,
+  ComplaintStatus,
+  ContentStatus,
+  MarketAvailability,
+  ReportType,
+  ReviewStatus,
+  UserRole,
+};
 
 /** Public listing/detail rows: casino, bonus, category, static page. */
 export const publishedContentWhere = {

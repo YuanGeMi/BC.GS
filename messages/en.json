@@ -422,6 +422,7 @@
       "pages": "Pages",
       "settings": "Settings",
       "reviews": "Reviews",
+      "complaints": "Complaints",
       "catalogs": "Catalogs",
       "clicks": "Clicks",
       "users": "Users",
@@ -784,6 +785,66 @@
       "title": "Settings",
       "lede": "Site name, logo, favicon, default SEO, footer text, and footer community links."
     },
+    "complaints": {
+      "eyebrow": "Cases",
+      "title": "Complaints",
+      "lede": "Complaints and scam reports submitted through Telegram and the site. Newest first. Contains personal data; do not share outside Desk.",
+      "detailTitle": "Complaint",
+      "empty": "No complaints match these filters.",
+      "tableMissing": "The complaints table is not in this database yet. Apply the pending Complaint migration first.",
+      "searchCaseId": "Search Case ID",
+      "allTypes": "All types",
+      "allSources": "All sources",
+      "columns": {
+        "caseId": "Case ID",
+        "type": "Type",
+        "casino": "Casino",
+        "subject": "Subject",
+        "status": "Status",
+        "source": "Source",
+        "created": "Created"
+      },
+      "status": {
+        "open": "Open",
+        "in_review": "In review",
+        "resolved": "Resolved",
+        "rejected": "Rejected"
+      },
+      "types": {
+        "complaint": "Complaint",
+        "scam_report": "Scam report"
+      },
+      "sources": {
+        "telegram": "Telegram",
+        "web": "Web"
+      },
+      "notInDatabase": "{name} (not in database)",
+      "notProvided": "Not provided",
+      "contactName": "Contact name",
+      "contactEmail": "Contact email",
+      "telegramUserId": "Telegram user ID",
+      "updated": "Updated",
+      "moderator": "Moderated by",
+      "moderatedAt": "Moderated at",
+      "description": "Description",
+      "evidence": "Evidence",
+      "noEvidence": "No attachments.",
+      "attachment": "Attachment {number}",
+      "attachmentUnavailable": "Attachment {number}: unavailable",
+      "evidenceHelp": "Files come from the public and download without opening. Scan them before viewing.",
+      "adminNotes": "Internal notes",
+      "adminNotesHelp": "Visible to Desk staff only. Never shown to the person who submitted the case.",
+      "saveNotes": "Save notes",
+      "updateStatus": "Update status",
+      "statusSaved": "Status updated.",
+      "notesSaved": "Notes saved.",
+      "countOne": "{count} case",
+      "countMany": "{count} cases",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {pageCount}",
+      "backToList": "Back to complaints"
+    },
     "reviews": {
       "eyebrow": "Queue",
       "title": "Reviews",
@@ -940,7 +1001,8 @@
       "typeRequired": "Pick a bonus type from the catalog.",
       "invalidExpiry": "Expiry must be a valid date.",
       "invalidRank": "Rank must be a whole number starting at 1, or blank.",
-      "invalidCasino": "Pick a casino from the list."
+      "invalidCasino": "Pick a casino from the list.",
+      "notesTooLong": "Notes must be 10,000 characters or fewer."
     },
     "notices": {
       "saved": "Saved.",
