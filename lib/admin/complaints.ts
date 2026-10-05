@@ -31,6 +31,8 @@ export type AdminComplaintEvidence = {
 };
 
 export type AdminComplaintDetail = AdminComplaintListRow & {
+  /** What the user typed for the casino, kept even after staff link a casino. */
+  casinoName: string | null;
   description: string;
   contactName: string | null;
   contactEmail: string | null;
@@ -42,7 +44,14 @@ export type AdminComplaintDetail = AdminComplaintListRow & {
   evidence: AdminComplaintEvidence[];
 };
 
-export type ComplaintActionError = "missing" | "invalidStatus" | "notesTooLong";
+export type AdminComplaintCasinoOption = {
+  id: string;
+  label: string;
+  isDraft: boolean;
+};
+
+export type ComplaintActionError =
+  "missing" | "invalidStatus" | "notesTooLong" | "invalidCasino";
 
 export type ComplaintActionResult =
   { ok: true } | { ok: false; error: ComplaintActionError };
@@ -124,11 +133,41 @@ function revalidateAdminComplaintPaths(caseId?: string) {
   }
 }
 
+export async function listAdminComplaintCasinos(): Promise<
+  AdminComplaintCasinoOption[]
+> {
+  await requireAdmin();
+  const rows = await prisma.casino.findMany({
+    select: {
+      id: true,
+      slug: true,
+      status: true,
+      translations: {
+        where: { locale: "en" },
+        select: { name: true },
+        take: 1,
+      },
+    },
+  });
+  return rows
+    .map((row) => ({
+      id: row.id,
+      label: row.translations[0]?.name || row.slug,
+      isDraft: row.status === "draft",
+    }))
+    .sort((a, b) =>
+      a.label.localeCompare(b.label, "en", { sensitivity: "base" }),
+    );
+}
+
 export async function listAdminComplaints(filters: {
   status?: string;
   type?: string;
   source?: string;
   caseId?: string;
+  /** Partial, case-insensitive match on the linked casino's English name or slug, or the typed casinoName. */
+  casino?: string;
+  unlinkedOnly?: boolean;
   page?: number;
 }): Promise<{
   rows: AdminComplaintListRow[];
@@ -150,14 +189,32 @@ export async function listAdminComplaints(filters: {
       ? filters.source
       : undefined;
   const caseId = filters.caseId?.trim();
+  const casino = filters.casino?.trim();
   const page = Math.max(1, filters.page ?? 1);
 
-  const where = {
+  const where: Prisma.ComplaintWhereInput = {
     ...(status ? { status } : {}),
     ...(type ? { type } : {}),
     ...(source ? { source } : {}),
-    ...(caseId
-      ? { caseId: { contains: caseId, mode: "insensitive" as const } }
+    ...(caseId ? { caseId: { contains: caseId, mode: "insensitive" } } : {}),
+    ...(filters.unlinkedOnly ? { casinoId: null } : {}),
+    ...(casino
+      ? {
+          OR: [
+            { casinoName: { contains: casino, mode: "insensitive" } },
+            { casino: { slug: { contains: casino, mode: "insensitive" } } },
+            {
+              casino: {
+                translations: {
+                  some: {
+                    locale: "en",
+                    name: { contains: casino, mode: "insensitive" },
+                  },
+                },
+              },
+            },
+          ],
+        }
       : {}),
   };
 
@@ -216,6 +273,7 @@ export async function getAdminComplaint(
 
   return {
     ...mapRow(row),
+    casinoName: row.casinoName?.trim() || null,
     description: row.description,
     contactName: row.contactName,
     contactEmail: row.contactEmail,
@@ -283,6 +341,39 @@ export async function saveComplaintNotes(
   await prisma.complaint.update({
     where: { caseId },
     data: { adminNotes: trimmed || null },
+    select: { id: true },
+  });
+
+  revalidateAdminComplaintPaths(caseId);
+  return { ok: true };
+}
+
+/** Data correction only: writes casinoId and nothing else (casinoName, status and moderator fields stay as they are). */
+export async function setComplaintCasino(
+  caseId: string,
+  casinoId: string,
+): Promise<ComplaintActionResult> {
+  await requireVerifiedAdmin();
+
+  const nextCasinoId = casinoId.trim() || null;
+  if (nextCasinoId) {
+    const casino = await prisma.casino.findUnique({
+      where: { id: nextCasinoId },
+      select: { id: true },
+    });
+    if (!casino) return { ok: false, error: "invalidCasino" };
+  }
+
+  const existing = await prisma.complaint.findUnique({
+    where: { caseId },
+    select: { casinoId: true },
+  });
+  if (!existing) return { ok: false, error: "missing" };
+  if (existing.casinoId === nextCasinoId) return { ok: true };
+
+  await prisma.complaint.update({
+    where: { caseId },
+    data: { casinoId: nextCasinoId },
     select: { id: true },
   });
 

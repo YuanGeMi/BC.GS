@@ -4,7 +4,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ComplaintActions } from "@/components/admin/complaint-actions";
 import { Link } from "@/i18n/navigation";
-import { getAdminComplaint } from "@/lib/admin/complaints";
+import {
+  getAdminComplaint,
+  listAdminComplaintCasinos,
+} from "@/lib/admin/complaints";
 
 type Props = {
   params: Promise<{ locale: string; caseId: string }>;
@@ -21,7 +24,10 @@ export default async function AdminComplaintDetailPage({ params }: Props) {
   setRequestLocale(locale);
   const tc = await getTranslations("Admin.complaints");
 
-  const complaint = await getAdminComplaint(decodeURIComponent(caseId));
+  const [complaint, casinos] = await Promise.all([
+    getAdminComplaint(decodeURIComponent(caseId)),
+    listAdminComplaintCasinos(),
+  ]);
   if (!complaint) notFound();
 
   const dateTimeFmt = new Intl.DateTimeFormat(locale, {
@@ -40,12 +46,19 @@ export default async function AdminComplaintDetailPage({ params }: Props) {
     {
       label: tc("columns.casino"),
       value: complaint.casinoId ? (
-        <Link
-          href={`/admin/casinos/${complaint.casinoId}`}
-          className="text-accent hover:text-accent-highlight"
-        >
-          {complaint.casinoLabel}
-        </Link>
+        <>
+          <Link
+            href={`/admin/casinos/${complaint.casinoId}`}
+            className="text-accent hover:text-accent-highlight"
+          >
+            {complaint.casinoLabel}
+          </Link>
+          {complaint.casinoName ? (
+            <span className="text-text/45 mt-1 block text-xs">
+              {tc("userTyped", { name: complaint.casinoName })}
+            </span>
+          ) : null}
+        </>
       ) : complaint.casinoLabel ? (
         tc("notInDatabase", { name: complaint.casinoLabel })
       ) : (
@@ -163,6 +176,9 @@ export default async function AdminComplaintDetailPage({ params }: Props) {
           caseId={complaint.caseId}
           status={complaint.status}
           adminNotes={complaint.adminNotes ?? ""}
+          casinoId={complaint.casinoId}
+          casinoName={complaint.casinoName}
+          casinos={casinos}
         />
       </div>
 

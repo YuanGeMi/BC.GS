@@ -12,6 +12,8 @@ type Props = {
     type?: string;
     source?: string;
     q?: string;
+    casino?: string;
+    unlinked?: string;
     page?: string;
   }>;
 };
@@ -35,6 +37,8 @@ export default async function AdminComplaintsPage({
   const type = query.type ?? "";
   const source = query.source ?? "";
   const q = query.q ?? "";
+  const casino = query.casino ?? "";
+  const unlinked = query.unlinked === "1";
   const page = Number.parseInt(query.page ?? "1", 10);
 
   const list = await listAdminComplaints({
@@ -42,6 +46,8 @@ export default async function AdminComplaintsPage({
     type: type || undefined,
     source: source || undefined,
     caseId: q || undefined,
+    casino: casino || undefined,
+    unlinkedOnly: unlinked,
     page: Number.isFinite(page) ? page : 1,
   });
 
@@ -57,6 +63,8 @@ export default async function AdminComplaintsPage({
     if (type) params.set("type", type);
     if (source) params.set("source", source);
     if (q) params.set("q", q);
+    if (casino) params.set("casino", casino);
+    if (unlinked) params.set("unlinked", "1");
     if (nextPage > 1) params.set("page", String(nextPage));
     const qs = params.toString();
     return qs ? `/admin/complaints?${qs}` : "/admin/complaints";
@@ -79,6 +87,14 @@ export default async function AdminComplaintsPage({
           defaultValue={q}
           placeholder={tc("searchCaseId")}
           aria-label={tc("searchCaseId")}
+          className={`${adminInputClass} max-w-[14rem]`}
+        />
+        <input
+          type="search"
+          name="casino"
+          defaultValue={casino}
+          placeholder={tc("searchCasino")}
+          aria-label={tc("searchCasino")}
           className={`${adminInputClass} max-w-[14rem]`}
         />
         <select
@@ -113,6 +129,16 @@ export default async function AdminComplaintsPage({
           <option value="telegram">{tc("sources.telegram")}</option>
           <option value="web">{tc("sources.web")}</option>
         </select>
+        <label className="text-text/65 flex h-11 cursor-pointer items-center gap-2.5 text-sm">
+          <input
+            type="checkbox"
+            name="unlinked"
+            value="1"
+            defaultChecked={unlinked}
+            className="border-text/25 text-accent accent-accent h-3.5 w-3.5 rounded-sm"
+          />
+          {tc("unlinkedOnly")}
+        </label>
         <button
           type="submit"
           className="ring-text/20 hover:ring-accent/50 h-11 px-4 text-sm ring-1"

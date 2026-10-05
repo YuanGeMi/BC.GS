@@ -843,7 +843,15 @@
       "previous": "Previous",
       "next": "Next",
       "pageOf": "Page {page} of {pageCount}",
-      "backToList": "Back to complaints"
+      "backToList": "Back to complaints",
+      "searchCasino": "Search casino",
+      "unlinkedOnly": "Unlinked only",
+      "noCasino": "No casino (unlinked)",
+      "draftCasino": "{name} (draft)",
+      "userTyped": "User typed: {name}",
+      "saveCasino": "Save casino",
+      "casinoSaved": "Casino link saved.",
+      "casinoLinkHelp": "Correct which casino this case is about. This does not change the status or moderator, and the user's original text is kept."
     },
     "reviews": {
       "eyebrow": "Queue",
