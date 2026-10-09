@@ -24,6 +24,7 @@ import {
   DEFAULT_OG_IMAGE_URL,
   DEFAULT_SITE_NAME,
   FOOTER_TAGLINE_KEYS,
+  PUBLIC_SITE_SETTING_KEYS,
   SITE_SETTING_KEYS,
   type FooterTaglines,
 } from "@/lib/site";
@@ -237,7 +238,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   await requireAdmin();
   const rows = await prisma.siteSetting.findMany({
     where: {
-      key: { in: Object.values(SITE_SETTING_KEYS) },
+      key: { in: PUBLIC_SITE_SETTING_KEYS },
     },
   });
   const byKey = new Map(rows.map((row) => [row.key, row.value]));

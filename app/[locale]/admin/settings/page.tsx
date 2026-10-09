@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { SiteSettingsForm } from "@/components/admin/site-settings-form";
+import { TelegramWelcomeForm } from "@/components/admin/telegram-welcome-form";
 import { routing } from "@/i18n/routing";
 import { getSiteSettings } from "@/lib/admin/static-pages";
+import { getTelegramWelcomeSettings } from "@/lib/admin/telegram-welcome";
 import type { FooterTaglines } from "@/lib/site";
 
 type Props = {
@@ -20,8 +22,9 @@ export default async function AdminSettingsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Admin.settings");
-  const [settings, ...defaultTaglines] = await Promise.all([
+  const [settings, telegramWelcome, ...defaultTaglines] = await Promise.all([
     getSiteSettings(),
+    getTelegramWelcomeSettings(),
     ...routing.locales.map(async (item) => {
       const tFooter = await getTranslations({
         locale: item,
@@ -52,6 +55,7 @@ export default async function AdminSettingsPage({ params }: Props) {
           Object.fromEntries(defaultTaglines) as FooterTaglines
         }
       />
+      <TelegramWelcomeForm initial={telegramWelcome} />
     </section>
   );
 }

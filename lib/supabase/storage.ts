@@ -1,5 +1,8 @@
 export const CASINO_LOGOS_BUCKET = "casino-logos";
 export const SITE_BRANDING_BUCKET = "site-branding";
+export const TELEGRAM_MEDIA_BUCKET = "telegram-media";
+/** Folder inside TELEGRAM_MEDIA_BUCKET for the bot's welcome media. */
+export const TELEGRAM_WELCOME_MEDIA_FOLDER = "welcome";
 
 export const CASINO_LOGO_MAX_BYTES = 2 * 1024 * 1024;
 export const SITE_ASSET_MAX_BYTES = 2 * 1024 * 1024;

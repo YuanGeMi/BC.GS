@@ -19,6 +19,9 @@ export const SITE_SETTING_KEYS = {
   footerTaglineEn: "footer_tagline_en",
   footerTaglineZh: "footer_tagline_zh",
   footerTaglineTh: "footer_tagline_th",
+  telegramWelcomeEn: "telegram_welcome_en",
+  telegramWelcomeZh: "telegram_welcome_zh",
+  telegramWelcomeTh: "telegram_welcome_th",
 } as const;
 
 export const FOOTER_TAGLINE_KEYS = {
@@ -26,6 +29,22 @@ export const FOOTER_TAGLINE_KEYS = {
   zh: SITE_SETTING_KEYS.footerTaglineZh,
   th: SITE_SETTING_KEYS.footerTaglineTh,
 } as const satisfies Record<Locale, string>;
+
+/** JSON per locale, read by the Telegram bot. Admin-only: never load on public pages. */
+export const TELEGRAM_WELCOME_KEYS = {
+  en: SITE_SETTING_KEYS.telegramWelcomeEn,
+  zh: SITE_SETTING_KEYS.telegramWelcomeZh,
+  th: SITE_SETTING_KEYS.telegramWelcomeTh,
+} as const satisfies Record<Locale, string>;
+
+const ADMIN_ONLY_SETTING_KEYS = new Set<string>(
+  Object.values(TELEGRAM_WELCOME_KEYS),
+);
+
+/** SiteSetting keys that public pages may read. */
+export const PUBLIC_SITE_SETTING_KEYS = Object.values(SITE_SETTING_KEYS).filter(
+  (key) => !ADMIN_ONLY_SETTING_KEYS.has(key),
+);
 
 export type FooterTaglines = Record<Locale, string>;
 
@@ -63,7 +82,7 @@ async function loadSiteConfig(): Promise<SiteConfig> {
   return dedupeInflight(siteConfigInflight, async () => {
     const rows = await prisma.siteSetting.findMany({
       where: {
-        key: { in: Object.values(SITE_SETTING_KEYS) },
+        key: { in: PUBLIC_SITE_SETTING_KEYS },
       },
     });
     const byKey = new Map(rows.map((row) => [row.key, row.value]));
