@@ -826,6 +826,33 @@
         "uploadFailed": "上传失败。请确认 telegram-media 存储桶已存在。"
       }
     },
+    "botAvatar": {
+      "title": "机器人头像",
+      "help": "Telegram 机器人的头像。选择图片，确认预览后再应用。",
+      "current": "当前",
+      "none": "尚未在此设置",
+      "preview": "预览",
+      "choose": "选择图片",
+      "apply": "应用",
+      "applying": "正在应用…",
+      "fileHelp": "JPG 或 PNG，最大 10 MB。宽度与高度之和不超过 10000 像素。方形图片效果最佳。PNG 会转换为 JPG，因为 Telegram 只接受 JPG。",
+      "refreshNote": "Telegram 客户端可能需要几分钟才会显示新头像。",
+      "applied": "头像已更新。Telegram 客户端可能需要几分钟才会显示。",
+      "errors": {
+        "notConfigured": "服务器未设置机器人令牌（TELEGRAM_BOT_TOKEN），因此无法更改头像。请联系开发人员添加。",
+        "invalidType": "请使用 JPG 或 PNG 图片。",
+        "tooLarge": "图片不能超过 10 MB。",
+        "invalidDimensions": "图片过大或过窄：宽度与高度之和不能超过 10000 像素，且一边不能超过另一边的 20 倍。",
+        "readFailed": "无法读取这张图片，请换一个文件。",
+        "uploadFailed": "上传失败，请重试。",
+        "badToken": "Telegram 拒绝了机器人令牌。请联系开发人员检查 TELEGRAM_BOT_TOKEN。",
+        "rateLimited": "Telegram 正在限制请求，请几分钟后再试。",
+        "rateLimitedWait": "Telegram 正在限制请求，请在 {seconds} 秒后再试。",
+        "invalidFile": "Telegram 不接受这张图片，请换一张。",
+        "rejected": "Telegram 拒绝了此更改，请稍后再试。",
+        "unreachable": "无法连接 Telegram，请稍后再试。"
+      }
+    },
     "complaints": {
       "eyebrow": "案件",
       "title": "投诉",

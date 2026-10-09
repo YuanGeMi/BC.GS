@@ -826,6 +826,33 @@
         "uploadFailed": "Upload failed. Check the telegram-media Storage bucket exists."
       }
     },
+    "botAvatar": {
+      "title": "Bot profile picture",
+      "help": "The Telegram bot's profile picture. Pick a picture, check the preview, then apply it.",
+      "current": "Current",
+      "none": "Not set here",
+      "preview": "Preview",
+      "choose": "Choose picture",
+      "apply": "Apply",
+      "applying": "Applying…",
+      "fileHelp": "JPG or PNG, up to 10 MB. Width plus height at most 10000 px. Square pictures work best. PNGs are converted to JPG, because Telegram only accepts JPG.",
+      "refreshNote": "Telegram apps can take a few minutes to show the new picture.",
+      "applied": "Profile picture updated. Telegram apps can take a few minutes to show it.",
+      "errors": {
+        "notConfigured": "The bot token (TELEGRAM_BOT_TOKEN) is not set on the server, so the picture can't be changed. Ask a developer to add it.",
+        "invalidType": "Use a JPG or PNG picture.",
+        "tooLarge": "The picture must be 10 MB or smaller.",
+        "invalidDimensions": "The picture is too large or too narrow: width plus height must be at most 10000 px, and one side at most 20 times the other.",
+        "readFailed": "This picture couldn't be read. Try another file.",
+        "uploadFailed": "Upload failed. Try again.",
+        "badToken": "Telegram rejected the bot token. Ask a developer to check TELEGRAM_BOT_TOKEN.",
+        "rateLimited": "Telegram is limiting requests. Try again in a few minutes.",
+        "rateLimitedWait": "Telegram is limiting requests. Try again in {seconds} seconds.",
+        "invalidFile": "Telegram didn't accept this picture. Try another one.",
+        "rejected": "Telegram refused the change. Try again later.",
+        "unreachable": "Telegram couldn't be reached. Try again later."
+      }
+    },
     "complaints": {
       "eyebrow": "Cases",
       "title": "Complaints",

@@ -22,6 +22,7 @@ export const SITE_SETTING_KEYS = {
   telegramWelcomeEn: "telegram_welcome_en",
   telegramWelcomeZh: "telegram_welcome_zh",
   telegramWelcomeTh: "telegram_welcome_th",
+  telegramBotAvatar: "telegram_bot_avatar",
 } as const;
 
 export const FOOTER_TAGLINE_KEYS = {
@@ -37,9 +38,10 @@ export const TELEGRAM_WELCOME_KEYS = {
   th: SITE_SETTING_KEYS.telegramWelcomeTh,
 } as const satisfies Record<Locale, string>;
 
-const ADMIN_ONLY_SETTING_KEYS = new Set<string>(
-  Object.values(TELEGRAM_WELCOME_KEYS),
-);
+const ADMIN_ONLY_SETTING_KEYS = new Set<string>([
+  ...Object.values(TELEGRAM_WELCOME_KEYS),
+  SITE_SETTING_KEYS.telegramBotAvatar,
+]);
 
 /** SiteSetting keys that public pages may read. */
 export const PUBLIC_SITE_SETTING_KEYS = Object.values(SITE_SETTING_KEYS).filter(
