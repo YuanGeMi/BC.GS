@@ -2,6 +2,7 @@
 -- Public bucket for the Telegram bot's welcome media (Telegram fetches it by URL).
 -- Uploads go through signed upload URLs issued by an admin-only Server Action.
 -- The app enforces 5 MB for images and 20 MB for GIF / MP4; 20 MB is the bucket ceiling.
+-- Safe to run again: an existing bucket and policy are left untouched.
 
 insert into storage.buckets (
   id,
@@ -17,14 +18,21 @@ values (
   20971520,
   array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4']::text[]
 )
-on conflict (id) do update set
-  public = excluded.public,
-  file_size_limit = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;
+on conflict (id) do nothing;
 
-drop policy if exists "Public read telegram media" on storage.objects;
-create policy "Public read telegram media"
-on storage.objects
-for select
-to public
-using (bucket_id = 'telegram-media');
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'Public read telegram media'
+  ) then
+    create policy "Public read telegram media"
+    on storage.objects
+    for select
+    to public
+    using (bucket_id = 'telegram-media');
+  end if;
+end
+$$;
