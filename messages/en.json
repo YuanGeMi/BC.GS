@@ -426,6 +426,7 @@
       "catalogs": "Catalogs",
       "clicks": "Clicks",
       "users": "Users",
+      "telegram": "Telegram",
       "aria": "Admin"
     },
     "shell": {
@@ -513,6 +514,10 @@
         "settings": {
           "kicker": "Brand",
           "blurb": "Site name, logo, favicon, SEO defaults, and community links."
+        },
+        "telegram": {
+          "kicker": "Bot",
+          "blurb": "Welcome message and bot profile picture."
         },
         "reviews": {
           "kicker": "Moderation",
@@ -784,6 +789,11 @@
       "eyebrow": "Site",
       "title": "Settings",
       "lede": "Site name, logo, favicon, default SEO, footer text, and footer community links."
+    },
+    "telegram": {
+      "eyebrow": "Bot",
+      "title": "Telegram",
+      "lede": "What the Telegram bot shows people: the welcome message after /start and the bot's profile picture."
     },
     "telegramWelcome": {
       "title": "Telegram welcome message",

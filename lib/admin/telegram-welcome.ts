@@ -80,9 +80,9 @@ function ownMediaUrlCheck(locale: Locale) {
   };
 }
 
-function revalidateSettingsPage() {
+function revalidateTelegramPage() {
   for (const locale of routing.locales) {
-    revalidatePath(`/${locale}/admin/settings`);
+    revalidatePath(`/${locale}/admin/telegram`);
   }
 }
 
@@ -155,7 +155,7 @@ export async function updateTelegramWelcome(
   });
 
   await removeUnusedMedia(locale, parsed.value.mediaUrl);
-  revalidateSettingsPage();
+  revalidateTelegramPage();
   return { ok: true, value: parsed.value };
 }
 

@@ -426,6 +426,7 @@
       "catalogs": "目录",
       "clicks": "点击",
       "users": "用户",
+      "telegram": "Telegram",
       "aria": "管理"
     },
     "shell": {
@@ -513,6 +514,10 @@
         "settings": {
           "kicker": "品牌",
           "blurb": "站点名称、标志、网站图标、默认 SEO 与社区链接。"
+        },
+        "telegram": {
+          "kicker": "机器人",
+          "blurb": "欢迎消息与机器人头像。"
         },
         "reviews": {
           "kicker": "审核",
@@ -784,6 +789,11 @@
       "eyebrow": "站点",
       "title": "设置",
       "lede": "站点名称、标志、网站图标、默认 SEO、页脚文字，以及页脚社区链接。"
+    },
+    "telegram": {
+      "eyebrow": "机器人",
+      "title": "Telegram",
+      "lede": "Telegram 机器人向用户展示的内容：/start 后的欢迎消息和机器人头像。"
     },
     "telegramWelcome": {
       "title": "Telegram 欢迎消息",

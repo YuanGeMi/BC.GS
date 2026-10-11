@@ -426,6 +426,7 @@
       "catalogs": "แคตตาล็อก",
       "clicks": "คลิก",
       "users": "ผู้ใช้",
+      "telegram": "Telegram",
       "aria": "ผู้ดูแล"
     },
     "shell": {
@@ -513,6 +514,10 @@
         "settings": {
           "kicker": "แบรนด์",
           "blurb": "ชื่อไซต์ โลโก้ favicon SEO เริ่มต้น และลิงก์ชุมชน"
+        },
+        "telegram": {
+          "kicker": "บอท",
+          "blurb": "ข้อความต้อนรับและรูปโปรไฟล์บอท"
         },
         "reviews": {
           "kicker": "ตรวจสอบ",
@@ -784,6 +789,11 @@
       "eyebrow": "ไซต์",
       "title": "การตั้งค่า",
       "lede": "ชื่อไซต์ โลโก้ favicon SEO เริ่มต้น ข้อความส่วนท้าย และลิงก์ชุมชนที่ส่วนท้าย"
+    },
+    "telegram": {
+      "eyebrow": "บอท",
+      "title": "Telegram",
+      "lede": "สิ่งที่บอท Telegram แสดงต่อผู้ใช้: ข้อความต้อนรับหลัง /start และรูปโปรไฟล์ของบอท"
     },
     "telegramWelcome": {
       "title": "ข้อความต้อนรับ Telegram",

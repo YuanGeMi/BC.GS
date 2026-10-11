@@ -197,7 +197,7 @@ export async function applyBotAvatar(input: {
   }
 
   for (const locale of routing.locales) {
-    revalidatePath(`/${locale}/admin/settings`);
+    revalidatePath(`/${locale}/admin/telegram`);
   }
   return { ok: true, url };
 }
