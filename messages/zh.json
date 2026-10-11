@@ -46,6 +46,29 @@
       "hasAccount": "已有账户？",
       "toLogin": "登录"
     },
+    "account": {
+      "seoTitle": "我的账户",
+      "eyebrow": "账户",
+      "title": "我的账户",
+      "description": "当前登录：{email}。可在下方修改密码，其他设备上的登录将被退出。",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "newPasswordHelp": "至少 {min} 个字符。",
+      "confirmPassword": "确认新密码",
+      "submit": "修改密码",
+      "saving": "正在修改…",
+      "updated": "密码已修改。",
+      "errors": {
+        "signedOut": "登录已过期，请重新登录后再修改密码。",
+        "currentRequired": "请输入当前密码。",
+        "wrongCurrentPassword": "当前密码不正确。",
+        "passwordTooShort": "新密码至少需要 {min} 个字符。",
+        "passwordMismatch": "两次输入的新密码不一致。",
+        "samePassword": "新密码不能与当前密码相同。",
+        "rateLimited": "尝试次数过多，请几分钟后再试。",
+        "generic": "无法修改密码，请重试。"
+      }
+    },
     "forgot": {
       "seoTitle": "重置密码",
       "seoDescription": "为你的 BC.GS 账户申请密码重置链接。",
@@ -432,7 +455,8 @@
     "shell": {
       "brand": "工作台",
       "logOut": "退出",
-      "notifications": "通知"
+      "notifications": "通知",
+      "account": "账户"
     },
     "actions": {
       "save": "保存",
@@ -523,6 +547,10 @@
         "reviews": {
           "kicker": "审核",
           "blurb": "通过、拒绝或下架用户评价。"
+        },
+        "complaints": {
+          "kicker": "案件",
+          "blurb": "来自 Telegram 和网站的投诉与诈骗举报。"
         },
         "catalogs": {
           "kicker": "分类法",
@@ -785,6 +813,30 @@
         "th": "泰文"
       },
       "footerTaglineHelp": "按语言显示在页脚标志下方。某语言留空则使用灰色显示的默认文字。"
+    },
+    "account": {
+      "eyebrow": "个人",
+      "title": "账户",
+      "lede": "当前登录：{email}。",
+      "passwordTitle": "修改密码",
+      "passwordHelp": "先输入当前密码，再输入两次新密码。其他设备上的登录会被退出，当前会话保持登录。",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "newPasswordHelp": "至少 {min} 个字符。",
+      "confirmPassword": "确认新密码",
+      "submit": "修改密码",
+      "saving": "正在修改…",
+      "updated": "密码已修改。",
+      "errors": {
+        "signedOut": "登录已过期，请重新登录。",
+        "currentRequired": "请输入当前密码。",
+        "wrongCurrentPassword": "当前密码不正确。",
+        "passwordTooShort": "新密码至少需要 {min} 个字符。",
+        "passwordMismatch": "两次输入的新密码不一致。",
+        "samePassword": "新密码不能与当前密码相同。",
+        "rateLimited": "尝试次数过多，请几分钟后再试。",
+        "generic": "无法修改密码，请重试。"
+      }
     },
     "settings": {
       "eyebrow": "站点",

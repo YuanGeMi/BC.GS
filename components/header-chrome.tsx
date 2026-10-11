@@ -140,7 +140,14 @@ export function HeaderChrome({ locale, children }: HeaderChromeProps) {
             );
           })}
 
-          <div className="border-text/8 mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t px-3 pt-4">
+          <div
+            className="border-text/8 mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t px-3 pt-4"
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest("a[href]")) {
+                setOpen(false);
+              }
+            }}
+          >
             <Suspense fallback={null}>
               <LocaleSwitcher />
             </Suspense>

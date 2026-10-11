@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { InitialsAvatar } from "@/components/initials-avatar";
+import { Link } from "@/i18n/navigation";
 import { logoutEverywhere } from "@/lib/auth/logout-everywhere";
 
 type AccountControlsProps = {
@@ -45,13 +46,18 @@ export function AccountControls({
 
   return (
     <div className="flex items-center gap-1.5">
-      <span title={name} aria-label={name}>
+      <Link
+        href="/account"
+        title={`${name} · ${t("account")}`}
+        aria-label={`${t("account")}: ${name}`}
+        className="hover:ring-accent/50 rounded-full ring-1 ring-transparent transition"
+      >
         <InitialsAvatar
           initials={initials}
           size="sm"
           variant="monogram"
         />
-      </span>
+      </Link>
       <form action={logoutEverywhere.bind(null, locale)} className="hidden md:block">
         <button
           type="submit"

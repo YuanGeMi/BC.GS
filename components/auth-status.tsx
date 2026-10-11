@@ -65,6 +65,15 @@ export function AuthStatus({ locale, mobile = false }: AuthStatusProps) {
         <span aria-hidden className="text-text/25 text-xs">
           |
         </span>
+        <Link
+          href="/account"
+          className="text-text/50 hover:text-accent text-[11px] font-medium tracking-wide transition-colors"
+        >
+          {t("account")}
+        </Link>
+        <span aria-hidden className="text-text/25 text-xs">
+          |
+        </span>
         <form action={logoutEverywhere.bind(null, locale)}>
           <button
             type="submit"

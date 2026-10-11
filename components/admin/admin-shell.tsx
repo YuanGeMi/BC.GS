@@ -75,6 +75,12 @@ export function AdminShell({
           </Link>
           <div className="flex items-center gap-3">
             <LocaleSwitcher variant="compact" />
+            <Link
+              href="/admin/account"
+              className="text-text/45 hover:text-accent text-[11px] tracking-wide uppercase"
+            >
+              {t("shell.account")}
+            </Link>
             <form action={logoutEverywhere.bind(null, locale)}>
               <button
                 type="submit"
@@ -140,6 +146,12 @@ function AdminAccount({ email, locale }: { email: string; locale: string }) {
   return (
     <div className="border-text/10 border-t px-5 py-4">
       <p className="text-text/70 truncate text-xs">{email}</p>
+      <Link
+        href="/admin/account"
+        className="text-text/40 hover:text-accent mt-1 inline-block text-[11px] tracking-[0.14em] uppercase transition-colors"
+      >
+        {t("shell.account")}
+      </Link>
       <LocaleSwitcher variant="compact" className="mt-3" />
       <form action={logoutEverywhere.bind(null, locale)} className="mt-2">
         <button

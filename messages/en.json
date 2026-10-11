@@ -46,6 +46,29 @@
       "hasAccount": "Already have an account?",
       "toLogin": "Log in"
     },
+    "account": {
+      "seoTitle": "Your account",
+      "eyebrow": "Account",
+      "title": "Your account",
+      "description": "Signed in as {email}. Change your password below; your other devices will be signed out.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "newPasswordHelp": "At least {min} characters.",
+      "confirmPassword": "Confirm new password",
+      "submit": "Change password",
+      "saving": "Changing…",
+      "updated": "Your password has been changed.",
+      "errors": {
+        "signedOut": "Your session has ended. Log in again to change your password.",
+        "currentRequired": "Enter your current password.",
+        "wrongCurrentPassword": "Your current password is incorrect.",
+        "passwordTooShort": "The new password must be at least {min} characters.",
+        "passwordMismatch": "The new passwords don't match.",
+        "samePassword": "The new password must be different from your current one.",
+        "rateLimited": "Too many attempts. Wait a few minutes and try again.",
+        "generic": "We couldn't change your password. Try again."
+      }
+    },
     "forgot": {
       "seoTitle": "Reset password",
       "seoDescription": "Request a password reset link for your BC.GS account.",
@@ -432,7 +455,8 @@
     "shell": {
       "brand": "Desk",
       "logOut": "Log out",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "account": "Account"
     },
     "actions": {
       "save": "Save",
@@ -523,6 +547,10 @@
         "reviews": {
           "kicker": "Moderation",
           "blurb": "Approve, reject, or take user reviews down."
+        },
+        "complaints": {
+          "kicker": "Cases",
+          "blurb": "Complaints and scam reports from Telegram and the site."
         },
         "catalogs": {
           "kicker": "Taxonomy",
@@ -785,6 +813,30 @@
         "th": "Thai"
       },
       "footerTaglineHelp": "Shown under the logo in the footer, per language. Leave a language empty to use the default text shown in grey."
+    },
+    "account": {
+      "eyebrow": "You",
+      "title": "Account",
+      "lede": "Signed in as {email}.",
+      "passwordTitle": "Change password",
+      "passwordHelp": "Enter your current password, then the new one twice. Your other sessions are signed out; this one stays signed in.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "newPasswordHelp": "At least {min} characters.",
+      "confirmPassword": "Confirm new password",
+      "submit": "Change password",
+      "saving": "Changing…",
+      "updated": "Password changed.",
+      "errors": {
+        "signedOut": "Your session has ended. Log in again.",
+        "currentRequired": "Enter your current password.",
+        "wrongCurrentPassword": "Current password is incorrect.",
+        "passwordTooShort": "The new password must be at least {min} characters.",
+        "passwordMismatch": "The new passwords don't match.",
+        "samePassword": "The new password must be different from the current one.",
+        "rateLimited": "Too many attempts. Wait a few minutes and try again.",
+        "generic": "Could not change the password. Try again."
+      }
     },
     "settings": {
       "eyebrow": "Site",

@@ -80,16 +80,30 @@ function Toast({ item, closeLabel }: { item: ToastItem; closeLabel: string }) {
       role={isError ? "alert" : "status"}
       className={cn(
         "bg-card pointer-events-auto flex items-start gap-3 rounded-lg py-3 pr-3 pl-4 shadow-[0_16px_40px_-20px_rgba(0,0,0,0.65)] ring-1 motion-safe:animate-[hero-fade_0.25s_ease-out_both]",
-        isError ? "ring-accent/60" : "ring-text/12",
+        isError ? "ring-accent/60" : "ring-emerald-400/35",
       )}
     >
-      <span
-        aria-hidden
-        className={cn(
-          "mt-1.5 size-1.5 shrink-0 rounded-full",
-          isError ? "bg-accent" : "bg-text/45",
-        )}
-      />
+      {isError ? (
+        <span
+          aria-hidden
+          className="bg-accent mt-1.5 size-1.5 shrink-0 rounded-full"
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400"
+        >
+          <svg viewBox="0 0 12 12" className="size-2.5" fill="none">
+            <path
+              d="M2.5 6.2 4.9 8.5 9.5 3.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      )}
       <p
         className={cn(
           "min-w-0 flex-1 text-sm leading-relaxed break-words",
