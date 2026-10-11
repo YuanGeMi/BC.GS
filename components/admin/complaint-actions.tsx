@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
+import { toast } from "@/components/admin/admin-toast";
 import { adminSelectClass, adminTextareaClass } from "@/lib/admin/fields";
 import {
   saveComplaintNotes,
@@ -34,8 +35,6 @@ export function ComplaintActions({
   const [nextStatus, setNextStatus] = useState(status);
   const [notes, setNotes] = useState(adminNotes);
   const [nextCasinoId, setNextCasinoId] = useState(casinoId ?? "");
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function err(code: string) {
@@ -43,52 +42,43 @@ export function ComplaintActions({
   }
 
   function saveStatus() {
-    setError(null);
-    setNotice(null);
     startTransition(async () => {
       const result = await setComplaintStatus(caseId, nextStatus);
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
-      setNotice(t("complaints.statusSaved"));
+      toast.success(t("complaints.statusSaved"));
       router.refresh();
     });
   }
 
   function saveNotes() {
-    setError(null);
-    setNotice(null);
     startTransition(async () => {
       const result = await saveComplaintNotes(caseId, notes);
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
-      setNotice(t("complaints.notesSaved"));
+      toast.success(t("complaints.notesSaved"));
       router.refresh();
     });
   }
 
   function saveCasino() {
-    setError(null);
-    setNotice(null);
     startTransition(async () => {
       const result = await setComplaintCasino(caseId, nextCasinoId);
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
-      setNotice(t("complaints.casinoSaved"));
+      toast.success(t("complaints.casinoSaved"));
       router.refresh();
     });
   }
 
   return (
     <div className="space-y-8">
-      {error ? <p className="text-accent text-sm">{error}</p> : null}
-      {notice ? <p className="text-text/55 text-sm">{notice}</p> : null}
-
       <div>
         <label
           htmlFor="complaint-casino"

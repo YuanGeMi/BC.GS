@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
+import { AdminToaster } from "@/components/admin/admin-toast";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { alignSessionRoleClaim } from "@/lib/auth/align-role";
 import { logoutEverywhere } from "@/lib/auth/logout-everywhere";
@@ -93,6 +94,7 @@ export function AdminShell({
         </div>
         <div className="min-w-0 flex-1 px-4 py-8 sm:px-8 lg:px-10">{children}</div>
       </div>
+      <AdminToaster />
     </div>
   );
 }

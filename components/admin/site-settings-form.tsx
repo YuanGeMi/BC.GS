@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
+import { toast } from "@/components/admin/admin-toast";
 import { uploadSiteAsset } from "@/lib/admin/site-assets";
 import { updateSiteSettings } from "@/lib/admin/static-pages";
 import { adminInputClass } from "@/lib/admin/fields";
@@ -48,16 +49,12 @@ export function SiteSettingsForm({
   const [telegramUrl, setTelegramUrl] = useState(telegramChannelUrl);
   const [discordUrl, setDiscordUrl] = useState(discordChannelUrl);
   const [footerTagline, setFooterTagline] = useState(initialFooterTagline);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [uploadingKind, setUploadingKind] = useState<SiteAssetKind | null>(
     null,
   );
   const [isPending, startTransition] = useTransition();
 
   function uploadAsset(kind: SiteAssetKind, file: File) {
-    setError(null);
-    setNotice(null);
     setUploadingKind(kind);
     startTransition(async () => {
       const body = new FormData();
@@ -66,7 +63,7 @@ export function SiteSettingsForm({
       const result = await uploadSiteAsset(body);
       if (!result.ok) {
         setUploadingKind(null);
-        setError(t(`pages.assetErrors.${result.error}`));
+        toast.error(t(`pages.assetErrors.${result.error}`));
         return;
       }
 
@@ -90,10 +87,10 @@ export function SiteSettingsForm({
       });
       setUploadingKind(null);
       if (!saved.ok) {
-        setError(t("errors.invalidLogoUrl"));
+        toast.error(t("errors.invalidLogoUrl"));
         return;
       }
-      setNotice(t("pages.assetUploaded"));
+      toast.success(t("pages.assetUploaded"));
       router.refresh();
     });
   }
@@ -103,8 +100,6 @@ export function SiteSettingsForm({
       className="mt-6 max-w-xl space-y-5"
       onSubmit={(event) => {
         event.preventDefault();
-        setError(null);
-        setNotice(null);
         startTransition(async () => {
           const result = await updateSiteSettings({
             siteName,
@@ -119,15 +114,15 @@ export function SiteSettingsForm({
           });
           if (!result.ok) {
             if (result.error === "invalidLogoUrl") {
-              setError(t("errors.invalidLogoUrl"));
+              toast.error(t("errors.invalidLogoUrl"));
             } else if (result.error === "invalidSiteName") {
-              setError(t("errors.invalidSiteName"));
+              toast.error(t("errors.invalidSiteName"));
             } else {
-              setError(t("errors.invalidUrl"));
+              toast.error(t("errors.invalidUrl"));
             }
             return;
           }
-          setNotice(t("pages.settingsSaved"));
+          toast.success(t("pages.settingsSaved"));
           router.refresh();
         });
       }}
@@ -384,8 +379,6 @@ export function SiteSettingsForm({
       </fieldset>
       <p className="text-text/40 text-xs">{t("pages.footerTaglineHelp")}</p>
 
-      {error ? <p className="text-accent text-sm">{error}</p> : null}
-      {notice ? <p className="text-text/55 text-sm">{notice}</p> : null}
       <button
         type="submit"
         disabled={isPending}

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
+import { toast } from "@/components/admin/admin-toast";
 import {
   searchAdminMarkets,
   updateMarketNames,
@@ -16,7 +17,6 @@ export function MarketsEditor() {
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState<AdminMarketRow[]>([]);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export function MarketsEditor() {
     startTransition(async () => {
       const result = await updateMarketNames(id, names);
       if (!result.ok) {
-        setError(
+        toast.error(
           result.error === "englishRequired"
             ? t("errors.englishRequired")
             : t("errors.missing"),
         );
         return;
       }
-      setError(null);
+      toast.success(t("notices.saved"));
       const next = await searchAdminMarkets(query);
       setRows(next);
     });
@@ -65,7 +65,6 @@ export function MarketsEditor() {
           placeholder={t("catalogs.searchMarkets")}
         />
       </label>
-      {error ? <p className="text-accent mt-4 text-sm">{error}</p> : null}
       {query.trim().length > 0 && query.trim().length < 2 ? (
         <p className="text-text/45 mt-6 text-sm">
           {t("catalogs.typeMinChars")}

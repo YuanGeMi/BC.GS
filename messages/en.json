@@ -431,7 +431,8 @@
     },
     "shell": {
       "brand": "Desk",
-      "logOut": "Log out"
+      "logOut": "Log out",
+      "notifications": "Notifications"
     },
     "actions": {
       "save": "Save",
@@ -797,8 +798,11 @@
     },
     "telegramWelcome": {
       "title": "Telegram welcome message",
-      "help": "What the bot sends after /start, per language. Each language is saved on its own. Leave a language empty to use the bot's built-in welcome.",
+      "help": "What the bot sends after /start, per language: the welcome text, then the media with its own caption. Both are optional. Each language is saved on its own. Leave a language empty to use the bot's built-in welcome.",
       "text": "Welcome text",
+      "textHelp": "Optional. Sent first, as plain text.",
+      "placeholdersHelp": "Placeholders: {list}. A missing username is left out; a missing name becomes “there”. Preview uses {sample}.",
+      "preview": "Preview",
       "count": "{count} / {max}",
       "media": "Media",
       "mediaHelp": "Optional: one image (JPG, PNG or WebP, up to 5 MB), GIF or MP4 video (up to 20 MB).",
@@ -808,10 +812,10 @@
       "mediaUploaded": "Uploaded. Save this language to keep it.",
       "mediaRemoved": "Media removed. Save this language to apply.",
       "caption": "Caption",
-      "captionHelp": "Used when media is present. Leave empty to use the welcome text.",
-      "captionWarning": "There is media but no caption, so the bot will use the welcome text as the caption, and it is longer than 1024 characters. Add a caption or shorten the text.",
+      "captionHelp": "Sent with the media only, never with the welcome text. Leave empty to send the media without a caption.",
+      "captionNeedsMedia": "A caption is only sent with media. Add media or clear the caption.",
       "buttons": "Buttons",
-      "buttonsHelp": "Up to 3 buttons, shown in this order. Only https:// links (t.me links included). No buttons is fine.",
+      "buttonsHelp": "Up to 3 buttons, shown in this order, attached to the last message the bot sends. Only https:// links (t.me links included). No buttons is fine.",
       "buttonLabel": "Button {index} label",
       "buttonUrl": "URL",
       "addButton": "Add button",
@@ -822,12 +826,13 @@
       "errors": {
         "textTooLong": "Welcome text must be 4096 characters or fewer.",
         "captionTooLong": "Caption must be 1024 characters or fewer.",
+        "captionWithoutMedia": "Add media or clear the caption. A caption is only sent with media.",
         "invalidMedia": "The media file is not valid. Upload it again.",
         "tooManyButtons": "Use at most 3 buttons.",
         "buttonLabelMissing": "Button {index}: add a label.",
         "buttonLabelTooLong": "Button {index}: the label must be 30 characters or fewer.",
         "buttonUrlInvalid": "Button {index}: use a full https:// link, for example https://t.me/yourchannel.",
-        "contentMissing": "Add welcome text or media. A caption or buttons can't be sent on their own.",
+        "contentMissing": "Add welcome text or media. Buttons can't be sent on their own.",
         "invalidLocale": "Unknown language.",
         "invalidType": "Use JPG, PNG, WebP, GIF or MP4.",
         "imageTooLarge": "Images must be 5 MB or smaller.",
@@ -1088,12 +1093,16 @@
       "invalidExpiry": "Expiry must be a valid date.",
       "invalidRank": "Rank must be a whole number starting at 1, or blank.",
       "invalidCasino": "Pick a casino from the list.",
-      "notesTooLong": "Notes must be 10,000 characters or fewer."
+      "notesTooLong": "Notes must be 10,000 characters or fewer.",
+      "exportFailed": "Could not export the report. Try again."
     },
     "notices": {
       "saved": "Saved.",
       "published": "Published.",
-      "unpublished": "Unpublished."
+      "unpublished": "Unpublished.",
+      "rejected": "Rejected.",
+      "deleted": "Deleted.",
+      "roleUpdated": "Role updated for {email}."
     },
     "common": {
       "required": "required",

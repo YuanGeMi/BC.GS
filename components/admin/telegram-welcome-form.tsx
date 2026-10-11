@@ -3,8 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { toast } from "@/components/admin/admin-toast";
 import { routing, type Locale } from "@/i18n/routing";
-import { adminInputClass } from "@/lib/admin/fields";
+import { adminInputClass, adminTextareaClass } from "@/lib/admin/fields";
 import {
   finalizeTelegramMediaUpload,
   prepareTelegramMediaUpload,
@@ -18,9 +19,11 @@ import {
   TELEGRAM_WELCOME_CAPTION_MAX,
   TELEGRAM_WELCOME_MAX_BUTTONS,
   TELEGRAM_WELCOME_MEDIA_MIME,
+  TELEGRAM_WELCOME_PLACEHOLDERS,
   TELEGRAM_WELCOME_TEXT_MAX,
   isTelegramWelcomeMediaMime,
   parseTelegramButtonUrl,
+  renderTelegramWelcomeTemplate,
   type TelegramWelcome,
   type TelegramWelcomeByLocale,
   type TelegramWelcomeMediaType,
@@ -35,8 +38,6 @@ type Draft = {
   mediaType: TelegramWelcomeMediaType | null;
   buttons: ButtonDraft[];
 };
-
-type Status = { error: string | null; notice: string | null };
 
 let buttonIdSeq = 0;
 
@@ -57,6 +58,32 @@ const labelClass =
 const linkClass =
   "text-text/55 hover:text-accent text-xs tracking-wide uppercase disabled:opacity-40";
 
+const SAMPLE_USER = { firstName: "Alex", lastName: "Chen", username: "alexchen" };
+
+function PlaceholderPreview({ template, max }: { template: string; max: number }) {
+  const t = useTranslations("Admin.telegramWelcome");
+  return (
+    <div className="space-y-2">
+      <p className="text-text/40 text-xs">
+        {t("placeholdersHelp", {
+          list: TELEGRAM_WELCOME_PLACEHOLDERS.join(" "),
+          sample: `${SAMPLE_USER.firstName} ${SAMPLE_USER.lastName} (@${SAMPLE_USER.username})`,
+        })}
+      </p>
+      {template.trim() ? (
+        <div className="border-text/10 bg-text/5 rounded-md border px-3 py-2">
+          <span className="text-text/35 mb-1 block text-[10px] tracking-[0.16em] uppercase">
+            {t("preview")}
+          </span>
+          <p className="text-text/80 text-sm leading-relaxed break-words whitespace-pre-wrap">
+            {renderTelegramWelcomeTemplate(template, SAMPLE_USER, "", max)}
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function TelegramWelcomeForm({
   initial,
 }: {
@@ -69,7 +96,6 @@ export function TelegramWelcomeForm({
     th: toDraft(initial.th),
   }));
   const [active, setActive] = useState<Locale>("en");
-  const [status, setStatus] = useState<Status>({ error: null, notice: null });
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -104,19 +130,12 @@ export function TelegramWelcomeForm({
   }
 
   function uploadMedia(locale: Locale, file: File) {
-    setStatus({ error: null, notice: null });
     if (!isTelegramWelcomeMediaMime(file.type)) {
-      setStatus({
-        error: t("telegramWelcome.errors.invalidType"),
-        notice: null,
-      });
+      toast.error(t("telegramWelcome.errors.invalidType"));
       return;
     }
     if (file.size > TELEGRAM_WELCOME_MEDIA_MIME[file.type].maxBytes) {
-      setStatus({
-        error: uploadErrorMessage("tooLarge", file.type),
-        notice: null,
-      });
+      toast.error(uploadErrorMessage("tooLarge", file.type));
       return;
     }
 
@@ -129,10 +148,7 @@ export function TelegramWelcomeForm({
           size: file.size,
         });
         if (!prepared.ok) {
-          setStatus({
-            error: uploadErrorMessage(prepared.error, file.type),
-            notice: null,
-          });
+          toast.error(uploadErrorMessage(prepared.error, file.type));
           return;
         }
 
@@ -143,10 +159,7 @@ export function TelegramWelcomeForm({
             cacheControl: "3600",
           });
         if (storageError) {
-          setStatus({
-            error: t("telegramWelcome.errors.uploadFailed"),
-            notice: null,
-          });
+          toast.error(t("telegramWelcome.errors.uploadFailed"));
           return;
         }
 
@@ -155,17 +168,14 @@ export function TelegramWelcomeForm({
           path: prepared.path,
         });
         if (!finalized.ok) {
-          setStatus({
-            error: uploadErrorMessage(finalized.error, file.type),
-            notice: null,
-          });
+          toast.error(uploadErrorMessage(finalized.error, file.type));
           return;
         }
         update(locale, {
           mediaUrl: finalized.url,
           mediaType: finalized.mediaType,
         });
-        setStatus({ error: null, notice: t("telegramWelcome.mediaUploaded") });
+        toast.success(t("telegramWelcome.mediaUploaded"));
       } finally {
         setUploading(false);
       }
@@ -174,7 +184,10 @@ export function TelegramWelcomeForm({
 
   function save(locale: Locale) {
     const current = drafts[locale];
-    setStatus({ error: null, notice: null });
+    if (current.caption.trim() && !current.mediaUrl) {
+      toast.error(t("telegramWelcome.errors.captionWithoutMedia"));
+      return;
+    }
 
     const filled = current.buttons.filter(
       (button) => button.label.trim() || button.url.trim(),
@@ -182,21 +195,15 @@ export function TelegramWelcomeForm({
     for (const [index, button] of current.buttons.entries()) {
       if (!button.label.trim() && !button.url.trim()) continue;
       if (!button.label.trim()) {
-        setStatus({
-          error: t("telegramWelcome.errors.buttonLabelMissing", {
-            index: index + 1,
-          }),
-          notice: null,
-        });
+        toast.error(
+          t("telegramWelcome.errors.buttonLabelMissing", { index: index + 1 }),
+        );
         return;
       }
       if (!parseTelegramButtonUrl(button.url)) {
-        setStatus({
-          error: t("telegramWelcome.errors.buttonUrlInvalid", {
-            index: index + 1,
-          }),
-          notice: null,
-        });
+        toast.error(
+          t("telegramWelcome.errors.buttonUrlInvalid", { index: index + 1 }),
+        );
         return;
       }
     }
@@ -210,12 +217,11 @@ export function TelegramWelcomeForm({
       });
       const name = t(`pages.footerTaglineLocale.${locale}`);
       if (!result.ok) {
-        setStatus({
-          error: t(`telegramWelcome.errors.${result.error}`, {
+        toast.error(
+          t(`telegramWelcome.errors.${result.error}`, {
             index: (result.buttonIndex ?? 0) + 1,
           }),
-          notice: null,
-        });
+        );
         return;
       }
       update(locale, toDraft(result.value));
@@ -224,19 +230,15 @@ export function TelegramWelcomeForm({
         !result.value.caption &&
         !result.value.mediaUrl &&
         result.value.buttons.length === 0;
-      setStatus({
-        error: null,
-        notice: empty
+      toast.success(
+        empty
           ? t("telegramWelcome.cleared", { language: name })
           : t("telegramWelcome.saved", { language: name }),
-      });
+      );
     });
   }
 
-  const captionFallbackTooLong =
-    Boolean(draft.mediaUrl) &&
-    !draft.caption.trim() &&
-    draft.text.trim().length > TELEGRAM_WELCOME_CAPTION_MAX;
+  const captionWithoutMedia = Boolean(draft.caption.trim()) && !draft.mediaUrl;
 
   return (
     <section className="border-text/10 mt-12 max-w-xl border-t pt-8">
@@ -259,7 +261,6 @@ export function TelegramWelcomeForm({
             disabled={busy}
             onClick={() => {
               setActive(locale);
-              setStatus({ error: null, notice: null });
             }}
             className={`-mb-px border-b-2 px-3 py-2 text-[11px] tracking-[0.16em] uppercase ${
               active === locale
@@ -285,17 +286,22 @@ export function TelegramWelcomeForm({
           <textarea
             value={draft.text}
             onChange={(event) => update(active, { text: event.target.value })}
-            className={`${adminInputClass} min-h-40`}
+            className={`${adminTextareaClass} min-h-40`}
             maxLength={TELEGRAM_WELCOME_TEXT_MAX}
             rows={6}
           />
         </label>
         <p className="text-text/40 text-xs">
+          {t("telegramWelcome.textHelp")}{" "}
           {t("telegramWelcome.count", {
             count: draft.text.length,
             max: TELEGRAM_WELCOME_TEXT_MAX,
           })}
         </p>
+        <PlaceholderPreview
+          template={draft.text}
+          max={TELEGRAM_WELCOME_TEXT_MAX}
+        />
 
         <div className="space-y-2">
           <span className={labelClass}>{t("telegramWelcome.media")}</span>
@@ -347,10 +353,7 @@ export function TelegramWelcomeForm({
                     className={linkClass}
                     onClick={() => {
                       update(active, { mediaUrl: null, mediaType: null });
-                      setStatus({
-                        error: null,
-                        notice: t("telegramWelcome.mediaRemoved"),
-                      });
+                      toast.success(t("telegramWelcome.mediaRemoved"));
                     }}
                   >
                     {t("telegramWelcome.mediaRemove")}
@@ -371,7 +374,7 @@ export function TelegramWelcomeForm({
             onChange={(event) =>
               update(active, { caption: event.target.value })
             }
-            className={`${adminInputClass} min-h-24`}
+            className={`${adminTextareaClass} min-h-24`}
             maxLength={TELEGRAM_WELCOME_CAPTION_MAX}
             rows={3}
           />
@@ -383,11 +386,15 @@ export function TelegramWelcomeForm({
             max: TELEGRAM_WELCOME_CAPTION_MAX,
           })}
         </p>
-        {captionFallbackTooLong ? (
+        {captionWithoutMedia ? (
           <p className="text-accent text-sm">
-            {t("telegramWelcome.captionWarning")}
+            {t("telegramWelcome.captionNeedsMedia")}
           </p>
         ) : null}
+        <PlaceholderPreview
+          template={draft.caption}
+          max={TELEGRAM_WELCOME_CAPTION_MAX}
+        />
 
         <fieldset className="space-y-3">
           <legend className={labelClass}>{t("telegramWelcome.buttons")}</legend>
@@ -463,12 +470,6 @@ export function TelegramWelcomeForm({
           {t("telegramWelcome.buttonsHelp")}
         </p>
 
-        {status.error ? (
-          <p className="text-accent text-sm">{status.error}</p>
-        ) : null}
-        {status.notice ? (
-          <p className="text-text/55 text-sm">{status.notice}</p>
-        ) : null}
         <button
           type="submit"
           disabled={busy}

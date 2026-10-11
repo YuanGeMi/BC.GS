@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
 import { AdminConfirm } from "@/components/admin/admin-confirm";
+import { toast } from "@/components/admin/admin-toast";
 import {
   type CatalogItem,
   type CatalogKind,
@@ -31,7 +32,6 @@ export function CatalogOptionsEditor({
   const [createSlug, setCreateSlug] = useState("");
   const [createSort, setCreateSort] = useState("0");
   const [createNames, setCreateNames] = useState(emptyNames);
-  const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<CatalogItem | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -84,13 +84,13 @@ export function CatalogOptionsEditor({
         names: createNames,
       });
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
       setCreateSlug("");
       setCreateSort("0");
       setCreateNames(emptyNames);
-      setError(null);
+      toast.success(t("notices.saved"));
       router.refresh();
     });
   }
@@ -104,10 +104,10 @@ export function CatalogOptionsEditor({
         names,
       });
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
-      setError(null);
+      toast.success(t("notices.saved"));
       router.refresh();
     });
   }
@@ -118,7 +118,7 @@ export function CatalogOptionsEditor({
       const usage = await getCatalogItemUsage(kind, item.id);
       if (!usage) {
         setPendingDelete(null);
-        setError(err("missing"));
+        toast.error(err("missing"));
         return;
       }
       setPendingDelete((current) =>
@@ -136,23 +136,20 @@ export function CatalogOptionsEditor({
             ...item,
             usageNames: result.usageNames ?? item.usageNames,
           });
-          setError(null);
           return;
         }
-        setError(err(result.error, result.usageNames));
+        toast.error(err(result.error, result.usageNames));
         setPendingDelete(null);
         return;
       }
       setPendingDelete(null);
-      setError(null);
+      toast.success(t("notices.deleted"));
       router.refresh();
     });
   }
 
   return (
     <>
-      {error ? <p className="text-accent mb-6 text-sm">{error}</p> : null}
-
       <div className="border-text/10 border-t pt-8">
         <p className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
           {t("catalogs.new")}

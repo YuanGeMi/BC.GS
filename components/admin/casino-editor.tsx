@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
 import { AdminConfirm } from "@/components/admin/admin-confirm";
+import { toast } from "@/components/admin/admin-toast";
 import { CasinoMarketTable } from "@/components/admin/casino-market-table";
 import {
   CONTENT_LOCALES,
@@ -76,8 +77,6 @@ export function CasinoEditor({
   const router = useRouter();
   const [form, setForm] = useState<CasinoSaveInput>(() => toInput(casino));
   const [locale, setLocale] = useState<Locale>("en");
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [logoFolder] = useState(
     () => casino?.id ?? `draft-${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
@@ -127,15 +126,14 @@ export function CasinoEditor({
   }
 
   function runSave(kind: "save" | "publish") {
-    setError(null);
-    setNotice(null);
     startTransition(async () => {
       if (isNew) {
         const result = await createCasino(form);
         if (!result.ok) {
-          setError(err(result.error));
+          toast.error(err(result.error));
           return;
         }
+        toast.success(t("casinos.editor.saved"));
         router.push(`/admin/casinos/${result.id}`);
         router.refresh();
         return;
@@ -144,10 +142,10 @@ export function CasinoEditor({
       if (kind === "publish") {
         const result = await saveAndPublishCasino(casino.id, form);
         if (!result.ok) {
-          setError(err(result.error));
+          toast.error(err(result.error));
           return;
         }
-        setNotice(t("casinos.editor.published"));
+        toast.success(t("casinos.editor.published"));
         setConfirmSlug(false);
         router.refresh();
         return;
@@ -155,10 +153,10 @@ export function CasinoEditor({
 
       const result = await updateCasino(casino.id, form);
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
-      setNotice(t("casinos.editor.saved"));
+      toast.success(t("casinos.editor.saved"));
       setConfirmSlug(false);
       router.refresh();
     });
@@ -227,10 +225,10 @@ export function CasinoEditor({
                 startTransition(async () => {
                   const result = await setCasinoStatus(casino.id, "draft");
                   if (!result.ok) {
-                    setError(err(result.error));
+                    toast.error(err(result.error));
                     return;
                   }
-                  setNotice(t("casinos.editor.unpublished"));
+                  toast.success(t("casinos.editor.unpublished"));
                   router.refresh();
                 })
               }
@@ -242,8 +240,6 @@ export function CasinoEditor({
         </div>
       </header>
 
-      {error ? <p className="text-accent mt-6 text-sm">{error}</p> : null}
-      {notice ? <p className="text-text/55 mt-6 text-sm">{notice}</p> : null}
       {!canPublish ? (
         <p className="text-text/45 mt-6 max-w-2xl text-sm">
           {t("casinos.editor.publishNeeds")}
@@ -307,8 +303,6 @@ export function CasinoEditor({
                         const file = event.target.files?.[0];
                         event.target.value = "";
                         if (!file) return;
-                        setError(null);
-                        setNotice(null);
                         setLogoUploading(true);
                         startTransition(async () => {
                           const body = new FormData();
@@ -317,11 +311,11 @@ export function CasinoEditor({
                           const result = await uploadCasinoLogo(body);
                           setLogoUploading(false);
                           if (!result.ok) {
-                            setError(t(`casinos.editor.logoErrors.${result.error}`));
+                            toast.error(t(`casinos.editor.logoErrors.${result.error}`));
                             return;
                           }
                           patch({ logoUrl: result.url });
-                          setNotice(t("casinos.editor.logoUploaded"));
+                          toast.success(t("casinos.editor.logoUploaded"));
                         });
                       }}
                     />
@@ -688,10 +682,11 @@ export function CasinoEditor({
             startTransition(async () => {
               const result = await deleteCasino(casino.id);
               if (!result.ok) {
-                setError(err(result.error));
+                toast.error(err(result.error));
                 setConfirmDelete(false);
                 return;
               }
+              toast.success(t("notices.deleted"));
               router.push("/admin/casinos");
               router.refresh();
             })

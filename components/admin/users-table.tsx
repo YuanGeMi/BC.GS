@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useMemo, useState, useTransition } from "react";
 
+import { toast } from "@/components/admin/admin-toast";
 import { setUserRole, type AdminUserRow } from "@/lib/admin/users";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,6 @@ export function UsersTable({
   const locale = useLocale();
   const router = useRouter();
   const [pendingChange, setPendingChange] = useState<PendingChange | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const dateFmt = useMemo(
@@ -49,21 +49,17 @@ export function UsersTable({
     startTransition(async () => {
       const result = await setUserRole(user.id, role);
       if (result.error) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
       setPendingChange(null);
-      setError(null);
+      toast.success(t("notices.roleUpdated", { email: user.email }));
       router.refresh();
     });
   }
 
   return (
     <>
-      {error && !pendingChange ? (
-        <p className="text-accent mb-4 text-sm">{error}</p>
-      ) : null}
-
       <div className="border-text/10 overflow-x-auto border-t">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead>
@@ -112,10 +108,7 @@ export function UsersTable({
                   <td className="py-3.5 text-right">
                     <button
                       type="button"
-                      onClick={() => {
-                        setError(null);
-                        setPendingChange({ user, role: nextRole });
-                      }}
+                      onClick={() => setPendingChange({ user, role: nextRole })}
                       className="text-accent hover:text-accent-highlight text-xs font-medium"
                     >
                       {nextRole === "admin"
@@ -158,7 +151,6 @@ export function UsersTable({
             <p className="text-text/60 mt-3 text-sm leading-relaxed">
               {t("users.confirmBody")}
             </p>
-            {error ? <p className="text-accent mt-3 text-sm">{error}</p> : null}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
+import { toast } from "@/components/admin/admin-toast";
 import {
   applyBotAvatar,
   prepareBotAvatarUpload,
@@ -54,8 +55,6 @@ export function BotAvatarForm({
   const t = useTranslations("Admin.botAvatar");
   const [currentUrl, setCurrentUrl] = useState(initialUrl);
   const [picked, setPicked] = useState<Picked | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(
@@ -73,30 +72,28 @@ export function BotAvatarForm({
   }
 
   function pick(file: File) {
-    setError(null);
-    setNotice(null);
     setPicked(null);
     startTransition(async () => {
       try {
         const jpeg = await toJpeg(file);
         if (jpeg === "invalidType") {
-          setError(t("errors.invalidType"));
+          toast.error(t("errors.invalidType"));
           return;
         }
         if (jpeg.size > BOT_AVATAR_MAX_BYTES) {
-          setError(t("errors.tooLarge"));
+          toast.error(t("errors.tooLarge"));
           return;
         }
         const bitmap = await createImageBitmap(jpeg);
         const ok = botAvatarDimensionsOk(bitmap.width, bitmap.height);
         bitmap.close();
         if (!ok) {
-          setError(t("errors.invalidDimensions"));
+          toast.error(t("errors.invalidDimensions"));
           return;
         }
         setPicked({ blob: jpeg, previewUrl: URL.createObjectURL(jpeg) });
       } catch {
-        setError(t("errors.readFailed"));
+        toast.error(t("errors.readFailed"));
       }
     });
   }
@@ -104,12 +101,10 @@ export function BotAvatarForm({
   function apply() {
     if (!picked) return;
     const { blob } = picked;
-    setError(null);
-    setNotice(null);
     startTransition(async () => {
       const prepared = await prepareBotAvatarUpload({ size: blob.size });
       if (!prepared.ok) {
-        setError(errorMessage(prepared.error));
+        toast.error(errorMessage(prepared.error));
         return;
       }
       const { error: storageError } = await createClient()
@@ -119,17 +114,17 @@ export function BotAvatarForm({
           cacheControl: "3600",
         });
       if (storageError) {
-        setError(t("errors.uploadFailed"));
+        toast.error(t("errors.uploadFailed"));
         return;
       }
       const result = await applyBotAvatar({ path: prepared.path });
       if (!result.ok) {
-        setError(errorMessage(result.error, result.retryAfter));
+        toast.error(errorMessage(result.error, result.retryAfter));
         return;
       }
       setCurrentUrl(result.url);
       setPicked(null);
-      setNotice(t("applied"));
+      toast.success(t("applied"));
     });
   }
 
@@ -200,8 +195,6 @@ export function BotAvatarForm({
           <p className="text-text/40 text-xs">{t("fileHelp")}</p>
           <p className="text-text/40 text-xs">{t("refreshNote")}</p>
 
-          {error ? <p className="text-accent text-sm">{error}</p> : null}
-          {notice ? <p className="text-text/55 text-sm">{notice}</p> : null}
         </div>
       )}
     </section>

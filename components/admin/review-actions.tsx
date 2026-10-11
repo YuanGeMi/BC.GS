@@ -5,7 +5,14 @@ import { useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
 import { AdminConfirm } from "@/components/admin/admin-confirm";
+import { toast } from "@/components/admin/admin-toast";
 import { setReviewStatus } from "@/lib/admin/reviews";
+
+const SUCCESS_NOTICE = {
+  published: "notices.published",
+  unpublished: "notices.unpublished",
+  rejected: "notices.rejected",
+} as const;
 
 export function ReviewActions({
   id,
@@ -17,7 +24,6 @@ export function ReviewActions({
   const t = useTranslations("Admin");
   const router = useRouter();
   const [confirmReject, setConfirmReject] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function err(code: string) {
@@ -25,22 +31,20 @@ export function ReviewActions({
   }
 
   function run(next: "published" | "rejected" | "unpublished") {
-    setError(null);
     startTransition(async () => {
       const result = await setReviewStatus(id, next);
+      setConfirmReject(false);
       if (!result.ok) {
-        setError(err(result.error));
-        setConfirmReject(false);
+        toast.error(err(result.error));
         return;
       }
-      setConfirmReject(false);
+      toast.success(t(SUCCESS_NOTICE[next]));
       router.refresh();
     });
   }
 
   return (
     <div className="space-y-3">
-      {error ? <p className="text-accent text-sm">{error}</p> : null}
       <div className="flex flex-wrap gap-2">
         {(status === "pending" || status === "unpublished") && (
           <button

@@ -92,6 +92,7 @@ export type TelegramWelcomeInputError =
   | "buttonLabelMissing"
   | "buttonLabelTooLong"
   | "buttonUrlInvalid"
+  | "captionWithoutMedia"
   | "contentMissing";
 
 export function emptyTelegramWelcome(): TelegramWelcome {
@@ -165,6 +166,8 @@ export function parseTelegramWelcomeInput(
     }
     mediaUrl = rawMediaUrl;
   }
+  // The caption is sent on the media message only; it never stands in for the welcome text.
+  if (caption && !mediaUrl) return { ok: false, error: "captionWithoutMedia" };
 
   const rawButtons = Array.isArray(raw.buttons) ? raw.buttons : [];
   const buttons: TelegramWelcomeButton[] = [];
@@ -195,7 +198,7 @@ export function parseTelegramWelcomeInput(
     mediaType,
     buttons,
   };
-  // The bot needs text or media to send anything; buttons or a caption alone can't be sent.
+  // The bot needs text or media to send anything; buttons alone can't be sent.
   if (!isTelegramWelcomeEmpty(value) && !text && !mediaUrl) {
     return { ok: false, error: "contentMissing" };
   }
@@ -214,6 +217,78 @@ export function parseStoredTelegramWelcome(
   } catch {
     return emptyTelegramWelcome();
   }
+  // Older saves could keep a caption without media; the bot ignores it, so drop it here instead of losing the whole value.
+  if (json && typeof json === "object" && !Array.isArray(json)) {
+    const raw = json as Record<string, unknown>;
+    if (!asString(raw.mediaUrl).trim()) json = { ...raw, caption: "" };
+  }
   const parsed = parseTelegramWelcomeInput(json, isOwnMediaUrl);
   return parsed.ok ? parsed.value : emptyTelegramWelcome();
+}
+
+export const TELEGRAM_WELCOME_PLACEHOLDERS = [
+  "{name}",
+  "{full_name}",
+  "{username}",
+] as const;
+
+export type TelegramWelcomeUser = {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+};
+
+// Same rules as the bot (bcgs-telegram-bot src/services/welcome-placeholders.ts), so the preview matches what is sent.
+const UNSAFE_NAME_CHARS =
+  /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202E\u2060-\u2069\uFEFF]/g;
+
+function cleanName(value: string | undefined): string {
+  return (value ?? "")
+    .replace(UNSAFE_NAME_CHARS, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanUsername(value: string | undefined): string {
+  const name = (value ?? "").trim().replace(/^@/, "");
+  return /^[A-Za-z0-9_]{1,32}$/.test(name) ? name : "";
+}
+
+function truncateForTelegram(value: string, max: number): string {
+  if (value.length <= max) return value;
+  let cut = value.slice(0, max - 1);
+  if (/[\uD800-\uDBFF]$/.test(cut)) cut = cut.slice(0, -1);
+  return `${cut.trimEnd()}…`;
+}
+
+function dropUsername(template: string): string {
+  return template
+    .replace(/[ \t]*\([ \t]*@?\{username\}[ \t]*\)/g, "")
+    .replace(/(^|\n)[ \t]*@?\{username\}[ \t]*/g, "$1")
+    .replace(
+      /[ \t]*[,;:]?[ \t]*@?\{username\}(?=[ \t]*(?:[!?.,;:)\]]|\n|$))/g,
+      "",
+    )
+    .replace(/[ \t]*@?\{username\}/g, "");
+}
+
+/** Fills {name}, {full_name} and {username}, then applies the Telegram length limit. Unknown placeholders stay as typed. */
+export function renderTelegramWelcomeTemplate(
+  template: string,
+  user: TelegramWelcomeUser,
+  fallbackName: string,
+  max: number,
+): string {
+  const first = cleanName(user.firstName);
+  const full = cleanName(`${first} ${cleanName(user.lastName)}`);
+  const username = cleanUsername(user.username);
+  const source = username ? template : dropUsername(template);
+  const filled = source.replace(
+    /(@?)\{(name|full_name|username)\}/g,
+    (_match, at: string, key: string) => {
+      if (key === "username") return `@${username}`;
+      return `${at}${key === "name" ? first || fallbackName : full || fallbackName}`;
+    },
+  );
+  return truncateForTelegram(filled, max);
 }

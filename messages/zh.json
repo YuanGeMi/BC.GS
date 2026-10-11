@@ -431,7 +431,8 @@
     },
     "shell": {
       "brand": "工作台",
-      "logOut": "退出"
+      "logOut": "退出",
+      "notifications": "通知"
     },
     "actions": {
       "save": "保存",
@@ -797,8 +798,11 @@
     },
     "telegramWelcome": {
       "title": "Telegram 欢迎消息",
-      "help": "机器人在 /start 后发送的内容，按语言分别设置。每种语言单独保存。留空则使用机器人内置的欢迎语。",
+      "help": "机器人在 /start 后发送的内容，按语言分别设置：先发欢迎文字，再发媒体及其说明文字。两者都是可选的。每种语言单独保存。留空则使用机器人内置的欢迎语。",
       "text": "欢迎文字",
+      "textHelp": "可选。作为第一条纯文本消息发送。",
+      "placeholdersHelp": "占位符：{list}。没有用户名时会被省略；没有名字时显示“朋友”。预览使用 {sample}。",
+      "preview": "预览",
       "count": "{count} / {max}",
       "media": "媒体",
       "mediaHelp": "可选：一张图片（JPG、PNG 或 WebP，最大 5 MB）、GIF 或 MP4 视频（最大 20 MB）。",
@@ -808,10 +812,10 @@
       "mediaUploaded": "已上传。保存此语言后生效。",
       "mediaRemoved": "已移除媒体。保存此语言后生效。",
       "caption": "说明文字",
-      "captionHelp": "有媒体时使用。留空则使用欢迎文字。",
-      "captionWarning": "已有媒体但没有说明文字，机器人会把欢迎文字用作说明文字，但它超过 1024 个字符。请添加说明文字或缩短欢迎文字。",
+      "captionHelp": "只随媒体发送，不会替代欢迎文字。留空则发送不带说明文字的媒体。",
+      "captionNeedsMedia": "说明文字只能随媒体发送。请添加媒体或清空说明文字。",
       "buttons": "按钮",
-      "buttonsHelp": "最多 3 个按钮，按此顺序显示。仅限 https:// 链接（包括 t.me 链接）。可以不设按钮。",
+      "buttonsHelp": "最多 3 个按钮，按此顺序显示，附在机器人发送的最后一条消息上。仅限 https:// 链接（包括 t.me 链接）。可以不设按钮。",
       "buttonLabel": "按钮 {index} 文字",
       "buttonUrl": "链接",
       "addButton": "添加按钮",
@@ -822,12 +826,13 @@
       "errors": {
         "textTooLong": "欢迎文字不能超过 4096 个字符。",
         "captionTooLong": "说明文字不能超过 1024 个字符。",
+        "captionWithoutMedia": "请添加媒体或清空说明文字。说明文字只能随媒体发送。",
         "invalidMedia": "媒体文件无效，请重新上传。",
         "tooManyButtons": "最多只能有 3 个按钮。",
         "buttonLabelMissing": "按钮 {index}：请填写文字。",
         "buttonLabelTooLong": "按钮 {index}：文字不能超过 30 个字符。",
         "buttonUrlInvalid": "按钮 {index}：请使用完整的 https:// 链接，例如 https://t.me/yourchannel。",
-        "contentMissing": "请添加欢迎文字或媒体。说明文字或按钮无法单独发送。",
+        "contentMissing": "请添加欢迎文字或媒体。按钮无法单独发送。",
         "invalidLocale": "未知语言。",
         "invalidType": "请使用 JPG、PNG、WebP、GIF 或 MP4。",
         "imageTooLarge": "图片不能超过 5 MB。",
@@ -1088,12 +1093,16 @@
       "invalidExpiry": "到期日须为有效日期。",
       "invalidRank": "排名须为从 1 开始的整数，或留空。",
       "invalidCasino": "请从列表中选择娱乐场。",
-      "notesTooLong": "备注不能超过 10,000 个字符。"
+      "notesTooLong": "备注不能超过 10,000 个字符。",
+      "exportFailed": "无法导出报告，请重试。"
     },
     "notices": {
       "saved": "已保存。",
       "published": "已发布。",
-      "unpublished": "已取消发布。"
+      "unpublished": "已取消发布。",
+      "rejected": "已拒绝。",
+      "deleted": "已删除。",
+      "roleUpdated": "已更新 {email} 的角色。"
     },
     "common": {
       "required": "必填",

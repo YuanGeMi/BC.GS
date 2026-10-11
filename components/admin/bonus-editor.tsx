@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { AdminConfirm } from "@/components/admin/admin-confirm";
+import { toast } from "@/components/admin/admin-toast";
 import {
   CONTENT_LOCALES,
   emptyBonusSaveInput,
@@ -66,8 +67,6 @@ export function BonusEditor({
     toInput(bonus, presetCasinoId),
   );
   const [locale, setLocale] = useState<Locale>("en");
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
   const isNew = !bonus;
@@ -118,15 +117,14 @@ export function BonusEditor({
   }
 
   function runSave(kind: "save" | "publish") {
-    setError(null);
-    setNotice(null);
     startTransition(async () => {
       if (isNew) {
         const result = await createBonus(form);
         if (!result.ok) {
-          setError(err(result.error));
+          toast.error(err(result.error));
           return;
         }
+        toast.success(t("bonuses.editor.saved"));
         router.push(`/admin/bonuses/${result.id}`);
         router.refresh();
         return;
@@ -135,20 +133,20 @@ export function BonusEditor({
       if (kind === "publish") {
         const result = await saveAndPublishBonus(bonus.id, form);
         if (!result.ok) {
-          setError(err(result.error));
+          toast.error(err(result.error));
           return;
         }
-        setNotice(t("bonuses.editor.published"));
+        toast.success(t("bonuses.editor.published"));
         router.refresh();
         return;
       }
 
       const result = await updateBonus(bonus.id, form);
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
-      setNotice(t("bonuses.editor.saved"));
+      toast.success(t("bonuses.editor.saved"));
       router.refresh();
     });
   }
@@ -206,10 +204,10 @@ export function BonusEditor({
                 startTransition(async () => {
                   const result = await setBonusStatus(bonus.id, "draft");
                   if (!result.ok) {
-                    setError(err(result.error));
+                    toast.error(err(result.error));
                     return;
                   }
-                  setNotice(t("bonuses.editor.unpublished"));
+                  toast.success(t("bonuses.editor.unpublished"));
                   router.refresh();
                 })
               }
@@ -221,8 +219,6 @@ export function BonusEditor({
         </div>
       </header>
 
-      {error ? <p className="text-accent mt-6 text-sm">{error}</p> : null}
-      {notice ? <p className="text-text/55 mt-6 text-sm">{notice}</p> : null}
       {casinoIsDraft ? (
         <p className="text-text/45 mt-6 max-w-2xl text-sm">
           {t("bonuses.editor.casinoDraftWarn")}
@@ -448,10 +444,11 @@ export function BonusEditor({
             startTransition(async () => {
               const result = await deleteBonus(bonus.id);
               if (!result.ok) {
-                setError(err(result.error));
+                toast.error(err(result.error));
                 setConfirmDelete(false);
                 return;
               }
+              toast.success(t("notices.deleted"));
               router.push("/admin/bonuses");
               router.refresh();
             })

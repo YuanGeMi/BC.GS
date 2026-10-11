@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState, useTransition } from "react";
 
 import { AdminConfirm } from "@/components/admin/admin-confirm";
+import { toast } from "@/components/admin/admin-toast";
 import {
   saveAndPublishStaticPage,
   setStaticPageStatus,
@@ -35,8 +36,6 @@ export function StaticPageEditor({
   const router = useRouter();
   const [form, setForm] = useState<StaticPageSaveInput>(() => toInput(page));
   const [locale, setLocale] = useState<Locale>("en");
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [confirmUnpublish, setConfirmUnpublish] = useState(false);
   const [isPending, startTransition] = useTransition();
   const canPublish = englishPageReady(form);
@@ -60,26 +59,24 @@ export function StaticPageEditor({
   }
 
   function runSave(kind: "save" | "publish") {
-    setError(null);
-    setNotice(null);
     startTransition(async () => {
       if (kind === "publish") {
         const result = await saveAndPublishStaticPage(page.slug, form);
         if (!result.ok) {
-          setError(err(result.error));
+          toast.error(err(result.error));
           return;
         }
-        setNotice(t("pages.editor.published"));
+        toast.success(t("pages.editor.published"));
         router.refresh();
         return;
       }
 
       const result = await updateStaticPage(page.slug, form);
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         return;
       }
-      setNotice(t("pages.editor.saved"));
+      toast.success(t("pages.editor.saved"));
       router.refresh();
     });
   }
@@ -88,12 +85,12 @@ export function StaticPageEditor({
     startTransition(async () => {
       const result = await setStaticPageStatus(page.slug, "draft");
       if (!result.ok) {
-        setError(err(result.error));
+        toast.error(err(result.error));
         setConfirmUnpublish(false);
         return;
       }
       setConfirmUnpublish(false);
-      setNotice(t("pages.editor.unpublishedNotice"));
+      toast.success(t("pages.editor.unpublishedNotice"));
       router.refresh();
     });
   }
@@ -149,8 +146,6 @@ export function StaticPageEditor({
         </div>
       </header>
 
-      {error ? <p className="text-accent mt-6 text-sm">{error}</p> : null}
-      {notice ? <p className="text-text/55 mt-6 text-sm">{notice}</p> : null}
       {!canPublish ? (
         <p className="text-text/45 mt-6 max-w-2xl text-sm">
           {t("pages.editor.publishNeeds")}
