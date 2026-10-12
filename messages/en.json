@@ -940,10 +940,16 @@
         "created": "Created"
       },
       "status": {
-        "open": "Open",
+        "open": "Open (legacy)",
+        "submitted": "Submitted",
+        "received": "Received",
         "in_review": "In review",
+        "waiting_for_more_information": "Waiting for more information",
         "resolved": "Resolved",
-        "rejected": "Rejected"
+        "rejected": "Rejected",
+        "verified": "Verified",
+        "not_verified": "Not verified",
+        "closed": "Closed"
       },
       "types": {
         "complaint": "Complaint",
@@ -986,7 +992,26 @@
       "userTyped": "User typed: {name}",
       "saveCasino": "Save casino",
       "casinoSaved": "Casino link saved.",
-      "casinoLinkHelp": "Correct which casino this case is about. This does not change the status or moderator, and the user's original text is kept."
+      "casinoLinkHelp": "Correct which casino this case is about. This does not change the status or moderator, and the user's original text is kept.",
+      "userMessage": "Message to user",
+      "messageCount": "{count} / {max}",
+      "internalNotesNeverSent": "Internal notes are never sent.",
+      "notifyUser": "Notify user",
+      "noNotification": "This case wasn't filed through Telegram with a user ID, so no notification is sent.",
+      "saveAndNotify": "Save and notify user",
+      "notificationQueued": "Saved. The user will be notified.",
+      "refresh": "Refresh",
+      "lastUserMessage": "Last message sent to user",
+      "noUserMessage": "No message sent yet.",
+      "recentNotifications": "Recent notifications",
+      "noNotifications": "No notifications yet.",
+      "withMessage": "with message",
+      "notificationState": {
+        "pending": "Pending",
+        "processing": "Sending",
+        "sent": "Sent",
+        "permanent_failure": "Failed"
+      }
     },
     "reviews": {
       "eyebrow": "Queue",
@@ -1146,6 +1171,9 @@
       "invalidRank": "Rank must be a whole number starting at 1, or blank.",
       "invalidCasino": "Pick a casino from the list.",
       "notesTooLong": "Notes must be 10,000 characters or fewer.",
+      "conflict": "Someone else changed this case. Refresh the page and try again.",
+      "messageTooLong": "The message must be 1,000 characters or fewer.",
+      "messageNotSent": "Turn on Notify user to send this message, or clear it.",
       "exportFailed": "Could not export the report. Try again."
     },
     "notices": {

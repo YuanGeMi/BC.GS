@@ -3,13 +3,27 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+import {
+  CASE_USER_MESSAGE_MAX,
+  normalizeCaseUserMessage,
+} from "@/lib/admin/case-message";
+import {
+  isAllowedComplaintStatus,
+  isComplaintStatus,
+} from "@/lib/admin/complaint-status";
 import { requireAdmin, requireVerifiedAdmin } from "@/lib/auth/require-admin";
-import { ComplaintSource, ComplaintStatus, ReportType } from "@/lib/db-enums";
+import {
+  ComplaintSource,
+  ComplaintStatus,
+  NotificationState,
+  ReportType,
+} from "@/lib/db-enums";
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
 
 const COMPLAINT_PAGE_SIZE = 20;
 const ADMIN_NOTES_MAX_LENGTH = 10_000;
+const RECENT_NOTIFICATIONS = 5;
 
 export type AdminComplaintListRow = {
   id: string;
@@ -42,7 +56,36 @@ export type AdminComplaintDetail = AdminComplaintListRow & {
   moderatedAt: string | null;
   moderatorLabel: string | null;
   evidence: AdminComplaintEvidence[];
+  /** Sent back with a status/message save to detect a concurrent change. */
+  revision: number;
+  /** Telegram case with a Telegram user ID: staff can notify the user. */
+  canNotify: boolean;
+  lastUserMessage: string | null;
+  lastUserMessageAt: string | null;
+  notifications: AdminComplaintNotification[];
 };
+
+export type AdminComplaintNotification = {
+  revision: number;
+  state: NotificationState;
+  status: ComplaintStatus;
+  hasMessage: boolean;
+  createdAt: string;
+  sentAt: string | null;
+  updatedAt: string;
+};
+
+export type ComplaintUpdateInput = {
+  status: string;
+  /** Message to the user; empty for none. */
+  message: string;
+  notify: boolean;
+  /** The revision the page loaded. */
+  expectedRevision: number;
+};
+
+export type ComplaintUpdateResult =
+  { ok: true; notified: boolean } | { ok: false; error: ComplaintActionError };
 
 export type AdminComplaintCasinoOption = {
   id: string;
@@ -51,14 +94,16 @@ export type AdminComplaintCasinoOption = {
 };
 
 export type ComplaintActionError =
-  "missing" | "invalidStatus" | "notesTooLong" | "invalidCasino";
+  | "missing"
+  | "invalidStatus"
+  | "notesTooLong"
+  | "invalidCasino"
+  | "conflict"
+  | "messageTooLong"
+  | "messageNotSent";
 
 export type ComplaintActionResult =
   { ok: true } | { ok: false; error: ComplaintActionError };
-
-function isComplaintStatus(value: string): value is ComplaintStatus {
-  return (Object.values(ComplaintStatus) as string[]).includes(value);
-}
 
 function isReportType(value: string): value is ReportType {
   return (Object.values(ReportType) as string[]).includes(value);
@@ -66,6 +111,23 @@ function isReportType(value: string): value is ReportType {
 
 function isComplaintSource(value: string): value is ComplaintSource {
   return (Object.values(ComplaintSource) as string[]).includes(value);
+}
+
+/** Only Telegram cases with a Telegram user ID can be notified. */
+function isNotifiable(row: {
+  source: ComplaintSource;
+  telegramUserId: string | null;
+}) {
+  return (
+    row.source === ComplaintSource.telegram && !!row.telegramUserId?.trim()
+  );
+}
+
+function isUniqueViolation(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
 }
 
 /** True when the Complaint migration has not been applied to this database yet. */
@@ -263,6 +325,22 @@ export async function getAdminComplaint(
         updatedAt: true,
         moderatedAt: true,
         moderatedBy: { select: { displayName: true, email: true } },
+        revision: true,
+        lastUserMessage: true,
+        lastUserMessageAt: true,
+        notifications: {
+          orderBy: { revision: "desc" },
+          take: RECENT_NOTIFICATIONS,
+          select: {
+            revision: true,
+            state: true,
+            status: true,
+            userMessage: true,
+            createdAt: true,
+            sentAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
   } catch (error) {
@@ -288,37 +366,149 @@ export async function getAdminComplaint(
       number: index + 1,
       available: isFetchableEvidence(entry),
     })),
+    revision: row.revision,
+    canNotify: isNotifiable(row),
+    lastUserMessage: row.lastUserMessage,
+    lastUserMessageAt: row.lastUserMessageAt
+      ? row.lastUserMessageAt.toISOString()
+      : null,
+    notifications: row.notifications.map((item) => ({
+      revision: item.revision,
+      state: item.state,
+      status: item.status,
+      hasMessage: item.userMessage !== null,
+      createdAt: item.createdAt.toISOString(),
+      sentAt: item.sentAt ? item.sentAt.toISOString() : null,
+      updatedAt: item.updatedAt.toISOString(),
+    })),
   };
 }
 
+class RevisionConflict extends Error {}
+
+/**
+ * Saves a status change and/or a message to the user. In one transaction: checks the
+ * revision the page loaded, updates the case, bumps revision, and queues one
+ * CaseNotificationOutbox row when the user should be notified.
+ */
 export async function setComplaintStatus(
   caseId: string,
-  nextStatus: string,
-): Promise<ComplaintActionResult> {
+  input: ComplaintUpdateInput,
+): Promise<ComplaintUpdateResult> {
   const admin = await requireVerifiedAdmin();
-  if (!isComplaintStatus(nextStatus)) {
-    return { ok: false, error: "invalidStatus" };
+
+  const nextStatus = typeof input.status === "string" ? input.status : "";
+  const message = normalizeCaseUserMessage(
+    typeof input.message === "string" ? input.message : "",
+  );
+  if (message.length > CASE_USER_MESSAGE_MAX) {
+    return { ok: false, error: "messageTooLong" };
+  }
+  const notify = input.notify === true;
+  const expectedRevision = input.expectedRevision;
+  if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) {
+    return { ok: false, error: "conflict" };
   }
 
-  const existing = await prisma.complaint.findUnique({
-    where: { caseId },
-    select: { status: true },
-  });
-  if (!existing) return { ok: false, error: "missing" };
-  if (existing.status === nextStatus) return { ok: true };
+  let result: ComplaintUpdateResult & { changed?: boolean };
+  try {
+    result = await prisma.$transaction(
+      async (tx): Promise<ComplaintUpdateResult & { changed?: boolean }> => {
+        const existing = await tx.complaint.findUnique({
+          where: { caseId },
+          select: {
+            id: true,
+            caseId: true,
+            type: true,
+            status: true,
+            source: true,
+            telegramUserId: true,
+            revision: true,
+            casinoName: true,
+            casino: {
+              select: {
+                slug: true,
+                translations: {
+                  where: { locale: "en" },
+                  select: { name: true },
+                  take: 1,
+                },
+              },
+            },
+          },
+        });
+        if (!existing) return { ok: false, error: "missing" };
+        if (existing.revision !== expectedRevision) {
+          return { ok: false, error: "conflict" };
+        }
 
-  await prisma.complaint.update({
-    where: { caseId },
-    data: {
-      status: nextStatus,
-      moderatedById: admin.id,
-      moderatedAt: new Date(),
-    },
-    select: { id: true },
-  });
+        const statusChanged = nextStatus !== existing.status;
+        if (!statusChanged && !message) return { ok: true, notified: false };
 
-  revalidateAdminComplaintPaths(caseId);
-  return { ok: true };
+        let status: ComplaintStatus = existing.status;
+        if (statusChanged) {
+          if (!isAllowedComplaintStatus(existing.type, nextStatus)) {
+            return { ok: false, error: "invalidStatus" };
+          }
+          status = nextStatus;
+        }
+
+        const willNotify = notify && isNotifiable(existing);
+        if (message && !willNotify)
+          return { ok: false, error: "messageNotSent" };
+
+        const now = new Date();
+        const revision = existing.revision + 1;
+        const updated = await tx.complaint.updateMany({
+          where: { id: existing.id, revision: expectedRevision },
+          data: {
+            ...(statusChanged ? { status } : {}),
+            moderatedById: admin.id,
+            moderatedAt: now,
+            updatedAt: now,
+            revision,
+            ...(message
+              ? { lastUserMessage: message, lastUserMessageAt: now }
+              : {}),
+          },
+        });
+        if (updated.count !== 1) throw new RevisionConflict();
+
+        if (willNotify) {
+          await tx.caseNotificationOutbox.create({
+            data: {
+              complaintId: existing.id,
+              revision,
+              telegramUserId: existing.telegramUserId!.trim(),
+              caseId: existing.caseId,
+              type: existing.type,
+              status,
+              casinoLabel:
+                existing.casino?.translations[0]?.name ||
+                existing.casinoName?.trim() ||
+                existing.casino?.slug ||
+                "",
+              userMessage: message || null,
+              caseUpdatedAt: now,
+            },
+            select: { id: true },
+          });
+        }
+
+        return { ok: true, notified: willNotify, changed: true };
+      },
+      { maxWait: 10_000, timeout: 15_000 },
+    );
+  } catch (error) {
+    if (error instanceof RevisionConflict || isUniqueViolation(error)) {
+      return { ok: false, error: "conflict" };
+    }
+    throw error;
+  }
+
+  if (!result.ok) return result;
+  if (result.changed) revalidateAdminComplaintPaths(caseId);
+  return { ok: true, notified: result.notified };
 }
 
 export async function saveComplaintNotes(

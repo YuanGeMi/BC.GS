@@ -940,10 +940,16 @@
         "created": "创建时间"
       },
       "status": {
-        "open": "待处理",
+        "open": "待处理（旧）",
+        "submitted": "已提交",
+        "received": "已收到",
         "in_review": "审核中",
+        "waiting_for_more_information": "等待补充信息",
         "resolved": "已解决",
-        "rejected": "已驳回"
+        "rejected": "已驳回",
+        "verified": "已核实",
+        "not_verified": "未核实",
+        "closed": "已关闭"
       },
       "types": {
         "complaint": "投诉",
@@ -986,7 +992,26 @@
       "userTyped": "用户输入：{name}",
       "saveCasino": "保存娱乐场",
       "casinoSaved": "娱乐场关联已保存。",
-      "casinoLinkHelp": "更正此案件所涉及的娱乐场。这不会改变状态或审核人，并会保留用户的原始输入。"
+      "casinoLinkHelp": "更正此案件所涉及的娱乐场。这不会改变状态或审核人，并会保留用户的原始输入。",
+      "userMessage": "给用户的消息",
+      "messageCount": "{count} / {max}",
+      "internalNotesNeverSent": "内部备注永远不会发送。",
+      "notifyUser": "通知用户",
+      "noNotification": "此案件不是通过带用户 ID 的 Telegram 提交的，因此不会发送通知。",
+      "saveAndNotify": "保存并通知用户",
+      "notificationQueued": "已保存，将通知用户。",
+      "refresh": "刷新",
+      "lastUserMessage": "最近发送给用户的消息",
+      "noUserMessage": "尚未发送消息。",
+      "recentNotifications": "最近的通知",
+      "noNotifications": "暂无通知。",
+      "withMessage": "含消息",
+      "notificationState": {
+        "pending": "待发送",
+        "processing": "发送中",
+        "sent": "已发送",
+        "permanent_failure": "发送失败"
+      }
     },
     "reviews": {
       "eyebrow": "队列",
@@ -1146,6 +1171,9 @@
       "invalidRank": "排名须为从 1 开始的整数，或留空。",
       "invalidCasino": "请从列表中选择娱乐场。",
       "notesTooLong": "备注不能超过 10,000 个字符。",
+      "conflict": "其他人已更改此案件。请刷新页面后重试。",
+      "messageTooLong": "消息不能超过 1,000 个字符。",
+      "messageNotSent": "请打开“通知用户”以发送此消息，或将其清空。",
       "exportFailed": "无法导出报告，请重试。"
     },
     "notices": {

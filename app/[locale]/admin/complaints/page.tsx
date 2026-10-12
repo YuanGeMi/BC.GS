@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
+import { COMPLAINT_STATUSES } from "@/lib/admin/complaint-status";
 import { listAdminComplaints } from "@/lib/admin/complaints";
 import { adminInputClass, adminSelectClass } from "@/lib/admin/fields";
 
@@ -101,13 +102,14 @@ export default async function AdminComplaintsPage({
           name="status"
           defaultValue={status}
           aria-label={tc("columns.status")}
-          className={`${adminSelectClass} max-w-[11rem]`}
+          className={`${adminSelectClass} max-w-[16rem]`}
         >
           <option value="">{t("status.all")}</option>
-          <option value="open">{tc("status.open")}</option>
-          <option value="in_review">{tc("status.in_review")}</option>
-          <option value="resolved">{tc("status.resolved")}</option>
-          <option value="rejected">{tc("status.rejected")}</option>
+          {COMPLAINT_STATUSES.map((value) => (
+            <option key={value} value={value}>
+              {tc(`status.${value}`)}
+            </option>
+          ))}
         </select>
         <select
           name="type"

@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ComplaintActions } from "@/components/admin/complaint-actions";
 import { Link } from "@/i18n/navigation";
+import { complaintStatusOptions } from "@/lib/admin/complaint-status";
 import {
   getAdminComplaint,
   listAdminComplaintCasinos,
@@ -104,6 +105,70 @@ export default async function AdminComplaintDetailPage({ params }: Props) {
     },
   ];
 
+  const notificationTime = (item: (typeof complaint.notifications)[number]) =>
+    item.state === "sent" && item.sentAt
+      ? item.sentAt
+      : item.state === "pending"
+        ? item.createdAt
+        : item.updatedAt;
+
+  const notificationHistory = (
+    <div className="border-text/10 mt-6 space-y-5 border-t pt-5 text-sm">
+      <div>
+        <p className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
+          {tc("lastUserMessage")}
+        </p>
+        {complaint.lastUserMessage ? (
+          <>
+            <p className="mt-2 leading-relaxed break-words whitespace-pre-wrap">
+              {complaint.lastUserMessage}
+            </p>
+            {complaint.lastUserMessageAt ? (
+              <p className="text-text/45 mt-1 text-xs tabular-nums">
+                {dateTimeFmt.format(new Date(complaint.lastUserMessageAt))}
+              </p>
+            ) : null}
+          </>
+        ) : (
+          <p className="text-text/45 mt-2">{tc("noUserMessage")}</p>
+        )}
+      </div>
+      <div>
+        <p className="text-text/40 text-[11px] tracking-[0.16em] uppercase">
+          {tc("recentNotifications")}
+        </p>
+        {complaint.notifications.length === 0 ? (
+          <p className="text-text/45 mt-2">{tc("noNotifications")}</p>
+        ) : (
+          <ul className="mt-2 space-y-1.5">
+            {complaint.notifications.map((item) => (
+              <li key={item.revision} className="text-text/70">
+                <span
+                  className={
+                    item.state === "permanent_failure"
+                      ? "text-accent"
+                      : item.state === "sent"
+                        ? "text-text"
+                        : "text-text/55"
+                  }
+                >
+                  {tc(`notificationState.${item.state}`)}
+                </span>
+                {" · "}
+                {tc(`status.${item.status}`)}
+                {item.hasMessage ? ` · ${tc("withMessage")}` : ""}
+                {" · "}
+                <span className="tabular-nums">
+                  {dateTimeFmt.format(new Date(notificationTime(item)))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <section className="max-w-3xl">
       <p className="text-accent/80 text-[11px] font-medium tracking-[0.22em] uppercase">
@@ -175,6 +240,13 @@ export default async function AdminComplaintDetailPage({ params }: Props) {
         <ComplaintActions
           caseId={complaint.caseId}
           status={complaint.status}
+          statusOptions={complaintStatusOptions(
+            complaint.type,
+            complaint.status,
+          )}
+          revision={complaint.revision}
+          canNotify={complaint.canNotify}
+          notificationHistory={notificationHistory}
           adminNotes={complaint.adminNotes ?? ""}
           casinoId={complaint.casinoId}
           casinoName={complaint.casinoName}
