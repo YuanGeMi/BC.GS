@@ -893,6 +893,33 @@
         "uploadFailed": "Upload failed. Check the telegram-media Storage bucket exists."
       }
     },
+    "telegramRankings": {
+      "title": "Rankings banner",
+      "help": "Shown above the rankings. If empty, the English banner is used; if that is empty too, the bot shows the text ranking only.",
+      "media": "Media",
+      "mediaHelp": "Optional: one image (JPG, PNG or WebP, up to 5 MB), GIF or MP4 video (up to 20 MB).",
+      "mediaUpload": "Upload media",
+      "mediaUploading": "Uploading…",
+      "mediaRemove": "Remove",
+      "mediaUploaded": "Uploaded. Save this language to keep it.",
+      "mediaRemoved": "Media removed. Save this language to apply.",
+      "intro": "Intro text",
+      "introHelp": "Optional, plain text. Leave empty to use the bot's built-in text.",
+      "count": "{count} / {max}",
+      "save": "Save {language}",
+      "saved": "{language} rankings banner saved.",
+      "cleared": "{language} rankings banner cleared.",
+      "errors": {
+        "introTooLong": "Intro text must be 300 characters or fewer.",
+        "invalidMedia": "The media file is not valid. Upload it again.",
+        "invalidLocale": "Unknown language.",
+        "invalidType": "Use JPG, PNG, WebP, GIF or MP4.",
+        "imageTooLarge": "Images must be 5 MB or smaller.",
+        "mediaTooLarge": "GIFs and videos must be 20 MB or smaller.",
+        "tooLarge": "File is too large.",
+        "uploadFailed": "Upload failed. Check the telegram-media Storage bucket exists."
+      }
+    },
     "botAvatar": {
       "title": "Bot profile picture",
       "help": "The Telegram bot's profile picture. Pick a picture, check the preview, then apply it.",

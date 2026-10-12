@@ -3,6 +3,8 @@ export const SITE_BRANDING_BUCKET = "site-branding";
 export const TELEGRAM_MEDIA_BUCKET = "telegram-media";
 /** Folder inside TELEGRAM_MEDIA_BUCKET for the bot's welcome media. */
 export const TELEGRAM_WELCOME_MEDIA_FOLDER = "welcome";
+/** Folder inside TELEGRAM_MEDIA_BUCKET for the rankings banner, one subfolder per locale. */
+export const TELEGRAM_RANKINGS_MEDIA_FOLDER = "rankings";
 /** Folder inside TELEGRAM_MEDIA_BUCKET for the bot's profile picture. */
 export const TELEGRAM_BOT_AVATAR_FOLDER = "avatar";
 

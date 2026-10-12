@@ -893,6 +893,33 @@
         "uploadFailed": "上传失败。请确认 telegram-media 存储桶已存在。"
       }
     },
+    "telegramRankings": {
+      "title": "排名横幅",
+      "help": "显示在排名上方。留空则使用英文横幅；英文也为空时，机器人只显示文字排名。",
+      "media": "媒体",
+      "mediaHelp": "可选：一张图片（JPG、PNG 或 WebP，最大 5 MB）、GIF 或 MP4 视频（最大 20 MB）。",
+      "mediaUpload": "上传媒体",
+      "mediaUploading": "上传中…",
+      "mediaRemove": "移除",
+      "mediaUploaded": "已上传。保存此语言后生效。",
+      "mediaRemoved": "已移除媒体。保存此语言后生效。",
+      "intro": "介绍文字",
+      "introHelp": "可选，纯文本。留空则使用机器人内置的文字。",
+      "count": "{count} / {max}",
+      "save": "保存{language}",
+      "saved": "{language}排名横幅已保存。",
+      "cleared": "{language}排名横幅已清空。",
+      "errors": {
+        "introTooLong": "介绍文字不能超过 300 个字符。",
+        "invalidMedia": "媒体文件无效，请重新上传。",
+        "invalidLocale": "未知语言。",
+        "invalidType": "请使用 JPG、PNG、WebP、GIF 或 MP4。",
+        "imageTooLarge": "图片不能超过 5 MB。",
+        "mediaTooLarge": "GIF 和视频不能超过 20 MB。",
+        "tooLarge": "文件过大。",
+        "uploadFailed": "上传失败。请确认 telegram-media 存储桶已存在。"
+      }
+    },
     "botAvatar": {
       "title": "机器人头像",
       "help": "Telegram 机器人的头像。选择图片，确认预览后再应用。",

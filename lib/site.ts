@@ -23,6 +23,9 @@ export const SITE_SETTING_KEYS = {
   telegramWelcomeZh: "telegram_welcome_zh",
   telegramWelcomeTh: "telegram_welcome_th",
   telegramBotAvatar: "telegram_bot_avatar",
+  telegramRankingsEn: "telegram_rankings_en",
+  telegramRankingsZh: "telegram_rankings_zh",
+  telegramRankingsTh: "telegram_rankings_th",
 } as const;
 
 export const FOOTER_TAGLINE_KEYS = {
@@ -38,8 +41,16 @@ export const TELEGRAM_WELCOME_KEYS = {
   th: SITE_SETTING_KEYS.telegramWelcomeTh,
 } as const satisfies Record<Locale, string>;
 
+/** Rankings banner JSON per locale, read by the Telegram bot. Admin-only: never load on public pages. */
+export const TELEGRAM_RANKINGS_KEYS = {
+  en: SITE_SETTING_KEYS.telegramRankingsEn,
+  zh: SITE_SETTING_KEYS.telegramRankingsZh,
+  th: SITE_SETTING_KEYS.telegramRankingsTh,
+} as const satisfies Record<Locale, string>;
+
 const ADMIN_ONLY_SETTING_KEYS = new Set<string>([
   ...Object.values(TELEGRAM_WELCOME_KEYS),
+  ...Object.values(TELEGRAM_RANKINGS_KEYS),
   SITE_SETTING_KEYS.telegramBotAvatar,
 ]);
 
