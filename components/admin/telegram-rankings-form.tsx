@@ -113,6 +113,8 @@ export function TelegramRankingsForm({
           mediaType: finalized.mediaType,
         });
         toast.success(t("telegramRankings.mediaUploaded"));
+      } catch {
+        toast.error(t("telegramRankings.errors.uploadFailed"));
       } finally {
         setUploading(false);
       }

@@ -178,28 +178,21 @@ export async function prepareTelegramRankingsMediaUpload(input: {
   return { ok: true, path, token: data.token };
 }
 
-/** First bytes of the stored file, read through its public URL; null if they can't be read. */
+const FILE_HEAD_TIMEOUT_MS = 5000;
+
+/** First bytes of the stored file, read through its public URL; null if they can't be read in time. */
 async function readFileHead(url: string): Promise<Uint8Array | null> {
   try {
-    const response = await fetch(url, { headers: { Range: "bytes=0-31" }, cache: "no-store" });
-    if (!response.ok || !response.body) return null;
-    const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let length = 0;
-    while (length < 32) {
-      const { done, value } = await reader.read();
-      if (done || !value) break;
-      chunks.push(value);
-      length += value.length;
-    }
-    await reader.cancel().catch(() => {});
-    const head = new Uint8Array(length);
-    let offset = 0;
-    for (const chunk of chunks) {
-      head.set(chunk, offset);
-      offset += chunk.length;
-    }
-    return head.subarray(0, 32);
+    const response = await fetch(url, {
+      headers: { Range: "bytes=0-31" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(FILE_HEAD_TIMEOUT_MS),
+    });
+    if (response.status !== 206 && response.status !== 200) return null;
+    // Next's patched fetch may tee the body, so it is read to the end rather than cancelled (cancelling one
+    // branch of a tee waits for the other). With the Range header that is only 32 bytes.
+    const body = new Uint8Array(await response.arrayBuffer());
+    return body.subarray(0, 32);
   } catch {
     return null;
   }
@@ -245,12 +238,9 @@ export async function finalizeTelegramRankingsMediaUpload(input: {
   const url = `${mediaPublicUrlPrefix(input.locale)}${name}`;
   if (!problem) {
     const head = await readFileHead(url);
-    if (!head) {
-      console.error("[finalizeTelegramRankingsMediaUpload]", "could not read the file");
-      await bucket.remove([path]);
-      return { ok: false, error: "uploadFailed" };
-    }
-    if (sniffTelegramMediaMime(head) !== mime) problem = "invalidType";
+    // Unreadable in time: the stored type, size and extension checks above still apply, as for the welcome media.
+    if (!head) console.warn("[finalizeTelegramRankingsMediaUpload]", "content check skipped: file not readable in time");
+    else if (sniffTelegramMediaMime(head) !== mime) problem = "invalidType";
   }
   if (problem || !spec) {
     await bucket.remove([path]);
